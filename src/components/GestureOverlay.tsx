@@ -8,19 +8,20 @@ interface GestureOverlayProps {
 }
 
 /**
- * GestureOverlay — Pointer Events implementation.
+ * GestureOverlay — Touch + Mouse implementation.
  *
- * Uses the universal Pointer Events API (Safari 13+, all Chromium-based
- * browsers including Ecosia/Brave/Samsung Internet, Firefox) plus
- * `setPointerCapture` so a stroke is delivered in full regardless of any
- * scroll-hijack heuristics. `touch-action` is only flipped to `none` while a
- * stroke is actively being drawn, so normal scrolling is preserved.
+ * Uses classic touch events with **non-passive** `touchmove` so we can call
+ * `preventDefault()` mid-stroke. That single change fixes the Android Chromium
+ * family (Ecosia, Brave, Samsung Internet, Edge mobile) which otherwise claims
+ * the gesture as a scroll after a few pixels of vertical travel.
+ *
+ * We deliberately do NOT use Pointer Events / setPointerCapture: iOS Safari
+ * (especially in standalone/PWA mode) drops pointermove events under capture
+ * and breaks the gesture entirely.
  */
 const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, containerRef }) => {
   const overlayRef = useRef<HTMLDivElement>(null);
   const drawingRef = useRef(false);
-  const activePointerIdRef = useRef<number | null>(null);
-  const captureElRef = useRef<HTMLElement | null>(null);
   const loggedOnceRef = useRef(false);
 
   const clearSelection = useCallback(() => {
@@ -50,8 +51,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     endGesture,
   } = useGestureDetection(handleGestureSuccess);
 
-  // Mirror isDrawing into a ref so event handlers always see the latest value
-  // without needing to be re-bound (React state lags one tick behind).
+  // Mirror isDrawing into a ref for handlers.
   useEffect(() => {
     drawingRef.current = isDrawing;
   }, [isDrawing]);
@@ -77,25 +77,21 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     return false;
   }, []);
 
-  const getEventPosition = useCallback(
-    (event: PointerEvent | MouseEvent, fallbackEl: HTMLElement | null) => {
+  const getTouchPosition = useCallback(
+    (clientX: number, clientY: number, fallbackEl: HTMLElement | null) => {
       const container = containerRef?.current || fallbackEl;
       const rect = container?.getBoundingClientRect();
       if (!rect) return { x: 0, y: 0 };
-      return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+      return { x: clientX - rect.left, y: clientY - rect.top };
     },
     [containerRef]
   );
 
-  // Attach Pointer Events to a target element (container or document).
   useEffect(() => {
     const usingContainer = !!containerRef?.current;
     const targetEl: HTMLElement | Document = usingContainer
       ? (containerRef!.current as HTMLElement)
       : document;
-    const styleEl: HTMLElement | null = usingContainer
-      ? (containerRef!.current as HTMLElement)
-      : document.documentElement;
 
     if (usingContainer && targetEl instanceof HTMLElement) {
       targetEl.removeAttribute('disabled');
@@ -106,91 +102,55 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       targetEl.classList.add('gesture-container');
     }
 
-    const setTouchAction = (value: string) => {
-      if (styleEl) styleEl.style.touchAction = value;
-    };
-
-    const supportsPointer = typeof window !== 'undefined' && 'PointerEvent' in window;
-
-    const onPointerDown = (e: PointerEvent) => {
+    // -------------------- Touch handlers --------------------
+    const onTouchStart = (e: TouchEvent) => {
       if (isInteractiveElement(e.target)) return;
-      // Only primary pointer (first finger / left mouse).
-      if (e.isPrimary === false) return;
+      if (e.touches.length !== 1) return;
 
       if (!loggedOnceRef.current) {
         loggedOnceRef.current = true;
         try {
-          console.debug('[gesture] start', {
-            pointerType: e.pointerType,
-            ua: navigator.userAgent,
-          });
+          console.debug('[gesture] touch start', { ua: navigator.userAgent });
         } catch {}
       }
 
-      try {
-        window.getSelection()?.removeAllRanges();
-      } catch {}
+      try { window.getSelection()?.removeAllRanges(); } catch {}
 
-      // Capture pointer so the browser can't steal it for scroll.
-      const captureTarget =
-        usingContainer && targetEl instanceof HTMLElement ? targetEl : (e.target as HTMLElement | null);
-      if (captureTarget && typeof captureTarget.setPointerCapture === 'function') {
-        try {
-          captureTarget.setPointerCapture(e.pointerId);
-          captureElRef.current = captureTarget;
-        } catch {}
-      }
-      activePointerIdRef.current = e.pointerId;
-
-      // Lock scroll for the duration of the stroke only.
-      setTouchAction('none');
-
+      const touch = e.touches[0];
       const fallback = usingContainer ? null : (overlayRef.current ?? document.documentElement);
-      const { x, y } = getEventPosition(e, fallback);
+      const { x, y } = getTouchPosition(touch.clientX, touch.clientY, fallback);
       startGesture(x, y);
     };
 
-    const onPointerMove = (e: PointerEvent) => {
+    const onTouchMove = (e: TouchEvent) => {
       if (!drawingRef.current) return;
-      if (activePointerIdRef.current !== null && e.pointerId !== activePointerIdRef.current) return;
       if (isInteractiveElement(e.target)) return;
-      // Cancellable now since we have pointer capture; suppresses stray text selection on desktop.
+      if (e.touches.length !== 1) return;
+      // CRITICAL: non-passive listener so this works. Prevents Android Chromium
+      // browsers from claiming the gesture as a scroll mid-stroke.
       try { e.preventDefault(); } catch {}
       clearSelection();
+      const touch = e.touches[0];
       const fallback = usingContainer ? null : (overlayRef.current ?? document.documentElement);
-      const { x, y } = getEventPosition(e, fallback);
+      const { x, y } = getTouchPosition(touch.clientX, touch.clientY, fallback);
       addPoint(x, y);
     };
 
-    const finishStroke = (e: PointerEvent) => {
-      if (activePointerIdRef.current !== null && e.pointerId !== activePointerIdRef.current) return;
+    const onTouchEnd = (_e: TouchEvent) => {
       if (drawingRef.current) clearSelection();
-      // Release capture and restore touch-action.
-      if (captureElRef.current && typeof captureElRef.current.releasePointerCapture === 'function') {
-        try { captureElRef.current.releasePointerCapture(e.pointerId); } catch {}
-      }
-      captureElRef.current = null;
-      activePointerIdRef.current = null;
-      setTouchAction('');
       endGesture();
     };
 
-    const onPointerUp = (e: PointerEvent) => {
-      if (isInteractiveElement(e.target)) {
-        // Still need to release capture / restore touch-action if we had started.
-        if (activePointerIdRef.current === e.pointerId) finishStroke(e);
-        return;
-      }
-      finishStroke(e);
+    const onTouchCancel = (_e: TouchEvent) => {
+      if (drawingRef.current) clearSelection();
+      endGesture();
     };
 
-    const onPointerCancel = (e: PointerEvent) => finishStroke(e);
-
-    // Mouse fallback for the (rare) browser without PointerEvent.
+    // -------------------- Mouse handlers (desktop) --------------------
     const onMouseDown = (e: MouseEvent) => {
       if (isInteractiveElement(e.target)) return;
       const fallback = usingContainer ? null : (overlayRef.current ?? document.documentElement);
-      const { x, y } = getEventPosition(e, fallback);
+      const { x, y } = getTouchPosition(e.clientX, e.clientY, fallback);
       startGesture(x, y);
     };
     const onMouseMove = (e: MouseEvent) => {
@@ -199,7 +159,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       e.preventDefault();
       clearSelection();
       const fallback = usingContainer ? null : (overlayRef.current ?? document.documentElement);
-      const { x, y } = getEventPosition(e, fallback);
+      const { x, y } = getTouchPosition(e.clientX, e.clientY, fallback);
       addPoint(x, y);
     };
     const onMouseUp = (_e: MouseEvent) => {
@@ -207,38 +167,32 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       endGesture();
     };
 
-    if (supportsPointer) {
-      (targetEl as any).addEventListener('pointerdown', onPointerDown, { passive: true });
-      // pointermove/up cannot be passive when we want preventDefault to work in some browsers.
-      (targetEl as any).addEventListener('pointermove', onPointerMove, { passive: false });
-      (targetEl as any).addEventListener('pointerup', onPointerUp, { passive: true });
-      (targetEl as any).addEventListener('pointercancel', onPointerCancel, { passive: true });
-    } else {
-      (targetEl as any).addEventListener('mousedown', onMouseDown);
-      (targetEl as any).addEventListener('mousemove', onMouseMove);
-      (targetEl as any).addEventListener('mouseup', onMouseUp);
-    }
+    // touchstart can stay passive (we don't preventDefault on it).
+    (targetEl as any).addEventListener('touchstart', onTouchStart, { passive: true });
+    // touchmove MUST be non-passive — this is the core fix for Ecosia/Android.
+    (targetEl as any).addEventListener('touchmove', onTouchMove, { passive: false });
+    (targetEl as any).addEventListener('touchend', onTouchEnd, { passive: true });
+    (targetEl as any).addEventListener('touchcancel', onTouchCancel, { passive: true });
+
+    (targetEl as any).addEventListener('mousedown', onMouseDown);
+    (targetEl as any).addEventListener('mousemove', onMouseMove);
+    (targetEl as any).addEventListener('mouseup', onMouseUp);
 
     return () => {
-      setTouchAction('');
       if (usingContainer && targetEl instanceof HTMLElement) {
         targetEl.classList.remove('gesture-container');
         targetEl.removeAttribute('disabled');
       }
-      if (supportsPointer) {
-        (targetEl as any).removeEventListener('pointerdown', onPointerDown);
-        (targetEl as any).removeEventListener('pointermove', onPointerMove);
-        (targetEl as any).removeEventListener('pointerup', onPointerUp);
-        (targetEl as any).removeEventListener('pointercancel', onPointerCancel);
-      } else {
-        (targetEl as any).removeEventListener('mousedown', onMouseDown);
-        (targetEl as any).removeEventListener('mousemove', onMouseMove);
-        (targetEl as any).removeEventListener('mouseup', onMouseUp);
-      }
+      (targetEl as any).removeEventListener('touchstart', onTouchStart);
+      (targetEl as any).removeEventListener('touchmove', onTouchMove);
+      (targetEl as any).removeEventListener('touchend', onTouchEnd);
+      (targetEl as any).removeEventListener('touchcancel', onTouchCancel);
+      (targetEl as any).removeEventListener('mousedown', onMouseDown);
+      (targetEl as any).removeEventListener('mousemove', onMouseMove);
+      (targetEl as any).removeEventListener('mouseup', onMouseUp);
     };
-  }, [containerRef, getEventPosition, startGesture, addPoint, endGesture, isInteractiveElement, clearSelection]);
+  }, [containerRef, getTouchPosition, startGesture, addPoint, endGesture, isInteractiveElement, clearSelection]);
 
-  // When scoped to a container we don't render an overlay (capture happens on the container itself).
   if (containerRef) return null;
 
   return (
