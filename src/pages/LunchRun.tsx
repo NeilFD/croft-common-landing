@@ -400,7 +400,7 @@ export default function LunchRun() {
               );
             })}
 
-            {!menu.starters.length && !menu.mains.length && !menu.desserts.length && (
+            {!menu.smallPlates.length && !menu.largePlates.length && !menu.curries.length && !menu.sides.length && !menu.desserts.length && (
               <div className="border border-white/15 p-8 text-center">
                 <p className="font-sans text-white/70">Nothing available at {info.label} right now.</p>
               </div>
