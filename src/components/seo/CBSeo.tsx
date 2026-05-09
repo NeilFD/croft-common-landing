@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 
-const SITE = "https://www.crazybeartest.com";
+const SITE = "https://www.crazybear.dev";
 
 interface CBSeoProps {
   title: string;

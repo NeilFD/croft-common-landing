@@ -7,7 +7,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const REF_LOGO_URL = "https://www.crazybeartest.com/brand/crazy-bear-mark.png";
+const REF_LOGO_URL = "https://www.crazybear.dev/brand/crazy-bear-mark.png";
 
 // ---- Helpers ---------------------------------------------------------------
 

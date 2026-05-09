@@ -44,7 +44,7 @@ const ManagementLogin = () => {
   const [sessionValid, setSessionValid] = useState(false);
   const [sessionCheckComplete, setSessionCheckComplete] = useState(false);
 
-  const isCrazyBearHost = typeof window !== 'undefined' && window.location.hostname.includes('crazybeartest.com');
+  const isCrazyBearHost = typeof window !== 'undefined' && window.location.hostname.includes('crazybear.dev');
 
   useEffect(() => {
     if (!isCrazyBearHost) return;
@@ -324,7 +324,7 @@ const ManagementLogin = () => {
       
       // Redirect to login
       setTimeout(() => {
-        window.location.assign(isCrazyBearHost ? 'https://www.crazybeartest.com/' : 'https://www.croftcommontest.com/management/login');
+        window.location.assign(isCrazyBearHost ? 'https://www.crazybear.dev/' : 'https://www.croftcommontest.com/management/login');
       }, 500);
       
     } catch (error: any) {
@@ -415,7 +415,7 @@ const ManagementLogin = () => {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: isCrazyBearHost ? "https://www.crazybeartest.com/set-password" : "https://www.croftcommontest.com/management/login"
+        redirectTo: isCrazyBearHost ? "https://www.crazybear.dev/set-password" : "https://www.croftcommontest.com/management/login"
       });
 
       if (error) {

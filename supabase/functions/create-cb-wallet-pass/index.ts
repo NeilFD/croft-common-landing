@@ -44,7 +44,7 @@ async function fetchAsset(file: string): Promise<Uint8Array> {
     `https://crazybear.dev/brand/wallet/${file}`,
     `https://www.crazybear.dev/brand/wallet/${file}`,
     `https://crazy-bear-web.lovable.app/brand/wallet/${file}`,
-    `https://www.crazybeartest.com/brand/wallet/${file}`,
+    `https://www.crazybear.dev/brand/wallet/${file}`,
   ];
   for (const url of candidates) {
     try {
@@ -163,15 +163,15 @@ serve(async (req) => {
         ],
         backFields: [
           { key: 'about', label: 'THE DEN', value: 'Your Crazy Bear membership. Show this card on arrival.' },
-          { key: 'website', label: 'WEBSITE', value: 'https://www.crazybeartest.com' },
-          { key: 'contact', label: 'CONTACT', value: 'hello@crazybeartest.com' },
+          { key: 'website', label: 'WEBSITE', value: 'https://www.crazybear.dev' },
+          { key: 'contact', label: 'CONTACT', value: 'hello@crazybear.dev' },
           { key: 'terms', label: 'TERMS', value: 'This card is non-transferable. The Den reserves the right to refuse entry.' },
         ],
       },
       barcodes: [
         {
           format: 'PKBarcodeFormatQR',
-          message: `https://www.crazybeartest.com/den/verify?m=${encodeURIComponent(membershipNumber)}`,
+          message: `https://www.crazybear.dev/den/verify?m=${encodeURIComponent(membershipNumber)}`,
           messageEncoding: 'iso-8859-1',
           altText: membershipNumber,
         },
