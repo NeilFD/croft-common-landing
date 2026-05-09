@@ -8,6 +8,9 @@ export interface MemberMoment {
   id: string;
   user_id: string;
   image_url: string;
+  media_type?: 'image' | 'video';
+  poster_url?: string | null;
+  duration_seconds?: number | null;
   tagline: string;
   date_taken: string;
   uploaded_at: string;
@@ -30,6 +33,7 @@ export interface MemberMoment {
   } | null;
   like_count?: number;
   user_has_liked?: boolean;
+  comment_count?: number;
   likers?: {
     first_name?: string | null;
     last_name?: string | null;
@@ -119,6 +123,12 @@ export const useMemberMoments = () => {
         `)
         .in('moment_id', momentIds);
 
+      // Get comment counts (excluding deleted)
+      const { data: commentRows } = await (supabase as any)
+        .from('moment_comments')
+        .select('moment_id, is_deleted')
+        .in('moment_id', momentIds);
+
       // Create maps
       const profilesMap = new Map();
       profilesData?.forEach(profile => {
@@ -128,6 +138,7 @@ export const useMemberMoments = () => {
       const likeCountMap = new Map();
       const userLikeMap = new Set();
       const likersMap = new Map();
+      const commentCountMap = new Map<string, number>();
 
       // Process like counts
       likeCounts?.forEach(like => {
@@ -147,13 +158,20 @@ export const useMemberMoments = () => {
         likersMap.get(like.moment_id).push(like.profiles);
       });
 
+      // Process comment counts
+      (commentRows || []).forEach((c: any) => {
+        if (c.is_deleted) return;
+        commentCountMap.set(c.moment_id, (commentCountMap.get(c.moment_id) || 0) + 1);
+      });
+
       // Combine moments with all data
       const momentsWithData = momentsData?.map(moment => ({
         ...moment,
         profiles: profilesMap.get(moment.user_id) || null,
         like_count: likeCountMap.get(moment.id) || 0,
         user_has_liked: userLikeMap.has(moment.id),
-        likers: likersMap.get(moment.id) || []
+        likers: likersMap.get(moment.id) || [],
+        comment_count: commentCountMap.get(moment.id) || 0,
       })) || [];
 
       setMoments(momentsWithData);
@@ -304,7 +322,8 @@ export const useMemberMoments = () => {
     file: File,
     tagline: string,
     dateTaken: string,
-    tags: string[] = []
+    tags: string[] = [],
+    extras: { mediaType?: 'image' | 'video'; posterBlob?: Blob | null; durationSeconds?: number | null } = {},
   ) => {
     if (uploading) {
       console.warn('Upload already in progress');
@@ -333,9 +352,24 @@ export const useMemberMoments = () => {
         .from('moments')
         .getPublicUrl(fileName);
 
-      const momentData = {
+      // Optional video poster
+      let posterUrl: string | null = null;
+      if (extras.mediaType === 'video' && extras.posterBlob) {
+        const posterName = `${user.id}/${Date.now()}-poster.jpg`;
+        const { error: posterErr } = await supabase.storage
+          .from('moments')
+          .upload(posterName, extras.posterBlob, { contentType: 'image/jpeg', upsert: false });
+        if (!posterErr) {
+          posterUrl = supabase.storage.from('moments').getPublicUrl(posterName).data.publicUrl;
+        }
+      }
+
+      const momentData: any = {
         user_id: user.id,
         image_url: publicUrl,
+        media_type: extras.mediaType || 'image',
+        poster_url: posterUrl,
+        duration_seconds: extras.durationSeconds ?? null,
         tagline,
         date_taken: dateTaken,
         latitude: null,
