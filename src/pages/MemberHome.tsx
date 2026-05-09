@@ -154,6 +154,7 @@ const MemberHome: React.FC = () => {
                 Upload receipt
               </button>
               <Link to="/den/member/lunch-run" className={chipBase}>Thai Takeaway</Link>
+              <Link to="/den/member/gold" className={chipBase}>Gold</Link>
               <Link to="/den/member/moments" className={chipBase}>Moments</Link>
               <Link to="/den/member/profile" className={chipBase}>Profile</Link>
             </div>
