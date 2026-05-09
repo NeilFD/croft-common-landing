@@ -10,6 +10,7 @@ import { TransitionProvider } from "@/contexts/TransitionContext";
 import { NudgeNotificationProvider } from "@/contexts/NudgeNotificationContext";
 const NudgeFloatingButton = lazy(() => import('./components/NudgeFloatingButton'));
 const CBSpotifyPlayer = lazy(() => import('./components/crazybear/CBSpotifyPlayer'));
+const CBFloatingActions = lazy(() => import('./components/crazybear/CBFloatingActions'));
 
 // Lazy load pages for better performance
 import Landing from "./pages/Landing";
@@ -470,6 +471,7 @@ const App = () => {
                        <Route path="*" element={<NotFound />} />
                       </Routes>
                       <RouteHydrationBeacon />
+                      <CBFloatingActions />
                     </Suspense>
                 </TransitionProvider>
               </Router>
