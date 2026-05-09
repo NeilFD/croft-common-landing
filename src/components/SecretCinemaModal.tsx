@@ -198,6 +198,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
           doorsTime,
           screeningTime,
           title: status.title ?? 'Secret Cinema Club',
+          walletToken: confirmation.walletToken ?? null,
         },
       });
       toast({ title: 'Email sent', description: `Sent to ${user.email}` });
