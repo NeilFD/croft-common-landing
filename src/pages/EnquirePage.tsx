@@ -151,8 +151,8 @@ export default function EnquirePage() {
     return (
       <>
         <Helmet>
-          <title>Thank You - Croft Common</title>
-          <meta name="description" content="Thank you for your enquiry. We'll be in touch soon to discuss your event at Croft Common." />
+          <title>Thank You - Crazy Bear</title>
+          <meta name="description" content="Thank you for your enquiry. We'll be in touch soon to discuss your event at the Crazy Bear." />
         </Helmet>
         
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
