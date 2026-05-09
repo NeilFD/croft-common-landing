@@ -5,105 +5,74 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-}
-
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
     const { messages, knownInfo } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY not configured');
 
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
-    }
+    const systemPrompt = `You are the Bear: an event planning assistant for Crazy Bear, two boutique hotel/event venues.
 
-    // Build conversation context for AI
-    let systemPrompt = `You are an event planning assistant for Crazy Bear, a pair of distinctive boutique hotels and event venues (Town in Beaconsfield and Country in Stadhampton). Speak in the 'Bears Den' brand voice: short, staccato, confident, minimal — never gushy, never over-explain. No emojis. Use British English. Your job is to have a natural conversation to understand what someone needs for their event.
+PROPERTIES:
+- Crazy Bear Town (Beaconsfield) — townhouse glamour, almost in London. Glam. Glitz. Show off. 33 bedrooms (Cosy / Boujee / Decadent).
+- Crazy Bear Country (Stadhampton, Oxfordshire) — the original. Britpop nostalgia, glam, experiential. Not a normal country pub. 33 bedrooms (Cosy / Boujee / Decadent).
 
-Guidelines:
-- Be warm, friendly, and conversational - never formal or robotic
-- Ask ONE question at a time
-- NO numbering or structured format - pure conversation
-- Adapt your next question based on their answer
-- If they're vague, gently probe for clarity without being pushy
-- Keep it light and fun
-- Use British English spelling and phrasing
-- Emojis are fine but don't overdo it
+SPACES (for context only — don't list them, just know them):
+Town: The Studio (up to 16, dining/meetings/screenings). The Pool (up to 120 standing, exclusive hire, parties/DJs/cocktails).
+Country: The Glasshouse (up to 250, weddings/big parties). The Conservatory (up to 50, dining/conferences/yoga). The Log Cabin (up to 14, dining/meetings). The Board Room (up to 8, dining/meetings). The Oak Room (up to 50, private dining). Terraces & Woodland Garden (flexible outdoor, marquees in summer).
 
-INFORMATION EXTRACTION RULES (CRITICAL):
-1. Before asking ANY question, review ALL previous user messages carefully
-2. Extract information even if mentioned casually or in passing
-3. If you find information for a field, mark it as collected and SKIP that question
-4. Accept approximate numbers and vague dates - convert them to usable values
-5. Examples of casual information mentions:
-   - "work dinner for 20 people" → eventType: "work dinner", guestCount: 20
-   - "birthday bash in November" → eventType: "birthday", eventDate: "November"
-   - "need something for 3-4k" → budget: "£3k-£4k"
-   - "around 50 guests" → guestCount: 50
-   - "roughly 30-40 people" → guestCount: 35
+OPERATIONAL RULES:
+- Step-free access everywhere. AV included. Music until 1am by request.
+- Pool requires exclusive hire and minimum spend.
+- Minimum spend in play in all areas. Pricing bespoke.
+- Lead time: 7 days minimum for any event over 20 guests.
 
-CONVERSATION FLOW:
-- Start each response by mentally reviewing: "What do I already know from the conversation?"
-- Only ask about fields you genuinely don't have yet
-- If a user provides multiple pieces of info, acknowledge ALL of them naturally
-- Never ask a question if you already have that information
-- Be an active listener - show you've understood what they've told you
+VOICE — 'Bears Den':
+- Short. Staccato. Confident. Minimal.
+- British English. No emojis. Never gushy. Never over-explain.
+- Sample lines: "You're here to party. We're in." / "We can do anything. Test us." / "Set us a challenge."
 
-REQUIRED info to gather (don't end conversation without these):
-1. name - their first name (required)
-2. email - their email address (required, get early)
-3. eventType - type of event (required)
-4. guestCount - number of guests (required)
-5. vibe - the atmosphere/vibe they want (required)
-6. eventDate - date or flexibility (required)
-7. budget - budget or "not sure yet" is acceptable (REQUIRED - must ask)
-8. fbStyle - food & drink style (REQUIRED - must ask naturally, e.g., sit-down meal, standing cocktails, canapés, etc.)
-9. fbPreferences - any dietary needs or F&B preferences (REQUIRED - must ask, can be "no specific requirements")
+CONVERSATION RULES:
+- One question at a time. Natural, not a form.
+- Read every prior user message. Extract info even if mentioned in passing. Never re-ask what you already have.
+- Convert vague answers to usable values (e.g. "around 50" → 50, "summer" → eventDate: "summer").
 
-OPTIONAL info to gather naturally if relevant:
-10. specialRequests - outdoor space, AV needs, accessibility, etc.
+REQUIRED INFO (must collect before completing):
+1. name (first name)
+2. email
+3. eventType
+4. guestCount
+5. vibe (atmosphere)
+6. eventDate
+7. budget (or "not sure yet" is fine)
+8. fbStyle (sit-down, canapes, sharing, cocktails, etc.)
+9. fbPreferences (dietary / preferences, "no specific requirements" is fine)
+10. propertyPreference (Town / Country / no preference) — ask naturally if not stated
 
-CRITICAL RESPONSE FORMAT - READ CAREFULLY:
-- While gathering info: Return ONLY a JSON object: {"done": false, "message": "your conversational question"}
-- The message field contains ONLY natural conversational text - NEVER include JSON syntax or structure words like "done", "false", curly braces, or quotes
-- When you have ALL REQUIRED fields: Return {"done": true, "extractedData": {name: "...", email: "...", eventType: "...", guestCount: X, vibe: "...", eventDate: "...", budget: "...", fbStyle: "...", fbPreferences: "...", ...optional fields...}}
-- Example CORRECT: {"done": false, "message": "Lovely to meet you! What sort of event are you planning?"}
-- Example WRONG: {"done": false, "message": "{\"done\": false, \"message\": \"What's your name?\"}"}
-- Example WRONG: {"done": false, "message": "\"done\": false, \"message\": \"How many guests?\""}
-- The message text must read naturally as if you're speaking to them - no technical formatting
-- Your entire response must be valid JSON
-- NEVER add any text outside the JSON structure`;
+OPTIONAL: specialRequests (outdoor, AV, accessibility, bedrooms needed, etc.)
 
-    // If we have known info, add it to the system prompt
+RESPONSE FORMAT — STRICT JSON ONLY:
+- Gathering: {"done": false, "message": "your one short question"}
+- Complete: {"done": true, "extractedData": {name, email, eventType, guestCount, vibe, eventDate, budget, fbStyle, fbPreferences, propertyPreference, ...optional}}
+- The "message" field is plain conversational text. Never nest JSON inside it.
+- No text outside the JSON.`;
+
+    let prompt = systemPrompt;
     if (knownInfo && Object.keys(knownInfo).length > 0) {
-      const knownFields = Object.entries(knownInfo)
-        .filter(([_, value]) => value !== null && value !== undefined && value !== '')
-        .map(([key, value]) => `${key}: ${value}`)
-        .join(', ');
-      
-      if (knownFields) {
-        systemPrompt += `\n\nALREADY COLLECTED FROM CONVERSATION: ${knownFields}\n- DO NOT ask about these fields again\n- Acknowledge this information naturally if relevant`;
-      }
+      const known = Object.entries(knownInfo)
+        .filter(([_, v]) => v !== null && v !== undefined && v !== '')
+        .map(([k, v]) => `${k}: ${v}`).join(', ');
+      if (known) prompt += `\n\nALREADY COLLECTED: ${known}\n- Do not re-ask. Acknowledge naturally if relevant.`;
     }
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Authorization': `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...messages
-        ],
+        messages: [{ role: 'system', content: prompt }, ...messages],
       }),
     });
 
@@ -116,108 +85,56 @@ CRITICAL RESPONSE FORMAT - READ CAREFULLY:
     const data = await response.json();
     const aiMessage = data.choices[0].message.content;
 
-    // Try to parse as JSON to see if conversation is done
     let parsed;
     try {
       parsed = JSON.parse(aiMessage);
-      
-      // Check if the AI accidentally nested the JSON in the message field
       if (parsed.message && typeof parsed.message === 'string') {
         try {
-          const innerParsed = JSON.parse(parsed.message);
-          // If message field contains JSON, use that instead
-          if (innerParsed && typeof innerParsed === 'object') {
-            console.log('Detected nested JSON in message field, using inner JSON');
-            parsed = innerParsed;
-          }
-        } catch {
-          // Message is just a string, which is correct
-        }
+          const inner = JSON.parse(parsed.message);
+          if (inner && typeof inner === 'object') parsed = inner;
+        } catch { /* ok */ }
       }
     } catch {
-      // If parsing fails, try to extract JSON from mixed text
-      const jsonMatch = aiMessage.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        try {
-          parsed = JSON.parse(jsonMatch[0]);
-        } catch {
-          // Fallback to treating as regular message
-          return new Response(JSON.stringify({ 
-            done: false, 
-            message: aiMessage 
-          }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
+      const m = aiMessage.match(/\{[\s\S]*\}/);
+      if (m) {
+        try { parsed = JSON.parse(m[0]); }
+        catch { return new Response(JSON.stringify({ done: false, message: aiMessage }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }); }
       } else {
-        // No JSON found, treat as regular message
-        return new Response(JSON.stringify({ 
-          done: false, 
-          message: aiMessage 
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        return new Response(JSON.stringify({ done: false, message: aiMessage }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       }
     }
-    
-    try {
-      // If conversation is done, generate space proposal
-      if (parsed.done && parsed.extractedData) {
-        console.log('Conversation complete, generating space proposal...');
-        
-        const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
-        const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
-        
-        // Call generate-event-proposal function
+
+    if (parsed.done && parsed.extractedData) {
+      const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+      const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
+      try {
         const proposalResponse = await fetch(`${SUPABASE_URL}/functions/v1/generate-event-proposal`, {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            enquiryData: parsed.extractedData
-          })
+          headers: { 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enquiryData: parsed.extractedData }),
         });
-
         if (proposalResponse.ok) {
-          const proposalData = await proposalResponse.json();
-          console.log('Proposal generated:', proposalData);
-          
-          // Add proposal details to extracted data
-          parsed.extractedData.recommendedSpaceId = proposalData.proposal?.recommendedSpaceId;
-          parsed.extractedData.recommendedSpace = proposalData.recommendedSpace;
-          parsed.extractedData.aiReasoning = proposalData.proposal?.reasoning;
-          parsed.extractedData.matchScore = proposalData.proposal?.matchScore;
-          parsed.extractedData.keyFeatures = proposalData.proposal?.keyFeatures;
-          parsed.extractedData.alternatives = proposalData.proposal?.alternatives;
+          const p = await proposalResponse.json();
+          parsed.extractedData.recommendedSpaceId = p.proposal?.recommendedSpaceId;
+          parsed.extractedData.recommendedSpace = p.recommendedSpace;
+          parsed.extractedData.aiReasoning = p.proposal?.reasoning;
+          parsed.extractedData.matchScore = p.proposal?.matchScore;
+          parsed.extractedData.keyFeatures = p.proposal?.keyFeatures;
+          parsed.extractedData.alternatives = p.proposal?.alternatives;
         } else {
-          console.error('Failed to generate proposal:', await proposalResponse.text());
+          console.error('Proposal failed:', await proposalResponse.text());
         }
+      } catch (e) {
+        console.error('Proposal call error:', e);
       }
-      
-      return new Response(JSON.stringify(parsed), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    } catch (innerError) {
-      console.error('Error processing parsed JSON:', innerError);
-      // Fallback to treating as regular message
-      return new Response(JSON.stringify({ 
-        done: false, 
-        message: aiMessage 
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
     }
 
+    return new Response(JSON.stringify(parsed), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error) {
     console.error('Event enquiry chat error:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message,
-      message: "Sorry, I'm having trouble right now. Could you try again?" 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(JSON.stringify({
+      error: (error as Error).message,
+      message: "The Bear's having a moment. Try again in a sec.",
+    }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 });
