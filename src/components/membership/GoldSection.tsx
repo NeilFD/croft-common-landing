@@ -17,10 +17,11 @@ const formatDate = (iso: string | null) => {
   });
 };
 
-const btnSmall =
-  'inline-flex items-center justify-center border-2 border-black bg-white text-black hover:bg-black hover:text-white px-3 py-2 font-mono uppercase tracking-[0.25em] text-[10px] transition-colors disabled:opacity-50';
-const btnSmallDark =
-  'inline-flex items-center justify-center border-2 border-black bg-black text-white hover:bg-white hover:text-black px-3 py-2 font-mono uppercase tracking-[0.25em] text-[10px] transition-colors disabled:opacity-50';
+const btnGold =
+  'inline-flex items-center justify-center border-2 bg-white text-black hover:bg-black hover:text-white px-3 py-2 font-mono uppercase tracking-[0.25em] text-[10px] transition-colors disabled:opacity-50';
+const btnGoldStyle = { borderColor: 'hsl(var(--gold-base))' } as React.CSSProperties;
+const btnFull =
+  'w-full inline-flex items-center justify-center border-2 border-black bg-black text-white hover:bg-white hover:text-black px-4 py-3 font-mono uppercase tracking-[0.3em] text-xs transition-colors disabled:opacity-50';
 
 export const GoldSection: React.FC = () => {
   const { user } = useAuth();
@@ -89,7 +90,7 @@ export const GoldSection: React.FC = () => {
   return (
     <>
       <div>
-        <button onClick={() => setShowInfo(true)} className={btnSmall}>
+        <button onClick={() => setShowInfo(true)} className={btnGold} style={btnGoldStyle}>
           {isGold ? 'Manage Gold' : 'Gold Member'}
         </button>
       </div>
@@ -133,7 +134,7 @@ export const GoldSection: React.FC = () => {
                   <button
                     onClick={openPortal}
                     disabled={portalLoading}
-                    className={btnSmallDark}
+                    className={btnFull}
                   >
                     {portalLoading ? 'Opening' : 'Manage subscription'}
                   </button>
@@ -200,7 +201,7 @@ export const GoldSection: React.FC = () => {
                       setShowInfo(false);
                       setShowCheckout(true);
                     }}
-                    className={btnSmallDark}
+                    className={btnFull}
                   >
                     Go Gold
                   </button>
