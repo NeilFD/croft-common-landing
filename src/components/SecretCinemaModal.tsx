@@ -237,8 +237,14 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
         description="We’ll email you a 6-digit verification code to sign in."
       />
 
-      <Dialog open={open} onOpenChange={resetAndClose}>
-        <DialogContent hideOverlay={true} className="sm:max-w-[600px] z-[10001]">
+      <Dialog open={open} onOpenChange={safeProps.guardOpenChange((v) => { if (!v) resetAndClose(); })}>
+        <DialogContent
+          hideOverlay={true}
+          className="sm:max-w-[600px] z-[10001]"
+          onPointerDownOutside={safeProps.onPointerDownOutside}
+          onInteractOutside={safeProps.onInteractOutside}
+          onFocusOutside={safeProps.onFocusOutside}
+        >
           <DialogHeader>
             <DialogTitle className="font-brutalist tracking-wide">
               Secret Cinema Club
