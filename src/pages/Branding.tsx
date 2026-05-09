@@ -168,9 +168,9 @@ const Branding = () => {
       <header className="border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto max-w-6xl px-6 py-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <img src={LOGO_URL} alt="Croft Common logo" className="w-8 h-8 object-contain" />
+            <img src={LOGO_URL} alt="Crazy Bear logo" className="w-8 h-8 object-contain" />
             <div>
-              <h1 className="text-xl md:text-2xl font-semibold leading-tight">Croft Common Brand Book</h1>
+              <h1 className="text-xl md:text-2xl font-semibold leading-tight">Crazy Bear Brand Book</h1>
               <p className="text-sm text-muted-foreground">Brand, design, and voice guidelines</p>
             </div>
           </div>
