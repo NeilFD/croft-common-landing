@@ -56,6 +56,7 @@ const MemberHome = lazy(() => import("./pages/MemberHome"));
 const LunchRun = lazy(() => import("./pages/LunchRun"));
 const MemberLedger = lazy(() => import("./pages/MemberLedger"));
 const MemberProfile = lazy(() => import("./pages/MemberProfile"));
+const DenVerify = lazy(() => import("./pages/DenVerify"));
 const MemberDashboard = lazy(() => import("./pages/MemberDashboard"));
 const MemberMoments = lazy(() => import("./pages/MemberMoments"));
 const CheckIn = lazy(() => import("./pages/CheckIn"));
@@ -360,6 +361,7 @@ const App = () => {
                       <Route path="/den/member/profile" element={<MemberRoutes><MemberProfile /></MemberRoutes>} />
                       <Route path="/den/member/dashboard" element={<MemberRoutes><MemberDashboard /></MemberRoutes>} />
                       <Route path="/den/member/moments" element={<MemberRoutes><MemberMoments /></MemberRoutes>} />
+                      <Route path="/den/verify" element={<DenVerify />} />
 
                       {/* Legacy /common-room redirects */}
                       <Route path="/common-room" element={<Navigate to="/den" replace />} />
