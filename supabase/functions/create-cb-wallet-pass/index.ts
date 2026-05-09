@@ -170,7 +170,7 @@ serve(async (req) => {
       barcodes: [
         {
           format: 'PKBarcodeFormatQR',
-          message: membershipNumber,
+          message: `https://www.crazybeartest.com/den/verify?m=${encodeURIComponent(membershipNumber)}`,
           messageEncoding: 'iso-8859-1',
           altText: membershipNumber,
         },
@@ -181,14 +181,21 @@ serve(async (req) => {
     const passJsonString = JSON.stringify(passJson, null, 2);
     zip.file('pass.json', passJsonString);
 
-    // Bear mark — used for both icon and logo at all density sizes.
-    const bearMark = await fetchBearMark();
-    zip.file('icon.png', bearMark);
-    zip.file('icon@2x.png', bearMark);
-    zip.file('icon@3x.png', bearMark);
-    zip.file('logo.png', bearMark);
-    zip.file('logo@2x.png', bearMark);
-    zip.file('logo@3x.png', bearMark);
+    // Pre-sized bear logo + icon assets so Apple Wallet renders them.
+    const [logo1x, logo2x, logo3x, icon1x, icon2x, icon3x] = await Promise.all([
+      fetchAsset('wallet-logo.png'),
+      fetchAsset('wallet-logo@2x.png'),
+      fetchAsset('wallet-logo@3x.png'),
+      fetchAsset('wallet-icon.png'),
+      fetchAsset('wallet-icon@2x.png'),
+      fetchAsset('wallet-icon@3x.png'),
+    ]);
+    zip.file('icon.png', icon1x);
+    zip.file('icon@2x.png', icon2x);
+    zip.file('icon@3x.png', icon3x);
+    zip.file('logo.png', logo1x);
+    zip.file('logo@2x.png', logo2x);
+    zip.file('logo@3x.png', logo3x);
 
     // Manifest
     const manifest: Record<string, string> = {};
