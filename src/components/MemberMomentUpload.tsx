@@ -335,13 +335,28 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
                 )}
               </div>
 
+              {busy && (
+                <div className="space-y-2">
+                  <div className="h-1 w-full bg-white/10 overflow-hidden">
+                    <div
+                      className="h-full bg-white transition-all duration-300 ease-out"
+                      style={{ width: `${STAGE_PCT[stage]}%` }}
+                    />
+                  </div>
+                  <p className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/60">
+                    {STAGE_LABEL[stage]}
+                  </p>
+                </div>
+              )}
+
               <button
                 onClick={handleUpload}
                 disabled={!tagline.trim() || busy}
                 className="w-full h-12 border border-white bg-white text-black font-mono text-xs tracking-[0.4em] uppercase hover:bg-black hover:text-white transition-colors disabled:opacity-50"
               >
-                {checking ? 'Checking' : uploading ? 'Posting' : 'Post Moment'}
+                {STAGE_LABEL[stage]}
               </button>
+
             </>
           )}
         </div>
