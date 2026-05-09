@@ -558,6 +558,8 @@ const MemberMomentsMosaic: React.FC = () => {
                   src={selectedMoment.image_url}
                   poster={selectedMoment.poster_url ?? undefined}
                   controls
+                  autoPlay
+                  loop
                   playsInline
                   className="max-w-full max-h-[65vh] object-contain"
                 />
