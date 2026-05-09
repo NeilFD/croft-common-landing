@@ -125,7 +125,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
             size="sm"
             onClick={handleDeleteAvatar}
             disabled={uploading}
-            className="border-2 border-black hover:border-red-500 hover:text-red-500"
+            className="bg-white text-black border-2 border-black hover:bg-white hover:text-red-500 hover:border-red-500"
           >
             <X className="h-4 w-4 mr-2" />
             Remove
