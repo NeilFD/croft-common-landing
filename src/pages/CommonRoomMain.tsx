@@ -54,7 +54,8 @@ const CommonRoomMain = () => {
       navigate(target ?? '/den/member');
       return;
     }
-    membershipGate.start();
+    // No biometric/passkey gate - go straight to email + code sign in
+    membershipGate.startWithOtp();
   };
 
   return (
