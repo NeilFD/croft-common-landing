@@ -1,67 +1,41 @@
-# Auto-hide floating actions on mobile scroll
+I found the actual failure pattern.
 
-Apply the Instagram / Material pattern: hide the floating Curious?, Book and Spotify buttons on **scroll down**, reveal on **scroll up**. Mobile only — desktop keeps them static.
+This is not Stacie typing too slowly. The flow itself is fragile.
 
-## Behaviour
+What is going on:
 
-- Threshold: hide only after scrolling **down** more than 10px past the previous position
-- Reveal immediately on any **upward** scroll movement
-- Always visible when `window.scrollY < 80` (top of page)
-- Animation: slide off the right edge with `translate-x-[120%]`, 300ms ease
-- Mobile only (`md:` breakpoint and below). On desktop the buttons never hide.
-- Honour `prefers-reduced-motion`: skip the transform, just stay visible
-- Applies uniformly to Curious?, Book **and** the Spotify widget so all three floating elements move together
+- The current signup creates a hidden random password, sends a confirmation email, then asks the user to manually type the email code into `/set-password`.
+- The email template shows a **CONFIRM EMAIL** button, but the app page asks for a **code**. That is already confusing.
+- The set-password page ignores the confirmation link flow and always tries to verify a typed code using `type: 'email'`.
+- Recent logs show auth verification returning `otp_expired`, and one fresh email send failed while the sender domain was still being finalised: `domain_not_verified`. The domain is verified now, but that failed attempt produced a dead email.
+- There is also stale-session noise: `User from sub claim in JWT does not exist`, caused by a deleted user still having an old browser session. That should be handled cleanly instead of poisoning the experience.
 
-## Implementation
+Plan to make it slick and reliable:
 
-### 1. New shared hook: `src/hooks/useHideOnScrollDown.ts`
+1. **Stop making the user manually copy codes for signup**
+   - Change the signup email to clearly say the button is the primary action.
+   - The user clicks the email button and lands on `/set-password` already verified.
+   - Only show manual code entry as a fallback, not the main path.
 
-```ts
-import { useEffect, useState, useRef } from 'react';
+2. **Make `/set-password` understand every valid auth link format**
+   - Handle `code`, `token_hash`, hash tokens, and existing sessions properly.
+   - If a valid signup link is present, exchange or verify it immediately.
+   - Then show only password and confirm password.
+   - If no link/session is valid, show email plus resend, with a clear expired-link state.
 
-export function useHideOnScrollDown(threshold = 10, topOffset = 80) {
-  const [hidden, setHidden] = useState(false);
-  const lastY = useRef(0);
+3. **Fix stale/deleted session handling**
+   - When the app sees `User from sub claim in JWT does not exist`, force a clean sign-out and clear the broken local session.
+   - This prevents old deleted test accounts from breaking new attempts.
 
-  useEffect(() => {
-    const isMobile = window.matchMedia('(max-width: 767px)').matches;
-    if (!isMobile) return; // desktop never hides
+4. **Improve resend behaviour**
+   - Resend should use the same production redirect.
+   - Copy should say “Send a fresh link”, not “Resend code”, unless manual code fallback is active.
+   - Expired/invalid states should offer one obvious recovery action.
 
-    lastY.current = window.scrollY;
-    let ticking = false;
+5. **Polish the signup states**
+   - After signup, send the user to a proper “Check your email” state.
+   - No mixed message between “code” and “link”.
+   - Keep Bears Den tone: short, confident, minimal.
 
-    const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        const y = window.scrollY;
-        const delta = y - lastY.current;
-        if (y < topOffset) setHidden(false);
-        else if (delta > threshold) setHidden(true);
-        else if (delta < -threshold) setHidden(false);
-        lastY.current = y;
-        ticking = false;
-      });
-    };
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, [threshold, topOffset]);
-
-  return hidden;
-}
-```
-
-### 2. Wire into `CBFloatingActions.tsx`
-
-Wrap both buttons in a container that applies `translate-x-[120%]` when `hidden`, with `transition-transform duration-300 ease-out motion-reduce:transition-none motion-reduce:translate-x-0`. Each button keeps its existing `bottomClass` — only the horizontal transform changes.
-
-### 3. Wire into `CBSpotifyPlayer.tsx`
-
-Same hook, same transform on the player container. Keeps the three floating elements visually coordinated.
-
-## Out of scope
-
-- No change to the `HIDDEN_PREFIXES` route logic (forms still hide them entirely)
-- No change to desktop behaviour
-- No change to button positions, sizes or styling
+6. **Redeploy the auth email hook after template changes**
+   - Email template changes will be deployed so the live signup emails match the corrected flow.

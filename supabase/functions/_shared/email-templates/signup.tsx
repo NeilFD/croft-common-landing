@@ -35,11 +35,16 @@ export const SignupEmail = ({
       <Container style={container}>
         <Text style={eyebrow}>THE BEARS DEN</Text>
         <Heading style={h1}>YOU'RE IN.</Heading>
-        <Text style={text}>One thing left. Confirm it's you.</Text>
+        <Text style={text}>One tap. The door opens.</Text>
         <Button style={button} href={confirmationUrl}>
-          CONFIRM EMAIL
+          OPEN THE DOOR
         </Button>
-        <Text style={text}>Then come find us.</Text>
+        <Text style={smallText}>
+          Button not working? Paste this into your browser:
+          <br />
+          <Link href={confirmationUrl} style={footerLink}>{confirmationUrl}</Link>
+        </Text>
+        <Text style={smallText}>This link is good for 24 hours.</Text>
         <Hr style={hr} />
         <Text style={footer}>
           Didn't sign up? Ignore this. No harm done.
@@ -95,4 +100,5 @@ const button = {
 }
 const hr = { borderColor: '#000000', borderWidth: '1px', margin: '40px 0 24px' }
 const footer = { fontSize: '12px', color: '#737373', lineHeight: '1.6', margin: '0' }
+const smallText = { fontSize: '12px', color: '#737373', lineHeight: '1.6', margin: '16px 0 0', wordBreak: 'break-all' as const }
 const footerLink = { color: '#000000', textDecoration: 'underline' }
