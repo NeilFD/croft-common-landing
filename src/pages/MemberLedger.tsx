@@ -10,7 +10,7 @@ import DateRangeFilter from '@/components/DateRangeFilter';
 import ReceiptDetailModal from '@/components/ReceiptDetailModal';
 import SpendingAnalysisTable from '@/components/SpendingAnalysisTable';
 import { MobileErrorBoundary } from '@/components/MobileErrorBoundary';
-import denBg from '@/assets/den-bg.jpg';
+import denBg from '@/assets/den-bg-neon.jpg';
 
 const chipBase =
   'inline-flex items-center justify-center border border-white/40 text-white px-5 py-2.5 font-mono text-[10px] tracking-[0.4em] uppercase hover:bg-white hover:text-black transition-colors touch-manipulation';
@@ -71,7 +71,7 @@ const MemberLedger: React.FC = () => {
       >
         <div
           className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-10"
-          style={{ backgroundImage: `url(${denBg})`, filter: 'grayscale(1) contrast(1.05)' }}
+          style={{ backgroundImage: `url(${denBg})`, filter: 'contrast(1.05)' }}
         />
         <div className="fixed inset-0 bg-black/75 -z-10" />
 

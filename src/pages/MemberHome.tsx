@@ -11,7 +11,7 @@ import UpcomingEventsCarousel from '@/components/UpcomingEventsCarousel';
 import MemberMomentsCarousel from '@/components/MemberMomentsCarousel';
 import TraditionalStreakCalendar from '@/components/TraditionalStreakCalendar';
 import { MobileErrorBoundary } from '@/components/MobileErrorBoundary';
-import denBg from '@/assets/den-bg.jpg';
+import denBg from '@/assets/den-bg-neon.jpg';
 
 interface MemberStats {
   user: { id: string; email: string; first_name: string; last_name: string };
@@ -114,7 +114,7 @@ const MemberHome: React.FC = () => {
         {/* Fixed B&W Crazy Bear background */}
         <div
           className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-10"
-          style={{ backgroundImage: `url(${denBg})`, filter: 'grayscale(1) contrast(1.05)' }}
+          style={{ backgroundImage: `url(${denBg})`, filter: 'contrast(1.05)' }}
         />
         <div className="fixed inset-0 bg-black/70 -z-10" />
 

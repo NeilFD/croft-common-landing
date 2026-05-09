@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Loader2, ShoppingCart, CheckCircle, ArrowLeft } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import denBg from '@/assets/den-bg.jpg';
+import denBg from '@/assets/den-bg-neon.jpg';
 
 interface MenuItem {
   id: string;
@@ -112,7 +112,7 @@ export default function LunchRun() {
     <div className="min-h-screen relative">
       <div
         className="fixed inset-0 bg-cover bg-center bg-no-repeat z-0"
-        style={{ backgroundImage: `url(${denBg})`, filter: 'grayscale(1) contrast(1.05)' }}
+        style={{ backgroundImage: `url(${denBg})`, filter: 'contrast(1.05)' }}
       />
       <div className="fixed inset-0 bg-white/80 z-0" />
 
