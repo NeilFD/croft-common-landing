@@ -88,7 +88,7 @@ const Branding = () => {
     const robots = document.querySelector('meta[name="robots"]');
     const canonical = document.querySelector('link[rel="canonical"]');
 
-    const descContent = "Croft Common brand book: logos, colors, typography, tone of voice, and usage guidelines.";
+    const descContent = "Crazy Bear brand book: logos, colors, typography, tone of voice, and usage guidelines.";
 
     if (metaDesc) metaDesc.setAttribute("content", descContent);
     else {
