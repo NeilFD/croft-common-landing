@@ -170,10 +170,19 @@ const MemberProfile: React.FC = () => {
 
                     <div className="space-y-3">
                       <AddToAppleWalletButton
-                        enabled={!!formData.avatar_url && formData.avatar_face_verified}
-                        disabledReason="Upload a verified face-on profile photo to unlock"
+                        enabled={!!formData.avatar_url && formData.avatar_face_verified && !autoVerifying}
+                        disabledReason={
+                          autoVerifying
+                            ? 'Verifying your profile photo...'
+                            : 'Upload a verified face-on profile photo to unlock'
+                        }
                       />
-                      {!(formData.avatar_url && formData.avatar_face_verified) && (
+                      {autoVerifying && (
+                        <div className="border-2 border-black bg-white p-3 font-mono text-[10px] tracking-[0.3em] uppercase text-black">
+                          Verifying your profile photo...
+                        </div>
+                      )}
+                      {!autoVerifying && !(formData.avatar_url && formData.avatar_face_verified) && (
                         <div className="border-2 border-black bg-white p-4 space-y-2">
                           <p className="font-mono text-[10px] tracking-[0.3em] uppercase text-black">
                             Unlock your wallet card
