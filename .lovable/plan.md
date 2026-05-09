@@ -1,45 +1,54 @@
-I checked the actual system before planning the fix.
+What I know from the checks:
+- The OTP signup process exists and should stay.
+- The sender domain is verified.
+- The backend is healthy.
+- The email queues are not stuck.
+- Recent signup emails are being logged as sent.
+- The suppression list is empty, so recipients are not blocked.
+- The failures people are reporting are happening after the email is handed off for delivery. That means the app thinks it sent the code, but some inbox providers are not showing it in inbox or spam.
 
-Findings:
-- The sending domain is verified and ready.
-- Josh and Sophie are not suppressed or blocked in the database.
-- Earlier sends to them were recorded as `sent`, but that only confirms hand-off to the mail system, not inbox placement.
-- The latest resend attempts hit rate limiting first, then succeeded at the auth layer.
-- There is also a recent unauthorised call into the auth email hook, which needs correcting because sign-up email must not rely on a fragile path.
-- The current user journey is too brittle: if the email is delayed, filtered, rate-limited or missed, the user has no proper recovery path on the password screen.
+Why this is happening:
+- This is a deliverability problem, not the OTP screen itself.
+- The current sender is a new, low-reputation subdomain: `notify.crazybeartest.com`.
+- New sender domains can be silently filtered, especially by Microsoft mailboxes, even when SPF/DKIM/domain verification is technically correct.
+- The domain name includes `test`, which can also make mail filters more suspicious.
+- The current app copy says “check your email” once the send request succeeds, but that does not prove inbox placement.
 
 Plan:
 
-1. Repair the email pipeline
-   - Re-check the auth email hook configuration against the verified sender domain.
-   - Redeploy the auth email hook and queue processor so the live deployed code matches the project files.
-   - Re-run the email infrastructure setup if the queue processor or service credentials are out of sync.
-   - Confirm the queue drains and that new auth emails are logged from `pending` to `sent`.
+1. Keep the OTP journey exactly as it is
+   - Do not replace the OTP/password flow.
+   - Keep users entering a code, then creating their password.
 
-2. Fix the signup recovery journey
-   - Add a proper “Resend code” action on `/set-password`.
-   - Use the entered or pre-filled email address.
-   - Add a cooldown so users cannot accidentally trigger rate limits.
-   - Show clear states: sending, sent, wait before retrying, or failed.
-   - Keep the page on `/set-password` until the user succeeds, then send them back to `/`.
+2. Harden the signup email itself
+   - Make the signup email shorter, plainer, and code-first.
+   - Remove anything that looks decorative, marketing-like, or link-heavy.
+   - Keep the From address aligned with the verified sender domain.
+   - Keep the subject direct: “Your Crazy Bear code”.
 
-3. Remove confusing code wording
-   - Stop mixing “six digit”, “eight digit” and generic code copy.
-   - Use consistent wording everywhere: “code from your email”.
-   - Update the email template, signup toast and password screen copy so they all match.
+3. Add a proper delivery recovery state
+   - Keep the existing resend button.
+   - Improve the page copy so users are not blamed or told only to check spam.
+   - Show a clear “send another code” path when the email has not arrived.
+   - Keep cooldown protection so we do not trigger rate limits.
 
-4. Make Microsoft inboxes less fragile
-   - Keep the From address aligned to the verified sender subdomain.
-   - Keep the email plain, short and code-first.
-   - Avoid extra marketing-like wording in the auth email that can hurt Microsoft placement.
+4. Add operational visibility for you
+   - Add an admin-safe email delivery view showing recent signup emails, status, recipient, timestamp and errors.
+   - Deduplicate email log rows so the stats are accurate.
+   - This lets you answer “did the system send it?” instantly instead of looking stupid in front of guests.
 
 5. Verify with real signals
-   - Trigger fresh codes for Josh and Sophie after the repair.
-   - Confirm the new messages move through the email log correctly.
-   - Confirm no queue backlog, no suppression, no auth hook errors, and no resend rate-limit loop.
+   - Send fresh signup codes after the email template is simplified.
+   - Check that each one moves from pending to sent.
+   - Check there is no queue backlog, no suppression, and no hook error.
+   - If Microsoft inboxes still do not show the email after this, the next proper fix is to move off the `test` sending domain to a production sender domain with reputation.
 
-Technical details:
-- Frontend work will be in `src/pages/crazybear/SetPassword.tsx` and `src/components/crazybear/CBSubscriptionForm.tsx`.
-- Email copy work will be in `supabase/functions/_shared/email-templates/signup.tsx`.
-- Backend deployment work will redeploy `auth-email-hook` and `process-email-queue`.
-- I will not change the generated Cloud client files.
+Files likely affected:
+- `supabase/functions/_shared/email-templates/signup.tsx`
+- `supabase/functions/auth-email-hook/index.ts`
+- `src/pages/crazybear/SetPassword.tsx`
+- Admin email monitoring page or existing admin area
+
+Deployment:
+- Redeploy the auth email hook after changing email templates.
+- No database schema change is needed for the email flow itself.
