@@ -44,6 +44,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
   const [confirmation, setConfirmation] = useState<{
     ticketNumbers: number[];
     releaseId: string;
+    walletToken?: string | null;
   } | null>(null);
 
   const formattedScreening = useMemo(() => {
@@ -133,9 +134,10 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
       const row = Array.isArray(data) ? data[0] : data;
       const ticket_numbers: number[] = row?.ticket_numbers ?? [];
       const release_id: string = row?.release_id;
+      const wallet_token: string | null = row?.wallet_token ?? null;
 
-      setConfirmation({ ticketNumbers: ticket_numbers, releaseId: release_id });
-      toast({ title: 'Booking confirmed', description: `You’ve got ticket${ticket_numbers.length > 1 ? 's' : ''} #${ticket_numbers.join(', ')}` });
+      setConfirmation({ ticketNumbers: ticket_numbers, releaseId: release_id, walletToken: wallet_token });
+      toast({ title: 'Booking confirmed', description: `You've got ticket${ticket_numbers.length > 1 ? 's' : ''} #${ticket_numbers.join(', ')}` });
 
       // Send confirmation email (best-effort with explicit error handling)
       const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-cinema-ticket-email', {
@@ -149,6 +151,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
           doorsTime,
           screeningTime,
           title: status.title ?? 'Secret Cinema Club',
+          walletToken: wallet_token,
         },
       });
       if (emailError) {
@@ -195,6 +198,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
           doorsTime,
           screeningTime,
           title: status.title ?? 'Secret Cinema Club',
+          walletToken: confirmation.walletToken ?? null,
         },
       });
       toast({ title: 'Email sent', description: `Sent to ${user.email}` });

@@ -468,6 +468,7 @@ export type Database = {
           quantity: number | null
           release_id: string
           user_id: string | null
+          wallet_token: string
         }
         Insert: {
           created_at?: string | null
@@ -477,6 +478,7 @@ export type Database = {
           quantity?: number | null
           release_id: string
           user_id?: string | null
+          wallet_token?: string
         }
         Update: {
           created_at?: string | null
@@ -486,6 +488,7 @@ export type Database = {
           quantity?: number | null
           release_id?: string
           user_id?: string | null
+          wallet_token?: string
         }
         Relationships: [
           {
@@ -3588,6 +3591,7 @@ export type Database = {
         Returns: {
           release_id: string
           ticket_numbers: number[]
+          wallet_token: string
         }[]
       }
       delete_email: {
