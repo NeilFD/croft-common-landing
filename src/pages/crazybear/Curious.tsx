@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import cbBgImage from '@/assets/cb-hero-blackbear.jpg';
 
 type Category = 'general' | 'rooms' | 'dining' | 'membership';
 
@@ -139,9 +140,17 @@ const Curious: React.FC = () => {
         <meta name="description" content="Ask the Bear. Rooms, dining, membership, events, or just a hello." />
       </Helmet>
 
-      <div className="min-h-screen bg-white text-black">
+      <div className="relative min-h-screen bg-white text-black">
+        {/* Opaque B&W background image */}
+        <div
+          aria-hidden
+          className="fixed inset-0 -z-10 bg-cover bg-center grayscale"
+          style={{ backgroundImage: `url(${cbBgImage})` }}
+        />
+        <div aria-hidden className="fixed inset-0 -z-10 bg-black/40" />
+
         {/* Brand bar */}
-        <header className="border-b-2 border-black px-6 md:px-12 py-6 flex items-center gap-4">
+        <header className="border-b-2 border-black/80 px-6 md:px-12 py-6 flex items-center gap-4 bg-white/90 backdrop-blur-sm">
           <Link to="/" className="flex items-center gap-3">
             <img src="/brand/crazy-bear-mark.png" alt="Crazy Bear" className="w-10 h-10" />
             <span className="font-display uppercase tracking-tight text-xl">Crazy Bear</span>
@@ -151,7 +160,8 @@ const Curious: React.FC = () => {
           </span>
         </header>
 
-        <main className="max-w-3xl mx-auto px-6 md:px-12 py-12 md:py-20">
+        <main className="relative max-w-3xl mx-auto px-6 md:px-12 py-12 md:py-20">
+          <div className="bg-white border-2 border-black p-6 md:p-10 shadow-[8px_8px_0_0_rgba(0,0,0,0.9)]">
           {!category && (
             <>
               <p className="font-mono text-[10px] tracking-[0.4em] uppercase text-black/50 mb-3">/ / /</p>
@@ -392,6 +402,7 @@ const Curious: React.FC = () => {
               )}
             </>
           )}
+          </div>
         </main>
       </div>
     </>
