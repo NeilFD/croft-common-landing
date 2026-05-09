@@ -1,27 +1,8 @@
-import React from 'react';
-import { useCMSContentBatch } from '@/hooks/useCMSContentBatch';
-import Footer from './Footer';
+// Legacy Croft Common footer — permanently retired.
+// Re-exports the Crazy Bear footer so any caller still importing
+// OptimizedFooter renders the new B&W Bears Den footer.
+import CBFooter from './crazybear/CBFooter';
 
-const OptimizedFooter = () => {
-  // Batch all footer CMS queries
-  const queries = [
-    { page: 'global', section: 'footer', contentKey: 'title' },
-    { page: 'global', section: 'footer', contentKey: 'description' },
-    { page: 'global', section: 'footer', contentKey: 'contact_title' },
-    { page: 'global', section: 'footer', contentKey: 'email' },
-    { page: 'global', section: 'footer', contentKey: 'phone' },
-    { page: 'global', section: 'footer', contentKey: 'hours_title' },
-    { page: 'global', section: 'footer', contentKey: 'hours_weekday' },
-    { page: 'global', section: 'footer', contentKey: 'hours_weekend' },
-    { page: 'global', section: 'footer', contentKey: 'copyright' },
-    { page: 'global', section: 'footer', contentKey: 'membership_link_text' },
-    { page: 'global', section: 'footer', contentKey: 'common_good_title' }
-  ];
-
-  const { loading } = useCMSContentBatch(queries);
-
-  // Show footer immediately, let CMS content populate async
-  return <Footer />;
-};
+const OptimizedFooter = () => <CBFooter />;
 
 export default OptimizedFooter;
