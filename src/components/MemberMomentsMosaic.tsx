@@ -176,20 +176,24 @@ const MemberMomentsMosaic: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-end justify-between mb-2 gap-4 flex-wrap">
         <div>
-          <h2 className="text-2xl font-bold">Moments</h2>
-          <p className="text-muted-foreground">
-            Capturing memories from Croft Common
-          </p>
+          <p className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/60 mb-3">Member</p>
+          <h1 className="font-display uppercase text-4xl md:text-5xl tracking-tight leading-none">
+            Moments
+          </h1>
+          <p className="font-sans text-sm text-white/70 mt-3">Yours. Tagged. Kept.</p>
         </div>
         {user && (
-          <Button onClick={() => setShowUpload(true)} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Share Moment
-          </Button>
+          <button
+            type="button"
+            onClick={() => setShowUpload(true)}
+            className="px-6 h-11 border border-white bg-white text-black font-mono text-[10px] tracking-[0.4em] uppercase hover:bg-black hover:text-white transition-colors"
+          >
+            Share
+          </button>
         )}
       </div>
 
@@ -320,7 +324,7 @@ const MemberMomentsMosaic: React.FC = () => {
                 <p className="text-muted-foreground">
                   {searchQuery || startDate || endDate || selectedTagFilter
                     ? 'Try adjusting your search, date, or tag filters'
-                    : 'Be the first to share a memory from Croft Common!'}
+                    : 'Be the first to share a moment.'}
                 </p>
               </div>
               {user && (

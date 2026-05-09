@@ -19,7 +19,8 @@ const TILES: Tile[] = [
   { index: '01', title: 'Home', copy: 'Streaks. Stats. The lot.', route: '/den/member' },
   { index: '02', title: 'Takeaway', copy: 'Order in. Members only.', route: '/den/member/lunch-run' },
   { index: '03', title: 'Ledger', copy: 'Receipts. Spend. Quiet maths.', route: '/den/member/ledger' },
-  { index: '04', title: 'You', copy: 'Profile. Moments. Yours.', route: '/den/member/profile' },
+  { index: '04', title: 'Moments', copy: 'Yours. Tagged. Kept.', route: '/den/member/moments' },
+  { index: '05', title: 'You', copy: 'Profile. Settings. Yours.', route: '/den/member/profile' },
 ];
 
 const CommonRoomMain = () => {

@@ -213,9 +213,7 @@ const MemberHome: React.FC = () => {
             {/* Moments */}
             <Eyebrow>Moments</Eyebrow>
             <div className="border border-white/15 bg-black/40 backdrop-blur-sm p-4 md:p-6">
-              <div className="bg-white text-black p-4 rounded">
-                <MemberMomentsCarousel />
-              </div>
+              <MemberMomentsCarousel />
             </div>
           </div>
 
