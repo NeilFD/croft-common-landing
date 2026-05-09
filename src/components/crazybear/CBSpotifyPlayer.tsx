@@ -60,26 +60,35 @@ const CBSpotifyPlayer = () => {
   }, []);
 
   useEffect(() => {
+    let timeoutId: number | undefined;
+
     const init = () => {
       const IFrameAPI = window.SpotifyIframeApi;
       if (!IFrameAPI || !containerRef.current) return;
       const element = containerRef.current.querySelector("[data-spotify-embed]");
       if (!element) return;
-      IFrameAPI.createController(
-        element,
-        {
-          uri: `spotify:playlist:${PLAYLIST_ID}`,
-          width: "100%",
-          height: "80",
-        },
-        (EmbedController: any) => {
-          controllerRef.current = EmbedController;
-          setReady(true);
-          EmbedController.addListener("playback_update", (e: any) => {
-            if (e?.data) setIsPlaying(!e.data.isPaused);
-          });
-        }
-      );
+      try {
+        IFrameAPI.createController(
+          element,
+          {
+            uri: `spotify:playlist:${PLAYLIST_ID}`,
+            width: "100%",
+            height: "80",
+          },
+          (EmbedController: any) => {
+            controllerRef.current = EmbedController;
+            setReady(true);
+            setFailed(false);
+            EmbedController.addListener("playback_update", (e: any) => {
+              if (e?.data) setIsPlaying(!e.data.isPaused);
+            });
+            EmbedController.addListener("ready", () => setReady(true));
+          }
+        );
+      } catch (err) {
+        console.error("Spotify embed init failed", err);
+        setFailed(true);
+      }
     };
 
     if (window.SpotifyIframeApi) {
@@ -96,11 +105,22 @@ const CBSpotifyPlayer = () => {
         const s = document.createElement("script");
         s.src = "https://open.spotify.com/embed/iframe-api/v1";
         s.async = true;
+        s.onerror = () => {
+          console.warn("Spotify iframe API failed to load");
+          setFailed(true);
+        };
         document.body.appendChild(s);
       }
     }
 
+    // Fallback: if the controller never becomes ready (script blocked,
+    // tracking-protection on Windows browsers, etc.), surface a direct link.
+    timeoutId = window.setTimeout(() => {
+      if (!controllerRef.current) setFailed(true);
+    }, 6000);
+
     return () => {
+      if (timeoutId) window.clearTimeout(timeoutId);
       try {
         controllerRef.current?.destroy?.();
       } catch {
@@ -110,7 +130,12 @@ const CBSpotifyPlayer = () => {
   }, []);
 
   const toggle = () => {
-    controllerRef.current?.togglePlay?.();
+    try {
+      controllerRef.current?.togglePlay?.();
+    } catch (err) {
+      console.error("Spotify togglePlay failed", err);
+      setFailed(true);
+    }
   };
 
   const hidden = useHideOnScrollDown();
