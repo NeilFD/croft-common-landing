@@ -90,7 +90,7 @@ export const GoldSection: React.FC = () => {
   return (
     <>
       <div>
-        <button onClick={() => setShowInfo(true)} className={btnSmall}>
+        <button onClick={() => setShowInfo(true)} className={btnGold} style={btnGoldStyle}>
           {isGold ? 'Manage Gold' : 'Gold Member'}
         </button>
       </div>
