@@ -27,12 +27,18 @@ const Frame = ({ children }: { children: React.ReactNode }) => (
   <div className="w-full max-w-md mx-auto">
     <div className="aspect-[1.586/1] w-full">
       <div className="relative h-full w-full bg-black text-white border border-white/20 rounded-xl overflow-hidden">
-        {/* Bear watermark */}
+        {/* Bear watermark — visible, white-on-black */}
         <img
-          src={BRAND_LOGO}
+          src="/brand/crazy-bear-mark.png"
           alt=""
           aria-hidden
-          className="absolute -right-6 -bottom-6 w-40 h-40 opacity-[0.08] object-contain grayscale invert pointer-events-none"
+          className="absolute -right-4 -bottom-4 w-44 h-44 md:w-52 md:h-52 object-contain pointer-events-none invert opacity-25"
+        />
+        {/* Bear logo top-right corner — small, crisp */}
+        <img
+          src="/brand/crazy-bear-mark.png"
+          alt="Crazy Bear"
+          className="absolute top-4 right-4 w-10 h-10 object-contain invert opacity-90 pointer-events-none"
         />
         {children}
       </div>
@@ -89,8 +95,8 @@ export const MembershipCard = () => {
           <div>
             <p className="font-mono text-[9px] md:text-[10px] tracking-[0.4em] uppercase text-white/60">The Den</p>
             <p className="font-mono text-[9px] md:text-[10px] tracking-[0.4em] uppercase text-white/40 mt-1">Member</p>
+            <p className="font-mono text-[9px] md:text-[10px] tracking-[0.4em] uppercase text-white/60 mt-1">Crazy Bear</p>
           </div>
-          <p className="font-mono text-[9px] md:text-[10px] tracking-[0.4em] uppercase text-white/60">Crazy Bear</p>
         </div>
 
         {/* Name */}

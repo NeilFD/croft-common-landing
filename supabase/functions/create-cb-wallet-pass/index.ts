@@ -36,12 +36,14 @@ function formatMemberSince(iso: string | null): string {
   return `${mm} / ${yy}`;
 }
 
-// Fetch the bear-mark PNG from the production site once per invocation.
-async function fetchBearMark(): Promise<Uint8Array> {
+// Fetch a wallet asset (sized + tinted variants of the bear mark) from the
+// public site. Apple silently rejects oversized logo PNGs, so we ship pre-sized
+// 50/100/150px logo files and 29/58/87px icon files.
+async function fetchAsset(file: string): Promise<Uint8Array> {
   const candidates = [
-    'https://www.crazybeartest.com/brand/crazy-bear-mark.png',
-    'https://crazybeartest.com/brand/crazy-bear-mark.png',
-    'https://croft-common-landing.lovable.app/brand/crazy-bear-mark.png',
+    `https://www.crazybeartest.com/brand/wallet/${file}`,
+    `https://crazybeartest.com/brand/wallet/${file}`,
+    `https://croft-common-landing.lovable.app/brand/wallet/${file}`,
   ];
   for (const url of candidates) {
     try {
@@ -54,7 +56,7 @@ async function fetchBearMark(): Promise<Uint8Array> {
       // try next
     }
   }
-  throw new Error('Could not fetch Crazy Bear logo asset for wallet pass');
+  throw new Error(`Could not fetch wallet asset: ${file}`);
 }
 
 serve(async (req) => {
@@ -168,7 +170,7 @@ serve(async (req) => {
       barcodes: [
         {
           format: 'PKBarcodeFormatQR',
-          message: membershipNumber,
+          message: `https://www.crazybeartest.com/den/verify?m=${encodeURIComponent(membershipNumber)}`,
           messageEncoding: 'iso-8859-1',
           altText: membershipNumber,
         },
@@ -179,14 +181,21 @@ serve(async (req) => {
     const passJsonString = JSON.stringify(passJson, null, 2);
     zip.file('pass.json', passJsonString);
 
-    // Bear mark — used for both icon and logo at all density sizes.
-    const bearMark = await fetchBearMark();
-    zip.file('icon.png', bearMark);
-    zip.file('icon@2x.png', bearMark);
-    zip.file('icon@3x.png', bearMark);
-    zip.file('logo.png', bearMark);
-    zip.file('logo@2x.png', bearMark);
-    zip.file('logo@3x.png', bearMark);
+    // Pre-sized bear logo + icon assets so Apple Wallet renders them.
+    const [logo1x, logo2x, logo3x, icon1x, icon2x, icon3x] = await Promise.all([
+      fetchAsset('wallet-logo.png'),
+      fetchAsset('wallet-logo@2x.png'),
+      fetchAsset('wallet-logo@3x.png'),
+      fetchAsset('wallet-icon.png'),
+      fetchAsset('wallet-icon@2x.png'),
+      fetchAsset('wallet-icon@3x.png'),
+    ]);
+    zip.file('icon.png', icon1x);
+    zip.file('icon@2x.png', icon2x);
+    zip.file('icon@3x.png', icon3x);
+    zip.file('logo.png', logo1x);
+    zip.file('logo@2x.png', logo2x);
+    zip.file('logo@3x.png', logo3x);
 
     // Manifest
     const manifest: Record<string, string> = {};
