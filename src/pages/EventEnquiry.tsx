@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { EventEnquiryChat } from '@/components/enquiry/EventEnquiryChat';
 import { EnquiryReview } from '@/components/enquiry/EnquiryReview';
-
+import cbBgImage from '@/assets/den-bg-neon.jpg';
 
 export type Message = {
   role: 'user' | 'assistant';
@@ -48,9 +48,9 @@ const EventEnquiry = () => {
   const [enquiryData, setEnquiryData] = useState<EnquiryData>({});
   const [isComplete, setIsComplete] = useState(false);
 
-  const handleBack = () => {
-    navigate('/hall');
-  };
+  useEffect(() => {
+    document.title = 'Plan Your Event | Crazy Bear';
+  }, []);
 
   const handleComplete = (data: EnquiryData, conversationHistory: Message[]) => {
     setEnquiryData(data);
@@ -63,45 +63,51 @@ const EventEnquiry = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col relative">
-      {/* Fixed Background Image */}
-      <div className="fixed inset-0 z-0 bg-background">
-        <div className="absolute inset-0 bg-background/60" />
-      </div>
-      
-      {/* Content wrapper */}
-      <div className="relative z-10 min-h-screen flex flex-col">
-        {/* Header */}
-        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border pt-[env(safe-area-inset-top)]">
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <button
-              onClick={handleBack}
-              className="flex items-center gap-2 text-foreground/70 hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="h-5 w-5" />
-              <span className="font-industrial text-sm">Back to Hall</span>
-            </button>
-            <h1 className="font-brutalist text-xl md:text-2xl text-foreground">
-              {isComplete ? 'Review Your Enquiry' : 'Plan Your Event'}
-            </h1>
-            <div className="w-20" /> {/* Spacer for centering */}
-          </div>
-        </div>
+    <>
+      <Helmet>
+        <title>Plan Your Event | Crazy Bear</title>
+        <meta name="description" content="Tell the Bear what you're planning. Weddings, parties, takeovers." />
+      </Helmet>
 
-        {/* Main Content */}
-        <div className="flex-1 flex items-center justify-center p-4">
+      <div className="relative min-h-screen text-black">
+        {/* Neon B&W background */}
+        <div
+          aria-hidden
+          className="fixed inset-0 -z-10 bg-cover bg-center"
+          style={{ backgroundImage: `url(${cbBgImage})` }}
+        />
+        <div aria-hidden className="fixed inset-0 -z-10 bg-white/55" />
+
+        {/* Brand bar */}
+        <header className="border-b-2 border-black/80 px-6 md:px-12 py-6 flex items-center gap-4 bg-white/85 backdrop-blur-sm">
+          <Link to="/" className="flex items-center gap-3">
+            <img src="/brand/crazy-bear-mark.png" alt="Crazy Bear" className="w-10 h-10" />
+            <span className="font-display uppercase tracking-tight text-xl">Crazy Bear</span>
+          </Link>
+          <span className="ml-auto font-mono text-[10px] tracking-[0.4em] uppercase text-black/60">
+            {isComplete ? 'Review' : 'Plan Your Event'}
+          </span>
+          <button
+            onClick={() => navigate('/curious')}
+            className="font-mono text-[10px] tracking-[0.4em] uppercase text-black/70 hover:text-black hidden md:inline"
+          >
+            ← All enquiries
+          </button>
+        </header>
+
+        <main className="relative max-w-4xl mx-auto px-6 md:px-12 py-10 md:py-16">
           {!isComplete ? (
             <EventEnquiryChat onComplete={handleComplete} />
           ) : (
-            <EnquiryReview 
-              enquiryData={enquiryData} 
+            <EnquiryReview
+              enquiryData={enquiryData}
               messages={messages}
               onEdit={handleEdit}
             />
           )}
-        </div>
+        </main>
       </div>
-    </div>
+    </>
   );
 };
 
