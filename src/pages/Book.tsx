@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCMSMode } from "@/contexts/CMSModeContext";
 import { CMSText } from "@/components/cms/CMSText";
+import denBg from "@/assets/den-bg.jpg";
 
 const Book: React.FC = () => {
   const navigate = useNavigate();
