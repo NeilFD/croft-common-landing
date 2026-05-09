@@ -1984,7 +1984,9 @@ export type Database = {
       lunch_orders: {
         Row: {
           created_at: string | null
+          discount_amount: number | null
           id: string
+          is_gold_at_purchase: boolean | null
           items: Json | null
           member_name: string | null
           member_phone: string | null
@@ -1992,12 +1994,17 @@ export type Database = {
           order_date: string
           site: string | null
           status: string | null
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          subtotal_amount: number | null
           total_amount: number | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
+          discount_amount?: number | null
           id?: string
+          is_gold_at_purchase?: boolean | null
           items?: Json | null
           member_name?: string | null
           member_phone?: string | null
@@ -2005,12 +2012,17 @@ export type Database = {
           order_date: string
           site?: string | null
           status?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          subtotal_amount?: number | null
           total_amount?: number | null
           user_id: string
         }
         Update: {
           created_at?: string | null
+          discount_amount?: number | null
           id?: string
+          is_gold_at_purchase?: boolean | null
           items?: Json | null
           member_name?: string | null
           member_phone?: string | null
@@ -2018,6 +2030,9 @@ export type Database = {
           order_date?: string
           site?: string | null
           status?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          subtotal_amount?: number | null
           total_amount?: number | null
           user_id?: string
         }
@@ -2408,6 +2423,57 @@ export type Database = {
           total_amount?: number | null
           user_id?: string
           venue_location?: string | null
+        }
+        Relationships: []
+      }
+      member_referral_redemptions: {
+        Row: {
+          code: string
+          created_at: string | null
+          id: string
+          referred_user_id: string
+          referrer_credited: boolean | null
+          referrer_user_id: string
+          stripe_subscription_id: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          id?: string
+          referred_user_id: string
+          referrer_credited?: boolean | null
+          referrer_user_id: string
+          stripe_subscription_id?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          id?: string
+          referred_user_id?: string
+          referrer_credited?: boolean | null
+          referrer_user_id?: string
+          stripe_subscription_id?: string | null
+        }
+        Relationships: []
+      }
+      member_referrals: {
+        Row: {
+          code: string
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -3327,6 +3393,54 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          created_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          environment: string
+          id: string
+          price_id: string
+          product_id: string
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          price_id: string
+          product_id: string
+          status?: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          price_id?: string
+          product_id?: string
+          status?: string
+          stripe_customer_id?: string
+          stripe_subscription_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -3709,6 +3823,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      ensure_referral_code: { Args: { p_user_id: string }; Returns: string }
       get_cinema_status:
         | {
             Args: never
@@ -3736,6 +3851,7 @@ export type Database = {
             }[]
           }
       is_email_domain_allowed: { Args: { email: string }; Returns: boolean }
+      is_gold: { Args: { check_user_id: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
           dlq_name: string
