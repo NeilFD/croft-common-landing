@@ -402,6 +402,7 @@ const App = () => {
                       <Route path="/research" element={<Navigate to="/management/research" replace />} />
                       
                       <Route path="/enquire" element={<EnquirePage />} />
+                      <Route path="/curious" element={<Curious />} />
                       <Route path="/profile" element={<MemberRoutes><MemberProfile /></MemberRoutes>} />
                       <Route path="/notifications" element={<Notifications />} />
                       <Route path="/uncommon-standards" element={<UncommonStandards />} />
