@@ -56,6 +56,7 @@ const MemberMomentsMosaic: React.FC = () => {
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [selectedTagFilter, setSelectedTagFilter] = useState<string>('');
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Helper function to get member name (moved before filtering logic)
   const getMemberName = (moment: MemberMoment) => {
