@@ -34,6 +34,8 @@ const MEMBERSHIP_INTEREST = ['Joining the Den', 'Existing member query', 'Press 
 
 const fieldClass =
   'w-full bg-white border-2 border-black px-4 py-3 font-sans text-sm text-black placeholder:text-black/40 focus:outline-none focus:ring-0 focus:border-black';
+const selectClass =
+  'w-full bg-white border-2 border-black pl-4 pr-10 py-3 font-mono text-[11px] tracking-[0.25em] uppercase text-black focus:outline-none focus:ring-0 focus:border-black appearance-none cursor-pointer bg-no-repeat bg-[right_1rem_center] bg-[length:14px] bg-[url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 20 20\' fill=\'black\'><path d=\'M5 7l5 6 5-6z\'/></svg>")]';
 const labelClass = 'block font-mono text-[10px] tracking-[0.3em] uppercase text-black/70 mb-2';
 
 const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -227,7 +229,7 @@ const Curious: React.FC = () => {
                   <div>
                     <label className={labelClass}>Property</label>
                     <select
-                      className={fieldClass}
+                      className={selectClass}
                       value={form.property}
                       onChange={(e) => set('property', e.target.value)}
                     >
@@ -275,7 +277,7 @@ const Curious: React.FC = () => {
                       <div>
                         <label className={labelClass}>Room type</label>
                         <select
-                          className={fieldClass}
+                          className={selectClass}
                           value={form.room_type}
                           onChange={(e) => set('room_type', e.target.value)}
                         >
@@ -295,7 +297,7 @@ const Curious: React.FC = () => {
                       <div className="md:col-span-2">
                         <label className={labelClass}>Where</label>
                         <select
-                          className={fieldClass}
+                          className={selectClass}
                           value={form.dining_venue}
                           onChange={(e) => set('dining_venue', e.target.value)}
                         >
@@ -333,7 +335,7 @@ const Curious: React.FC = () => {
                     <div>
                       <label className={labelClass}>About your enquiry</label>
                       <select
-                        className={fieldClass}
+                        className={selectClass}
                         value={form.membership_interest}
                         onChange={(e) => set('membership_interest', e.target.value)}
                       >
