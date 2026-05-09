@@ -16,13 +16,27 @@ const corsHeaders = {
     'authorization, x-client-info, apikey, content-type, x-lovable-signature, x-lovable-timestamp, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
-const EMAIL_SUBJECTS: Record<string, string> = {
-  signup: 'Your Crazy Bear code',
-  invite: "You've been invited",
-  magiclink: 'Your Crazy Bear code',
-  recovery: 'Reset your password',
-  email_change: 'Confirm your new email',
-  reauthentication: 'Your verification code',
+// Subject builders. Including the code in the subject is the single biggest
+// inbox-placement win for short-lived OTPs: users see the code in the
+// notification preview even if the message lands in Junk.
+const buildSubject = (emailType: string, token?: string): string => {
+  const code = (token || '').trim()
+  switch (emailType) {
+    case 'signup':
+      return code ? `Crazy Bear code: ${code}` : 'Your Crazy Bear code'
+    case 'magiclink':
+      return code ? `Crazy Bear code: ${code}` : 'Your Crazy Bear code'
+    case 'recovery':
+      return code ? `Crazy Bear reset code: ${code}` : 'Reset your password'
+    case 'reauthentication':
+      return code ? `Crazy Bear code: ${code}` : 'Your verification code'
+    case 'email_change':
+      return 'Confirm your new email'
+    case 'invite':
+      return "You've been invited"
+    default:
+      return 'Notification'
+  }
 }
 
 // Template mapping
