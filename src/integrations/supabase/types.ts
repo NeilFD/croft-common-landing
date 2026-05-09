@@ -260,6 +260,48 @@ export type Database = {
         }
         Relationships: []
       }
+      cb_enquiries: {
+        Row: {
+          category: string
+          created_at: string
+          details: Json
+          email: string
+          full_name: string
+          id: string
+          message: string | null
+          phone: string | null
+          property: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          details?: Json
+          email: string
+          full_name: string
+          id?: string
+          message?: string | null
+          phone?: string | null
+          property?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          details?: Json
+          email?: string
+          full_name?: string
+          id?: string
+          message?: string | null
+          phone?: string | null
+          property?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       cb_members: {
         Row: {
           birthday_day: number | null
