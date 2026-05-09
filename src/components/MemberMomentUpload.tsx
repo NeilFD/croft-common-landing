@@ -15,6 +15,9 @@ const PRESET_TAGS = [
   'Rooms', 'Late', 'Cinema', 'Music', 'Crew',
 ];
 
+const MAX_VIDEO_SECONDS = 30;
+const MAX_BYTES = 50 * 1024 * 1024; // 50MB combined cap (covers short videos)
+
 const chipBase =
   'inline-flex items-center justify-center px-3 h-7 font-mono text-[10px] tracking-[0.3em] uppercase border transition-colors';
 const chipUnselected = `${chipBase} border-white/40 text-white hover:bg-white hover:text-black`;
@@ -32,11 +35,60 @@ const fileToBase64 = (file: File): Promise<string> =>
     reader.readAsDataURL(file);
   });
 
+interface VideoMeta {
+  durationSeconds: number;
+  posterBlob: Blob | null;
+}
+
+const probeVideo = (file: File): Promise<VideoMeta> =>
+  new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.muted = true;
+    video.playsInline = true;
+    video.src = url;
+    video.onloadedmetadata = () => {
+      const duration = video.duration;
+      // Seek to 0.1s for poster
+      video.currentTime = Math.min(0.1, duration / 2);
+    };
+    video.onseeked = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          URL.revokeObjectURL(url);
+          resolve({ durationSeconds: video.duration, posterBlob: null });
+          return;
+        }
+        ctx.drawImage(video, 0, 0);
+        canvas.toBlob(
+          (blob) => {
+            URL.revokeObjectURL(url);
+            resolve({ durationSeconds: video.duration, posterBlob: blob });
+          },
+          'image/jpeg',
+          0.85,
+        );
+      } catch {
+        URL.revokeObjectURL(url);
+        resolve({ durationSeconds: video.duration, posterBlob: null });
+      }
+    };
+    video.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Could not read video metadata.'));
+    };
+  });
+
 type Stage = 'idle' | 'checking' | 'saving' | 'done';
 
 const STAGE_LABEL: Record<Stage, string> = {
   idle: 'Post Moment',
-  checking: 'Checking photo',
+  checking: 'Checking',
   saving: 'Saving',
   done: 'Done',
 };
@@ -51,6 +103,8 @@ const STAGE_PCT: Record<Stage, number> = {
 const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen = true, onPosted }) => {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
+  const [videoMeta, setVideoMeta] = useState<VideoMeta | null>(null);
   const [tagline, setTagline] = useState('');
   const [dateTaken, setDateTaken] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -62,17 +116,41 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
   const { uploadMoment, refetchMoments } = useMemberMoments();
   const { toast } = useToast();
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
     if (!selectedFile) return;
 
-    if (!selectedFile.type.startsWith('image/')) {
-      toast({ title: 'Wrong file type', description: 'Pick an image.', variant: 'destructive' });
+    const isVideo = selectedFile.type.startsWith('video/');
+    const isImage = selectedFile.type.startsWith('image/');
+    if (!isVideo && !isImage) {
+      toast({ title: 'Wrong file type', description: 'Pick a photo or short video.', variant: 'destructive' });
       return;
     }
-    if (selectedFile.size > 10 * 1024 * 1024) {
-      toast({ title: 'Too big', description: 'Max 10MB.', variant: 'destructive' });
+    if (selectedFile.size > MAX_BYTES) {
+      toast({ title: 'Too big', description: 'Max 50MB.', variant: 'destructive' });
       return;
+    }
+
+    if (isVideo) {
+      try {
+        const meta = await probeVideo(selectedFile);
+        if (meta.durationSeconds > MAX_VIDEO_SECONDS + 0.5) {
+          toast({
+            title: 'Too long',
+            description: `Videos must be ${MAX_VIDEO_SECONDS} seconds or less.`,
+            variant: 'destructive',
+          });
+          return;
+        }
+        setVideoMeta(meta);
+        setMediaType('video');
+      } catch {
+        toast({ title: 'Bad video', description: 'Could not read that video.', variant: 'destructive' });
+        return;
+      }
+    } else {
+      setMediaType('image');
+      setVideoMeta(null);
     }
 
     setFile(selectedFile);
@@ -99,44 +177,50 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
 
   const handleUpload = async () => {
     if (!file || !tagline.trim()) {
-      toast({ title: 'Missing details', description: 'Add a photo and a line.', variant: 'destructive' });
+      toast({ title: 'Missing details', description: 'Add a clip and a line.', variant: 'destructive' });
       return;
     }
 
     setStage('checking');
 
-    // Run AI moderation and base64 conversion in parallel with no extra round-trips
-    let moderation: { allowed: boolean; reason?: string };
-    try {
-      const imageBase64 = await fileToBase64(file);
-      const { data, error } = await supabase.functions.invoke('moderate-moment-upload', {
-        body: { imageBase64, mimeType: file.type },
-      });
-      if (error) throw new Error(error.message || 'Photo check failed.');
-      moderation = data as { allowed: boolean; reason?: string };
-    } catch (err: any) {
-      setStage('idle');
-      toast({
-        title: 'Photo check failed',
-        description: err?.message || 'Try again in a moment.',
-        variant: 'destructive',
-      });
-      return;
-    }
+    // AI moderation runs only for images. Videos skip AI check in v1.
+    if (mediaType === 'image') {
+      let moderation: { allowed: boolean; reason?: string };
+      try {
+        const imageBase64 = await fileToBase64(file);
+        const { data, error } = await supabase.functions.invoke('moderate-moment-upload', {
+          body: { imageBase64, mimeType: file.type },
+        });
+        if (error) throw new Error(error.message || 'Photo check failed.');
+        moderation = data as { allowed: boolean; reason?: string };
+      } catch (err: any) {
+        setStage('idle');
+        toast({
+          title: 'Photo check failed',
+          description: err?.message || 'Try again in a moment.',
+          variant: 'destructive',
+        });
+        return;
+      }
 
-    if (!moderation?.allowed) {
-      setStage('idle');
-      toast({
-        title: 'Photo blocked',
-        description: moderation?.reason || "This photo can't be posted.",
-        variant: 'destructive',
-      });
-      return;
+      if (!moderation?.allowed) {
+        setStage('idle');
+        toast({
+          title: 'Photo blocked',
+          description: moderation?.reason || "This photo can't be posted.",
+          variant: 'destructive',
+        });
+        return;
+      }
     }
 
     try {
       setStage('saving');
-      const result = await uploadMoment(file, tagline.trim(), dateTaken, selectedTags);
+      const result = await uploadMoment(file, tagline.trim(), dateTaken, selectedTags, {
+        mediaType,
+        posterBlob: videoMeta?.posterBlob ?? null,
+        durationSeconds: videoMeta?.durationSeconds ?? null,
+      });
       if (!result) throw new Error('Could not save your moment.');
       setStage('done');
       refetchMoments();
@@ -162,6 +246,8 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl('');
     }
+    setMediaType('image');
+    setVideoMeta(null);
     setTagline('');
     setDateTaken(format(new Date(), 'yyyy-MM-dd'));
     setSelectedTags([]);
@@ -212,20 +298,20 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
                 onClick={() => fileInputRef.current?.click()}
                 className="w-full border border-dashed border-white/30 p-10 text-center hover:border-white transition-colors"
               >
-                <p className="font-display uppercase text-xl tracking-tight mb-2">Pick a photo</p>
+                <p className="font-display uppercase text-xl tracking-tight mb-2">Pick a photo or video</p>
                 <p className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/50">
-                  JPG · PNG · GIF · 10MB Max
+                  JPG · PNG · GIF · MP4 · MOV · 30s max
                 </p>
               </button>
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/*,video/*"
                 onChange={handleFileSelect}
                 className="hidden"
               />
               <p className="font-sans text-xs text-white/50 leading-relaxed">
-                Photos are checked automatically. Anything inappropriate is rejected.
+                Photos are checked automatically. Videos are capped at 30 seconds.
               </p>
             </>
           )}
@@ -234,7 +320,18 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
             <>
               {previewUrl && (
                 <div className="relative">
-                  <img src={previewUrl} alt="Preview" className="w-full h-56 object-cover" />
+                  {mediaType === 'video' ? (
+                    <video
+                      src={previewUrl}
+                      className="w-full h-56 object-cover"
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                    />
+                  ) : (
+                    <img src={previewUrl} alt="Preview" className="w-full h-56 object-cover" />
+                  )}
                   <button
                     type="button"
                     onClick={handleBack}
@@ -242,6 +339,11 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
                   >
                     Change
                   </button>
+                  {mediaType === 'video' && videoMeta && (
+                    <div className="absolute bottom-2 right-2 px-2 h-6 inline-flex items-center bg-black/70 border border-white/40 font-mono text-[10px] tracking-wider text-white">
+                      {Math.round(videoMeta.durationSeconds)}s
+                    </div>
+                  )}
                 </div>
               )}
 
