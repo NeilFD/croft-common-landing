@@ -56,7 +56,7 @@ const CBFloatingActions: React.FC = () => {
 
   return (
     <>
-      <CBFloatingButton label="Curious?" to="/enquire" bottomClass="bottom-64" />
+      <CBFloatingButton label="Curious?" to="/curious" bottomClass="bottom-64" />
       <CBFloatingButton label="Book" to="/book" bottomClass="bottom-40" />
     </>
   );
