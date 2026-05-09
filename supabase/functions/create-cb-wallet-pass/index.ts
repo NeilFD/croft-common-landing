@@ -36,12 +36,14 @@ function formatMemberSince(iso: string | null): string {
   return `${mm} / ${yy}`;
 }
 
-// Fetch the bear-mark PNG from the production site once per invocation.
-async function fetchBearMark(): Promise<Uint8Array> {
+// Fetch a wallet asset (sized + tinted variants of the bear mark) from the
+// public site. Apple silently rejects oversized logo PNGs, so we ship pre-sized
+// 50/100/150px logo files and 29/58/87px icon files.
+async function fetchAsset(file: string): Promise<Uint8Array> {
   const candidates = [
-    'https://www.crazybeartest.com/brand/crazy-bear-mark.png',
-    'https://crazybeartest.com/brand/crazy-bear-mark.png',
-    'https://croft-common-landing.lovable.app/brand/crazy-bear-mark.png',
+    `https://www.crazybeartest.com/brand/wallet/${file}`,
+    `https://crazybeartest.com/brand/wallet/${file}`,
+    `https://croft-common-landing.lovable.app/brand/wallet/${file}`,
   ];
   for (const url of candidates) {
     try {
@@ -54,7 +56,7 @@ async function fetchBearMark(): Promise<Uint8Array> {
       // try next
     }
   }
-  throw new Error('Could not fetch Crazy Bear logo asset for wallet pass');
+  throw new Error(`Could not fetch wallet asset: ${file}`);
 }
 
 serve(async (req) => {
