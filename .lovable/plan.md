@@ -1,78 +1,84 @@
-# Universal Fix: Secret Seven Gesture & Safari Modal Flicker
+## Thai Takeaway — Members' Collection Ordering
 
-Two distinct root causes are producing the symptoms you described. Both are fixable without changing the gesture shape, the secret seven UX, or any business logic.
+Replace the existing /den/member/lunch-run page with a properly Crazy Bear branded Thai takeaway flow for collection. Members pick a site (Town or Country), browse a shared menu tagged per site, build an order, and submit for collection. Kitchen confirms a ready time by phone.
 
-## Problem 1 — Gesture fails on Ecosia (Android) and is flaky in some Chromium browsers
+### User journey
 
-### Root cause
-`GestureOverlay` uses **legacy touch events** registered as **passive: true**, with no `touch-action` constraint on the gesture container.
+```
+Den Home  ->  Tap "Takeaway" chip
+         ->  /den/member/lunch-run
+              1. Pick site (Town / Country)            [tile chooser]
+              2. Browse menu, filtered by selected site [tabs: Starters / Mains / Desserts / Drinks]
+              3. Add to basket (sticky basket bar)
+              4. Review basket
+              5. Enter name + phone (prefilled from cb_members) + optional notes
+              6. Confirm order
+              7. Confirmation screen: "We'll text you when it's ready, usually 30 minutes"
+                 - Shows collection address for chosen site
+                 - Order reference
+```
 
-On Android Chrome based browsers (Ecosia, Brave, Samsung Internet, Edge mobile) the browser:
-1. Sees the first vertical part of the "7" stroke.
-2. Claims the touch sequence as a **scroll gesture**.
-3. Stops dispatching further `touchmove` events to JS (because the listener is passive — JS cannot cancel scroll).
-4. The remaining points of the "7" never arrive, `isValid7Shape` never returns true, nothing happens.
+Member can switch sites at the top of the menu (warns if basket has items from items not available at the new site).
 
-iOS Safari is more lenient because it batches touchmoves differently, which is why it "mostly works" there.
+### Visual / brand
 
-### Fix
-Rewrite the input layer of `GestureOverlay` to use the **Pointer Events API** (universal across Safari 13+, all Chromium, Firefox, Samsung Internet, Ecosia):
+- Black background, Archivo Black headings, Space Grotesk body, mono eyebrows — matches Bear's Den.
+- Hero strip uses `cb-hero-thai.jpg` with a Town/Country tile chooser overlay.
+- Dish cards use `town-06.jpg` and `country-05.jpg` (the existing Thai food carousel images) as section banners. Individual dishes stay text + price for now (no per-dish photos yet).
+- Site tag chips on each item: small mono label "Town", "Country", or "Both".
+- No focus rings on selected items; selected dish card uses inverted (white bg / black text) treatment.
 
-- `pointerdown` → start gesture, call `el.setPointerCapture(e.pointerId)` so the browser routes all subsequent moves to us regardless of scroll heuristics.
-- `pointermove` → add point. Guarded by `isDrawing` and `isInteractiveElement`.
-- `pointerup` / `pointercancel` → end gesture, release capture.
-- While `isDrawing === true`, set `touch-action: none` on the container; restore it when not drawing. This guarantees the browser will not steal the gesture for scrolling, but pages remain scrollable normally when no gesture is in progress.
-- Keep mouse fallback for older desktop browsers behind `if (!window.PointerEvent)`.
+### Menu data
 
-Pointer Events also fix Apple Pencil, stylus, and trackpad edge-cases.
+The `lunch_menu` table already has the 11 Thai dishes. Add one schema field:
 
-### Secondary cleanup in `useGestureDetection`
-- Replace `setLastGestureTime` (state) with a ref so the 1s debounce does not retrigger renders that cancel in-flight strokes.
-- Remove the React state churn during `addPoint` (use a ref array, only `setPoints` on validation success or stroke end). This stops the per-frame re-render that some low-end Android devices cannot keep up with.
+- `site` text — values `town`, `country`, or `both`. Default `both`.
 
-## Problem 2 — Secret Seven modal flashes open then closes on Safari
+Then categorise the existing 11 items via the data tool (rough split — confirmable later in admin):
+- Pad Thai Prawn — both
+- Green Curry Chicken — both
+- Massaman Beef — country
+- Tofu Pad See Ew — town
+- Tom Yum Soup — both
+- Crispy Spring Rolls — both
+- Chicken Satay — both
+- Mango Sticky Rice — both
+- Singha Beer — both
+- Thai Iced Tea — both
+- Coconut Water — both
 
-### Root cause
-After a successful "7" stroke, `SecretLuckySevenModal` (and the gate modals it spawns) open a Radix `Dialog`. On Safari the gesture's final `touchend` fires a synthetic `click` ~300ms later. Radix interprets this click as `onPointerDownOutside` against the just-opened dialog and **closes it immediately** via `onOpenChange(false) → handleCloseAll()`.
+### Order data
 
-This is a known Radix + iOS Safari interaction; it does not happen on Chrome desktop, which is why "for some people" only.
+`lunch_orders` already exists (user_id, order_date, items jsonb, total_amount, status). Add:
 
-The same pattern affects every modal opened directly from a gesture: `BiometricUnlockModal`, `RecipeOfTheMonthModal`, `RollTheDiceModal`, `RoomsOfferModal`, `PoolDayBedModal`, `SecretCinemaModal`, the Bears Den gate.
+- `site` text — `town` or `country`
+- `member_name` text
+- `member_phone` text
+- `notes` text
 
-### Fix
-Add a small **gesture grace window** to each gesture-launched dialog:
+The existing `create-lunch-order` edge function gets updated to persist site, name, phone, notes.
 
-- New tiny hook `useGestureSafeDialogProps(open)` returns `{ onPointerDownOutside, onInteractOutside, onFocusOutside }` handlers that call `e.preventDefault()` for the first 600ms after `open` flips to true.
-- Apply it to the `<DialogContent>` of every secret modal.
-- Also tighten the `Dialog`'s `onOpenChange` so it ignores `false` transitions during the same 600ms window (defence in depth).
+### Files to change
 
-Effect: the residual synthetic click from the "7" gesture is swallowed; the modal stays open until the user genuinely taps outside.
+- `src/pages/LunchRun.tsx` — full rebuild (site picker -> menu -> basket -> details -> confirm), Crazy Bear styling, new collection copy. Replaces all delivery/address language.
+- `src/hooks/useLunchRun.ts` — add `site` to MenuItem, accept `site` filter, pass through on submit.
+- `src/components/MemberHome.tsx` — relabel chip from "Takeaway" to "Thai Takeaway" (route stays `/den/member/lunch-run`).
+- `supabase/functions/create-lunch-order/index.ts` — accept and store site / contact / notes.
+- Migration: add `site` column to `lunch_menu`, add `site / member_name / member_phone / notes` to `lunch_orders`.
+- Data update (insert tool): set `site` value on each of the 11 existing dishes.
 
-## Problem 3 — Universal hardening (small)
+### Out of scope (this round)
 
-- `SecretGestureHost` currently mounts `<GestureOverlay>` only when `user` is truthy, but the "Members: draw 7" hint text is rendered with `pointer-events: none` — confirm no z-index above the overlay swallows pointers in the property pages.
-- `GestureOverlay`'s document-level fallback listeners (used when no `containerRef` is passed) currently call `e.preventDefault()` inside non-passive `mousemove` only. After the rewrite, switch all branches to Pointer Events for symmetry, so behaviour is identical whether scoped or global.
-- Add a one-line UA log on first gesture attempt (`console.debug('[gesture] start', { pointerType, ua })`) so we can verify Ecosia / Samsung Internet in production logs.
+- Per-dish photography
+- Payments (collection only, paid on pickup)
+- Capacity limits or cut-off times
+- Admin UI for editing menu (existing direct-DB edits remain)
+- Push/email notifications to the kitchen (future iteration)
 
-## Files to change
+### Technical notes
 
-- `src/hooks/useGestureDetection.ts` — refs instead of state for hot path; keep public API identical.
-- `src/components/GestureOverlay.tsx` — Pointer Events rewrite, conditional `touch-action: none`, mouse fallback.
-- `src/hooks/useGestureSafeDialog.ts` — **new**, ~25 lines.
-- `src/components/SecretLuckySevenModal.tsx` — apply the safe-dialog hook.
-- `src/components/BiometricUnlockModal.tsx` — apply the safe-dialog hook.
-- `src/components/MembershipLinkModal.tsx` — apply.
-- `src/components/AuthModal.tsx` — apply (only when opened from gesture path).
-- `src/components/secrets/RecipeOfTheMonthModal.tsx`, `RollTheDiceModal.tsx`, `RoomsOfferModal.tsx`, `PoolDayBedModal.tsx` — apply.
-- `src/components/SecretCinemaModal.tsx` — apply.
-
-No changes to gesture shape, validation thresholds, biometric flow, RP IDs, or any backend.
-
-## Verification plan
-
-After the change:
-1. Preview on the iPhone you have. Draw a "7" on /index — modal stays open.
-2. Mobile Safari Web Inspector: confirm `[gesture] start { pointerType: 'touch' }` log appears.
-3. Open the published URL on Ecosia Android — draw a "7" — modal opens. Check Chrome devtools remote inspect to confirm pointer events.
-4. Desktop Chrome and Firefox — mouse drag still works (PointerEvent path covers both).
-5. Confirm normal vertical scrolling on every page is unaffected (touch-action only flips to `none` mid-stroke).
+- Site selection persisted in `localStorage` so a returning member skips step 1.
+- Basket persisted in `localStorage` keyed by site so a refresh does not lose the order.
+- Confirmation screen shows: order ref (last 8 of UUID), site collection address, member phone for SMS, plain English copy: "Ready in about 30 minutes. We'll call when it's bagged."
+- Town address: 75 Wycombe End, Beaconsfield HP9 1LX.
+- Country address: Bear Lane, Stadhampton OX44 7UR.

@@ -3,128 +3,72 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-interface MenuItem {
+export type Site = 'town' | 'country';
+
+export interface MenuItem {
   id: string;
   name: string;
   description: string;
   price: number;
   category: string;
-  image_url?: string;
-}
-
-interface TimeSlot {
-  id: string;
-  time: string;
-  displayTime: string;
-  available: boolean;
-  ordersCount: number;
-  maxOrders: number;
-  spotsLeft: number;
-}
-
-interface LunchAvailability {
-  available: boolean;
-  reason?: string;
-  totalSandwichesLeft: number;
-  userCanOrder: boolean;
-  userSandwichCount: number;
-  timeSlots: TimeSlot[];
-  orderDate: string;
+  site: 'town' | 'country' | 'both';
 }
 
 interface OrderItem extends MenuItem {
   quantity: number;
 }
 
-export const useLunchRun = () => {
+export const useLunchRun = (site: Site | null) => {
   const { user } = useAuth();
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
-  const [menu, setMenu] = useState<{ sandwiches: MenuItem[], beverages: MenuItem[] }>({ 
-    sandwiches: [], 
-    beverages: [] 
-  });
-  const [availability, setAvailability] = useState<LunchAvailability | null>(null);
+  const [allItems, setAllItems] = useState<MenuItem[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
   const orderDate = new Date().toISOString().split('T')[0];
 
-  const loadMenuAndAvailability = useCallback(async () => {
+  const loadMenu = useCallback(async () => {
     try {
       setLoading(true);
-      console.log('🍽️ Starting to load lunch data...');
-      console.log('🔍 User ID:', user?.id);
-      console.log('🔄 Loading state set to true');
-      
-      // Load menu from database directly since the edge function might be having issues
-      console.log('📋 Fetching menu from database...');
-      const { data: menuItems, error: menuError } = await (supabase as any)
+      const { data, error } = await (supabase as any)
         .from('lunch_menu')
         .select('*')
         .eq('is_available', true)
         .order('category')
         .order('sort_order');
-
-      if (menuError) {
-        console.error('❌ Menu database error:', menuError);
-        throw menuError;
-      }
-
-      console.log('✅ Menu items received:', menuItems?.length || 0, 'items');
-      console.log('📋 Menu items data:', menuItems);
-      
-      // Group items by category — sandwiches/mains and beverages, with everything else as a "main"
-      const sandwiches = menuItems?.filter((item: any) => item.category !== 'beverage') || [];
-      const beverages = menuItems?.filter((item: any) => item.category === 'beverage') || [];
-
-      console.log('🍜 Mains:', sandwiches.length, '🥤 Beverages:', beverages.length);
-
-      setMenu({ sandwiches, beverages });
-
-      // No more time/cutoff restrictions — always open.
-      setAvailability({
-        available: true,
-        totalSandwichesLeft: 999,
-        userCanOrder: true,
-        userSandwichCount: 0,
-        timeSlots: [],
-        orderDate,
-      });
-
-      console.log('🎉 Lunch data loaded successfully!');
-
+      if (error) throw error;
+      setAllItems((data || []) as MenuItem[]);
     } catch (error: any) {
-      console.error('💥 Error loading lunch data:', error);
+      console.error('Error loading Thai menu:', error);
       toast({
-        title: "Error",
-        description: `Failed to load lunch menu. ${error.message || 'Please try again.'}`,
-        variant: "destructive",
-      });
-      
-      // Set default unavailable state
-      setAvailability({
-        available: false,
-        reason: "Unable to load lunch data",
-        totalSandwichesLeft: 0,
-        userCanOrder: false,
-        userSandwichCount: 0,
-        timeSlots: [],
-        orderDate
+        title: 'Error',
+        description: error.message || 'Failed to load menu.',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
     }
-  }, [user?.id, orderDate, toast]);
+  }, [toast]);
 
   useEffect(() => {
-    // Load menu data on component mount
-    loadMenuAndAvailability();
-  }, [loadMenuAndAvailability]);
+    loadMenu();
+  }, [loadMenu]);
+
+  // Filter by site (returns items tagged for that site or 'both')
+  const items = site
+    ? allItems.filter((i) => i.site === site || i.site === 'both')
+    : allItems;
+
+  const menu = {
+    starters: items.filter((i) => i.category === 'starter'),
+    mains: items.filter((i) => i.category === 'main'),
+    desserts: items.filter((i) => i.category === 'dessert'),
+    beverages: items.filter((i) => i.category === 'beverage'),
+  };
 
   const submitOrder = async (orderData: {
-    orderDate: string;
-    collectionTime: string;
+    site: Site;
     items: OrderItem[];
     totalAmount: number;
     memberName: string;
@@ -133,29 +77,19 @@ export const useLunchRun = () => {
   }) => {
     try {
       setSubmitting(true);
-
       const { data, error } = await supabase.functions.invoke('create-lunch-order', {
-        body: orderData
+        body: { ...orderData, orderDate },
       });
-
       if (error) throw error;
-
-      if (data.success) {
-        toast({
-          title: "Order Placed!",
-          description: "Your lunch order has been confirmed.",
-        });
-        return { success: true, orderId: data.orderId };
-      } else {
-        throw new Error(data.error || 'Failed to place order');
-      }
-
+      if (!data?.success) throw new Error(data?.error || 'Failed to place order');
+      toast({ title: 'Order placed', description: 'The kitchen has it.' });
+      return { success: true, orderId: data.orderId, orderRef: data.orderRef };
     } catch (error: any) {
-      console.error('Error submitting order:', error);
+      console.error('Error submitting Thai order:', error);
       toast({
-        title: "Order Failed",
-        description: error.message || "Failed to place order. Please try again.",
-        variant: "destructive",
+        title: 'Order failed',
+        description: error.message || 'Please try again.',
+        variant: 'destructive',
       });
       return { success: false, error: error.message };
     } finally {
@@ -166,19 +100,9 @@ export const useLunchRun = () => {
   return {
     loading,
     menu,
-    availability,
+    items,
     submitting,
     orderDate,
-    loadMenuAndAvailability,
-    submitOrder
+    submitOrder,
   };
 };
-
-// Helper function to format time
-function formatTime(timeString: string): string {
-  const [hours, minutes] = timeString.split(':');
-  const hour = parseInt(hours);
-  const ampm = hour >= 12 ? 'PM' : 'AM';
-  const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
-  return `${displayHour}:${minutes} ${ampm}`;
-}
