@@ -384,7 +384,7 @@ const Branding = () => {
 
       <footer className="border-t border-border py-8">
         <div className="container mx-auto max-w-6xl px-6 flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">Croft Common — Internal brand book</p>
+          <p className="text-sm text-muted-foreground">Crazy Bear — Internal brand book</p>
           <a href="#logos" className="story-link text-sm">Back to top</a>
         </div>
       </footer>
