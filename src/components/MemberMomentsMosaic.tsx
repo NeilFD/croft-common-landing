@@ -47,13 +47,23 @@ const MomentVideo: React.FC<{
       retryTimer = 0;
     };
 
-    const attachSource = () => {
-      if (video.dataset.srcAttached === 'true') return;
+    const attachSource = (preload: 'metadata' | 'auto' = 'auto') => {
+      if (video.dataset.srcAttached === 'true') {
+        if (preload === 'auto' && video.preload !== 'auto') {
+          video.preload = 'auto';
+        }
+        return;
+      }
       video.src = src;
-      video.preload = 'auto';
+      video.preload = preload;
       video.dataset.srcAttached = 'true';
       video.load();
     };
+
+    // Attach metadata immediately so the video reserves layout space
+    // (otherwise <video> with no src collapses and never enters viewport,
+    // so the lazy IntersectionObserver never fires).
+    attachSource('metadata');
 
     const pause = () => {
       clearRetry();
