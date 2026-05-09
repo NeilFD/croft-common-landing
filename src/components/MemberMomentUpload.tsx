@@ -253,9 +253,13 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
             } catch {
               // keep original poster/duration
             }
+          } else if (file.size > MAX_RAW_VIDEO_BYTES) {
+            throw new Error('That video could not be made web-ready. Try a shorter clip, or export it as MP4 first.');
           }
         } catch {
-          // fall through with original file
+          if (file.size > MAX_RAW_VIDEO_BYTES) {
+            throw new Error('That video could not be made web-ready. Try a shorter clip, or export it as MP4 first.');
+          }
         }
       }
 
