@@ -109,7 +109,7 @@ export default function Notifications() {
           page="notifications" 
           section="message" 
           contentKey="content"
-          fallback="Pop down to Croft Common to soak up the Membership benefits in the sun tomorrow"
+          fallback="Pop down to Crazy Bear to soak up the Membership benefits in the sun tomorrow"
           as="p"
         />
         <CMSText 
