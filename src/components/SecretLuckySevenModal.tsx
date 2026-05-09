@@ -6,6 +6,7 @@ import AnimatedDice from "@/components/graphics/AnimatedDice";
 import BiometricUnlockModal from "@/components/BiometricUnlockModal";
 import MembershipLinkModal from "@/components/MembershipLinkModal";
 import { useMembershipGate } from "@/hooks/useMembershipGate";
+import { useGestureSafeDialog } from "@/hooks/useGestureSafeDialog";
 
 interface SecretLuckySevenModalProps {
   open: boolean;
