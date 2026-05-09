@@ -506,7 +506,7 @@ const MemberMomentsMosaic: React.FC = () => {
         />
       )}
 
-      {/* Detail Modal — full-bleed image, dark chrome */}
+      {/* Detail Modal — full-bleed media, dark chrome, scrollable comments */}
       {selectedMoment && (
         <div
           className="fixed inset-0 z-[200] bg-black/95 flex flex-col"
@@ -529,79 +529,82 @@ const MemberMomentsMosaic: React.FC = () => {
             </button>
           </div>
 
-          {/* Image / Video area - full bleed */}
+          {/* Scrollable body: media + info + comments */}
           <div
-            className="flex-1 flex items-center justify-center overflow-hidden p-2 md:p-6"
-            onClick={() => setSelectedMoment(null)}
-          >
-            {selectedMoment.media_type === 'video' ? (
-              <video
-                src={selectedMoment.image_url}
-                poster={selectedMoment.poster_url ?? undefined}
-                controls
-                playsInline
-                className="max-w-full max-h-full object-contain"
-                onClick={(e) => e.stopPropagation()}
-              />
-            ) : (
-              <img
-                src={selectedMoment.image_url}
-                alt={selectedMoment.tagline}
-                className="max-w-full max-h-full object-contain"
-                onClick={(e) => e.stopPropagation()}
-              />
-            )}
-          </div>
-
-          {/* Info bar */}
-          <div
-            className="flex-shrink-0 px-4 md:px-6 py-4 border-t border-white/10 bg-black"
+            className="flex-1 overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-start justify-between gap-4 mb-3">
-              <p className="font-sans text-sm md:text-base text-white leading-snug flex-1">
-                {selectedMoment.tagline}
-              </p>
-              <button
-                type="button"
-                aria-label={selectedMoment.user_has_liked ? 'Unlike' : 'Like'}
-                onClick={() => {
-                  selectedMoment.user_has_liked
-                    ? unlikeMoment(selectedMoment.id)
-                    : likeMoment(selectedMoment.id);
-                }}
-                className="inline-flex items-center gap-1.5 h-8 px-3 border border-white/30 hover:bg-white/10 transition-colors"
-              >
-                <Heart
-                  className={cn(
-                    'h-4 w-4 stroke-2',
-                    selectedMoment.user_has_liked
-                      ? 'fill-red-500 stroke-red-500'
-                      : 'fill-transparent stroke-white'
-                  )}
+            {/* Media area */}
+            <div className="flex items-center justify-center p-2 md:p-6 bg-black">
+              {selectedMoment.media_type === 'video' ? (
+                <video
+                  src={selectedMoment.image_url}
+                  poster={selectedMoment.poster_url ?? undefined}
+                  controls
+                  playsInline
+                  className="max-w-full max-h-[65vh] object-contain"
                 />
-                {!!selectedMoment.like_count && selectedMoment.like_count > 0 && (
-                  <span className="font-mono text-[10px] text-white">{selectedMoment.like_count}</span>
-                )}
-              </button>
+              ) : (
+                <img
+                  src={selectedMoment.image_url}
+                  alt={selectedMoment.tagline}
+                  className="max-w-full max-h-[65vh] object-contain"
+                />
+              )}
             </div>
 
-            {selectedMoment.tags && selectedMoment.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-3">
-                {selectedMoment.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center px-2 h-6 border border-white/30 font-mono text-[9px] tracking-[0.3em] uppercase text-white/80"
-                  >
-                    {tag}
-                  </span>
-                ))}
+            {/* Info bar */}
+            <div className="px-4 md:px-6 py-4 border-t border-white/10 bg-black">
+              <div className="flex items-start justify-between gap-4 mb-3">
+                <p className="font-sans text-sm md:text-base text-white leading-snug flex-1">
+                  {selectedMoment.tagline}
+                </p>
+                <button
+                  type="button"
+                  aria-label={selectedMoment.user_has_liked ? 'Unlike' : 'Like'}
+                  onClick={() => {
+                    selectedMoment.user_has_liked
+                      ? unlikeMoment(selectedMoment.id)
+                      : likeMoment(selectedMoment.id);
+                  }}
+                  className="inline-flex items-center gap-1.5 h-8 px-3 border border-white/30 hover:bg-white/10 transition-colors"
+                >
+                  <Heart
+                    className={cn(
+                      'h-4 w-4 stroke-2',
+                      selectedMoment.user_has_liked
+                        ? 'fill-red-500 stroke-red-500'
+                        : 'fill-transparent stroke-white'
+                    )}
+                  />
+                  {!!selectedMoment.like_count && selectedMoment.like_count > 0 && (
+                    <span className="font-mono text-[10px] text-white">{selectedMoment.like_count}</span>
+                  )}
+                </button>
               </div>
-            )}
 
-            <div className="flex items-center gap-4 font-mono text-[10px] tracking-[0.3em] uppercase text-white/60">
-              <span>{getMemberName(selectedMoment)}</span>
-              <span>{format(new Date(selectedMoment.date_taken), 'dd MMM yyyy')}</span>
+              {selectedMoment.tags && selectedMoment.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {selectedMoment.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center px-2 h-6 border border-white/30 font-mono text-[9px] tracking-[0.3em] uppercase text-white/80"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex items-center gap-4 font-mono text-[10px] tracking-[0.3em] uppercase text-white/60">
+                <span>{getMemberName(selectedMoment)}</span>
+                <span>{format(new Date(selectedMoment.date_taken), 'dd MMM yyyy')}</span>
+              </div>
+            </div>
+
+            {/* Comments */}
+            <div className="px-4 md:px-6 py-6 border-t border-white/10 bg-black">
+              <MomentComments momentId={selectedMoment.id} />
             </div>
           </div>
         </div>
@@ -621,77 +624,5 @@ const MemberMomentsMosaic: React.FC = () => {
           onClose={() => setEditingMoment(null)}
         />
       )}
-
-      {/* Detail Modal */}
-      {selectedMoment && (
-        <div 
-          className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4"
-          onClick={() => setSelectedMoment(null)}
-        >
-          <div className="bg-white rounded-lg overflow-hidden shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col">
-            {/* Image Area - takes most of the space */}
-            <div className="flex-1 flex items-center justify-center bg-gray-50 min-h-[60vh]">
-              <img
-                src={selectedMoment.image_url}
-                alt={selectedMoment.tagline}
-                className="max-w-full max-h-full object-contain"
-                onClick={e => e.stopPropagation()}
-                style={{ maxHeight: 'calc(90vh - 200px)' }}
-              />
-            </div>
-            
-            {/* Info Panel - fixed at bottom */}
-            <div className="flex-shrink-0 bg-white p-4 border-t" onClick={e => e.stopPropagation()}>
-              <div className="max-w-full mx-auto">
-                <h3 className="font-semibold text-lg text-gray-900 mb-2">{selectedMoment.tagline}</h3>
-                
-                {/* Tags */}
-                {selectedMoment.tags && selectedMoment.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {selectedMoment.tags.map(tag => (
-                      <Badge
-                        key={tag}
-                        variant="outline"
-                        className="bg-gray-100 text-gray-700 border-gray-300"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-                
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-sm text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      <span className="font-medium">{getMemberName(selectedMoment)}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      <span>{format(new Date(selectedMoment.date_taken), 'MMMM dd, yyyy')}</span>
-                    </div>
-                    {selectedMoment.is_featured && (
-                      <Badge variant="secondary" className="bg-blue-100 text-blue-800 w-fit">
-                        Featured Moment
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  <Button 
-                    variant="outline"
-                    onClick={() => setSelectedMoment(null)}
-                    className="w-full sm:w-auto"
-                  >
-                    Close
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
 
 export default MemberMomentsMosaic;
