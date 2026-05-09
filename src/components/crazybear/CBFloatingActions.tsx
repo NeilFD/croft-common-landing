@@ -36,9 +36,9 @@ const CBFloatingButton: React.FC<CBFloatingButtonProps> = ({ label, to, bottomCl
       type="button"
       aria-label={label}
       onClick={() => navigate(to)}
-      className={`fixed ${bottomClass} right-6 md:right-8 z-40 w-20 h-20 rounded-full transition-colors duration-300 flex items-center justify-center border-2 border-white/40 bg-black text-white hover:bg-accent-pink hover:text-white hover:border-accent-pink`}
+      className={`fixed ${bottomClass} right-3 md:right-8 z-40 w-14 h-14 md:w-20 md:h-20 rounded-full transition-colors duration-300 flex items-center justify-center border-2 border-white/40 bg-black text-white hover:bg-accent-pink hover:text-white hover:border-accent-pink shadow-lg`}
     >
-      <span className="relative font-brutalist tracking-wider uppercase select-none text-[9px]">
+      <span className="relative font-brutalist tracking-wider uppercase select-none text-[8px] md:text-[9px] leading-none">
         {label}
       </span>
     </button>
@@ -51,8 +51,8 @@ const CBFloatingActions: React.FC = () => {
 
   return (
     <>
-      <CBFloatingButton label="Curious?" to="/curious" bottomClass="bottom-64" />
-      <CBFloatingButton label="Book" to="/book" bottomClass="bottom-40" />
+      <CBFloatingButton label="Curious?" to="/curious" bottomClass="bottom-40 md:bottom-64" />
+      <CBFloatingButton label="Book" to="/book" bottomClass="bottom-24 md:bottom-40" />
     </>
   );
 };
