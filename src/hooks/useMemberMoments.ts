@@ -636,12 +636,12 @@ export const useMemberMoments = () => {
       .on(
         'postgres_changes',
         {
-          event: 'UPDATE',
+          event: '*',
           schema: 'public',
           table: 'member_moments'
         },
         (payload) => {
-          console.log('🔔 REALTIME: Member moment update:', payload);
+          console.log('🔔 REALTIME: Member moment change:', payload);
           fetchMoments();
         }
       )
