@@ -8,7 +8,7 @@ import BiometricUnlockModal from '@/components/BiometricUnlockModal';
 import MembershipLinkModal from '@/components/MembershipLinkModal';
 import { AuthModal } from '@/components/AuthModal';
 import { useNavigate } from 'react-router-dom';
-import denBg from '@/assets/den-bg.jpg';
+import denBg from '@/assets/den-bg-neon.jpg';
 
 type Tile = {
   index: string;
