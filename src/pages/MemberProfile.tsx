@@ -46,6 +46,7 @@ const MemberProfile: React.FC = () => {
     beer_style_preferences: [] as string[],
     communication_preferences: { push: true, email: true },
     avatar_url: null as string | null,
+    avatar_face_verified: false,
   });
 
   React.useEffect(() => {
@@ -65,6 +66,7 @@ const MemberProfile: React.FC = () => {
         beer_style_preferences: profile.beer_style_preferences || [],
         communication_preferences: profile.communication_preferences || { push: true, email: true },
         avatar_url: profile.avatar_url,
+        avatar_face_verified: !!profile.avatar_face_verified,
       });
     }
   }, [profile]);
@@ -139,17 +141,43 @@ const MemberProfile: React.FC = () => {
                       <MembershipCard />
                     </div>
 
-                    <AddToAppleWalletButton />
+                    <div className="space-y-3">
+                      <AddToAppleWalletButton
+                        enabled={!!formData.avatar_url && formData.avatar_face_verified}
+                        disabledReason="Upload a verified face-on profile photo to unlock"
+                      />
+                      {!(formData.avatar_url && formData.avatar_face_verified) && (
+                        <div className="border-2 border-black bg-white p-4 space-y-2">
+                          <p className="font-mono text-[10px] tracking-[0.3em] uppercase text-black">
+                            Unlock your wallet card
+                          </p>
+                          <p className="font-sans text-xs text-black/80">
+                            Your member card is gated behind a verified profile photo. Please upload a clear, face-on photo of yourself before adding your card to Apple Wallet.
+                          </p>
+                          <ul className="font-sans text-xs text-black/70 list-disc pl-4 space-y-1">
+                            <li>A real photo of you, not a logo, cartoon or pet.</li>
+                            <li>Looking straight at the camera, face clearly visible.</li>
+                            <li>Well-lit, in focus, no sunglasses or masks.</li>
+                            <li>One person only, no group shots.</li>
+                          </ul>
+                        </div>
+                      )}
+                    </div>
 
-                    <DenSection eyebrow="///" title="Profile Picture" description="Your avatar across The Den.">
+                    <DenSection eyebrow="///" title="Profile Picture" description="Your avatar across The Den. Used for entry checks.">
                       <AvatarUpload
                         currentAvatarUrl={formData.avatar_url}
                         displayName={`${formData.first_name} ${formData.last_name}`.trim()}
+                        faceVerified={formData.avatar_face_verified}
                         onAvatarChange={(newAvatarUrl) => {
                           setFormData((prev) => ({ ...prev, avatar_url: newAvatarUrl }));
                           if (newAvatarUrl !== formData.avatar_url) {
-                            updateProfile({ avatar_url: newAvatarUrl });
+                            updateProfile({ avatar_url: newAvatarUrl, avatar_face_verified: false });
                           }
+                        }}
+                        onVerifiedChange={(verified) => {
+                          setFormData((prev) => ({ ...prev, avatar_face_verified: verified }));
+                          updateProfile({ avatar_face_verified: verified });
                         }}
                       />
                     </DenSection>
@@ -412,6 +440,7 @@ const MemberProfile: React.FC = () => {
                                   beer_style_preferences: profile.beer_style_preferences || [],
                                   communication_preferences: profile.communication_preferences || { push: true, email: true },
                                   avatar_url: profile.avatar_url,
+                                  avatar_face_verified: !!profile.avatar_face_verified,
                                 });
                               }
                             }}

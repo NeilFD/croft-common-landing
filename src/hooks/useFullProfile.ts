@@ -28,6 +28,7 @@ export interface FullProfile {
   dietary_notes: string | null;
   tier_badge: string | null;
   hide_from_leaderboards: boolean;
+  avatar_face_verified: boolean;
   preferences: any;
 }
 
@@ -96,6 +97,7 @@ export const useFullProfile = () => {
         dietary_notes: prefs.dietary_notes || null,
         tier_badge: extendedData?.tier_badge || 'bronze',
         hide_from_leaderboards: prefs.hide_from_leaderboards || false,
+        avatar_face_verified: !!prefs.avatar_face_verified,
         preferences: prefs,
       };
 
@@ -133,6 +135,7 @@ export const useFullProfile = () => {
         'favorite_venue', 'favorite_drink', 'visit_time_preference',
         'beer_style_preferences', 'dietary_notes', 'dietary_preferences',
         'communication_preferences', 'hide_from_leaderboards', 'avatar_url',
+        'avatar_face_verified',
       ];
       const prefsPatch: any = {};
       prefsKeys.forEach((k) => {
