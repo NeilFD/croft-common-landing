@@ -52,8 +52,14 @@ const SecretLuckySevenModal: React.FC<SecretLuckySevenModalProps> = ({ open, onC
         description="We’ll email you a 6-digit verification code to confirm."
       />
 
-      <Dialog open={open && allowed} onOpenChange={(v) => { if (!v) handleCloseAll(); }}>
-        <DialogContent hideOverlay={true} className="w-[90vw] max-w-lg border border-border bg-background z-[10001]">
+      <Dialog open={open && allowed} onOpenChange={safeProps.guardOpenChange((v) => { if (!v) handleCloseAll(); })}>
+        <DialogContent
+          hideOverlay={true}
+          className="w-[90vw] max-w-lg border border-border bg-background z-[10001]"
+          onPointerDownOutside={safeProps.onPointerDownOutside}
+          onInteractOutside={safeProps.onInteractOutside}
+          onFocusOutside={safeProps.onFocusOutside}
+        >
           <div className="space-y-6">
             <div className="flex items-center gap-3">
               <CroftLogo size="sm" />
