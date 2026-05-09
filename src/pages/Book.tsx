@@ -37,7 +37,13 @@ const Book: React.FC = () => {
 
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="relative min-h-screen bg-background text-foreground flex flex-col">
+      <div
+        aria-hidden
+        className="fixed inset-0 -z-10 bg-cover bg-center grayscale"
+        style={{ backgroundImage: `url(${denBg})` }}
+      />
+      <div aria-hidden className="fixed inset-0 -z-10 bg-white/70" />
       {!isCMSMode && (
         <header className="container mx-auto px-6 pt-10">
           <Button
