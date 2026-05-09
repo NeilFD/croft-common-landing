@@ -1,12 +1,14 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { Resend } from "https://esm.sh/resend@2.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY") || "");
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const SITE_NAME = "Crazy Bear · Bears Den";
+const SENDER_DOMAIN = "notify.crazybear.dev";
+const FROM_DOMAIN = "notify.crazybear.dev";
+const FROM_ADDRESS = `Bears Den Cinema <cinema@${FROM_DOMAIN}>`;
 
 type EmailPayload = {
   toEmail: string;
@@ -14,9 +16,9 @@ type EmailPayload = {
   guestName?: string;
   quantity: number;
   ticketNumbers: number[];
-  screeningDate: string; // YYYY-MM-DD
-  doorsTime: string;     // HH:mm
-  screeningTime: string; // HH:mm
+  screeningDate: string;
+  doorsTime: string;
+  screeningTime: string;
   title?: string | null;
   walletToken?: string | null;
 };
@@ -24,8 +26,11 @@ type EmailPayload = {
 const fmtDate = (isoDate: string) => {
   try {
     const d = new Date(isoDate);
-    return d.toLocaleDateString('en-GB', {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+    return d.toLocaleDateString("en-GB", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   } catch {
     return isoDate;
@@ -33,27 +38,32 @@ const fmtDate = (isoDate: string) => {
 };
 
 const buildHtml = (p: EmailPayload) => {
-  const title = (p.title || 'Secret Cinema').toUpperCase();
+  const title = (p.title || "Secret Cinema").toUpperCase();
   const dateStr = fmtDate(p.screeningDate);
-  const namesLine = p.quantity === 2 && p.guestName
-    ? `${p.primaryName} + ${p.guestName}`
-    : p.primaryName;
+  const namesLine =
+    p.quantity === 2 && p.guestName
+      ? `${p.primaryName} + ${p.guestName}`
+      : p.primaryName;
 
   const walletUrl = p.walletToken
     ? `https://szokkwlleqndyiojhsll.supabase.co/functions/v1/create-cinema-wallet-pass?token=${encodeURIComponent(p.walletToken)}`
     : null;
 
   const ticketRow = (p.ticketNumbers || [])
-    .map((n) => `
+    .map(
+      (n) => `
       <td style="padding:0 8px 0 0;">
         <div style="display:inline-block; border:2px solid #000; padding:14px 18px; min-width:80px; text-align:center; background:#fff;">
           <div style="font-family:'Archivo Black',Arial Black,Helvetica,sans-serif; font-size:11px; letter-spacing:0.18em; color:#000; margin-bottom:4px;">TICKET</div>
           <div style="font-family:'Archivo Black',Arial Black,Helvetica,sans-serif; font-size:28px; line-height:1; color:#000;">#${n}</div>
         </div>
       </td>
-    `).join('');
+    `,
+    )
+    .join("");
 
-  const walletButton = walletUrl ? `
+  const walletButton = walletUrl
+    ? `
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0 8px 0;">
       <tr>
         <td>
@@ -67,7 +77,8 @@ const buildHtml = (p: EmailPayload) => {
     <p style="margin:0 0 24px 0; font-family:'Space Grotesk',Helvetica,Arial,sans-serif; font-size:12px; color:#555; letter-spacing:0.04em;">
       Open this email on your iPhone, then tap the button above.
     </p>
-  ` : '';
+  `
+    : "";
 
   return `<!doctype html>
 <html lang="en">
@@ -76,8 +87,8 @@ const buildHtml = (p: EmailPayload) => {
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Your Secret Cinema ticket</title>
 </head>
-<body style="margin:0; padding:0; background:#f4f4f4; font-family:'Space Grotesk',Helvetica,Arial,sans-serif; color:#000;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4; padding:24px 12px;">
+<body style="margin:0; padding:0; background:#ffffff; font-family:'Space Grotesk',Helvetica,Arial,sans-serif; color:#000;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff; padding:24px 12px;">
     <tr>
       <td align="center">
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px; width:100%; background:#ffffff; border:2px solid #000;">
@@ -114,7 +125,7 @@ const buildHtml = (p: EmailPayload) => {
                     <td style="padding:4px 0; text-align:right;">${p.screeningTime}</td>
                   </tr>
                   <tr>
-                    <td style="padding:4px 0;"><strong style="font-family:'Archivo Black',Arial Black,Helvetica,sans-serif; font-size:11px; letter-spacing:0.2em;">NAME${p.quantity === 2 ? 'S' : ''}</strong></td>
+                    <td style="padding:4px 0;"><strong style="font-family:'Archivo Black',Arial Black,Helvetica,sans-serif; font-size:11px; letter-spacing:0.2em;">NAME${p.quantity === 2 ? "S" : ""}</strong></td>
                     <td style="padding:4px 0; text-align:right;">${namesLine}</td>
                   </tr>
                 </table>
@@ -155,7 +166,36 @@ const buildHtml = (p: EmailPayload) => {
 </html>`;
 };
 
-serve(async (req) => {
+const buildText = (p: EmailPayload) => {
+  const title = (p.title || "Secret Cinema").toUpperCase();
+  const dateStr = fmtDate(p.screeningDate);
+  const namesLine =
+    p.quantity === 2 && p.guestName
+      ? `${p.primaryName} + ${p.guestName}`
+      : p.primaryName;
+  const tickets = (p.ticketNumbers || []).map((n) => `#${n}`).join(", ");
+  const walletUrl = p.walletToken
+    ? `https://szokkwlleqndyiojhsll.supabase.co/functions/v1/create-cinema-wallet-pass?token=${encodeURIComponent(p.walletToken)}`
+    : null;
+  return [
+    `CRAZY BEAR · BEARS DEN — SECRET CINEMA`,
+    ``,
+    `You're in.`,
+    title,
+    ``,
+    `Date: ${dateStr}`,
+    `Doors: ${p.doorsTime}`,
+    `Screening: ${p.screeningTime}`,
+    `Name${p.quantity === 2 ? "s" : ""}: ${namesLine}`,
+    `Ticket${p.ticketNumbers.length > 1 ? "s" : ""}: ${tickets}`,
+    walletUrl ? `\nAdd to Apple Wallet: ${walletUrl}` : ``,
+    ``,
+    `One night. One screen. Fifty tickets.`,
+    `Last Thursday of the month. Always uncommonly good.`,
+  ].join("\n");
+};
+
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -175,23 +215,99 @@ serve(async (req) => {
       });
     }
 
+    const admin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+
+    const tickets = (payload.ticketNumbers || []).join(",");
+    const idempotencyKey = `cinema-ticket-${payload.toEmail}-${payload.screeningDate}-${tickets}`;
+
+    // Skip duplicates
+    const { data: latest } = await admin
+      .from("email_send_log")
+      .select("status")
+      .eq("message_id", idempotencyKey)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (latest?.status === "sent") {
+      return new Response(
+        JSON.stringify({ ok: true, skipped: "already_sent" }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
+    }
+
+    // Unsubscribe token (one per email)
+    const { data: existingToken } = await admin
+      .from("email_unsubscribe_tokens")
+      .select("token")
+      .eq("email", payload.toEmail)
+      .is("used_at", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const unsubscribeToken = existingToken?.token ?? crypto.randomUUID();
+    if (!existingToken?.token) {
+      await admin.from("email_unsubscribe_tokens").insert({
+        email: payload.toEmail,
+        token: unsubscribeToken,
+      });
+    }
+
     const html = buildHtml(payload);
-    const subject = `Secret Cinema · ${(payload.title || 'Tonight').toUpperCase()} · Ticket${payload.ticketNumbers.length > 1 ? 's' : ''} #${payload.ticketNumbers.join(', ')}`;
+    const text = buildText(payload);
+    const subject = `Secret Cinema · ${(payload.title || "Tonight").toUpperCase()} · Ticket${payload.ticketNumbers.length > 1 ? "s" : ""} #${payload.ticketNumbers.join(", ")}`;
 
-    const res = await resend.emails.send({
-      from: "Bears Den Cinema <cinema@notify.crazybear.dev>",
-      to: [payload.toEmail],
-      subject,
-      html,
+    await admin.from("email_send_log").insert({
+      message_id: idempotencyKey,
+      template_name: "cinema_ticket",
+      recipient_email: payload.toEmail,
+      status: "pending",
     });
 
-    return new Response(JSON.stringify({ ok: true, id: (res as any)?.id ?? null }), {
-      status: 200,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
+    const { error: enqueueError } = await admin.rpc("enqueue_email", {
+      queue_name: "transactional_emails",
+      payload: {
+        message_id: idempotencyKey,
+        idempotency_key: idempotencyKey,
+        to: payload.toEmail,
+        from: FROM_ADDRESS,
+        sender_domain: SENDER_DOMAIN,
+        subject,
+        html,
+        text,
+        purpose: "transactional",
+        label: "cinema_ticket",
+        unsubscribe_token: unsubscribeToken,
+        queued_at: new Date().toISOString(),
+      },
     });
-  } catch (error: any) {
-    console.error("send-cinema-ticket-email error:", error);
-    return new Response(JSON.stringify({ error: error?.message ?? 'Unknown error' }), {
+
+    if (enqueueError) {
+      await admin.from("email_send_log").insert({
+        message_id: `${idempotencyKey}-err`,
+        template_name: "cinema_ticket",
+        recipient_email: payload.toEmail,
+        status: "failed",
+        error_message: enqueueError.message,
+      });
+      return new Response(
+        JSON.stringify({ error: "Failed to enqueue", details: enqueueError.message }),
+        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ ok: true, queued: true, message_id: idempotencyKey }),
+      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } },
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("send-cinema-ticket-email error:", message);
+    return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
