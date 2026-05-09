@@ -6,11 +6,8 @@ import {
   Body,
   Container,
   Head,
-  Heading,
-  Hr,
   Html,
   Preview,
-  Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
@@ -22,35 +19,19 @@ interface SignupEmailProps {
   token?: string
 }
 
-export const SignupEmail = ({
-  token,
-}: SignupEmailProps) => (
+// Plain, code-first email. Kept deliberately short and link-light to improve
+// inbox placement at Microsoft and other strict providers.
+export const SignupEmail = ({ token }: SignupEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Your code to enter the den</Preview>
+    <Preview>Your Crazy Bear code: {token || ''}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Section style={header}>
-          <Text style={eyebrow}>The Crazy Bear</Text>
-          <Hr style={rule} />
-        </Section>
-
-        <Heading style={h1}>Welcome to the den</Heading>
-
-        <Text style={text}>
-          Enter the code below at www.crazybeartest.com/set-password
-          to set your password. The door swings open.
-        </Text>
-
-        <Section style={codeWrap}>
-          <Text style={code}>{token || '------'}</Text>
-        </Section>
-
-        <Text style={small}>This code expires in one hour. One use only.</Text>
-
-        <Hr style={rule} />
-        <Text style={footer}>Didn't sign up? Ignore this email and nothing happens.</Text>
-        <Text style={signoff}>The Crazy Bear, Stadhampton & Beaconsfield</Text>
+        <Text style={text}>Your Crazy Bear code:</Text>
+        <Text style={code}>{token || '------'}</Text>
+        <Text style={text}>Enter it to set your password.</Text>
+        <Text style={small}>Expires in one hour. One use only.</Text>
+        <Text style={small}>If you did not request this, ignore this email.</Text>
       </Container>
     </Body>
   </Html>
@@ -67,87 +48,25 @@ const main = {
 const container = {
   maxWidth: '560px',
   margin: '0 auto',
-  padding: '40px 32px',
+  padding: '32px 24px',
   backgroundColor: '#ffffff',
-}
-const header = { marginBottom: '32px' }
-const eyebrow = {
-  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-  fontSize: '11px',
-  letterSpacing: '0.4em',
-  textTransform: 'uppercase' as const,
-  color: '#000000',
-  margin: '0 0 16px',
-}
-const rule = {
-  borderColor: '#000000',
-  borderTopWidth: '1px',
-  borderTopStyle: 'solid' as const,
-  margin: '0',
-}
-const h1 = {
-  fontSize: '32px',
-  fontWeight: 'normal' as const,
-  color: '#000000',
-  letterSpacing: '-0.01em',
-  lineHeight: '1.1',
-  margin: '32px 0 24px',
 }
 const text = {
   fontSize: '15px',
   color: '#000000',
-  lineHeight: '1.6',
-  margin: '0 0 28px',
-}
-const buttonWrap = { margin: '0 0 32px' }
-const codeWrap = {
-  margin: '0 0 24px',
-  padding: '24px',
-  backgroundColor: '#000000',
-  textAlign: 'center' as const,
+  lineHeight: '1.5',
+  margin: '0 0 16px',
 }
 const code = {
   fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-  fontSize: '36px',
-  letterSpacing: '0.5em',
-  color: '#ffffff',
-  margin: 0,
-  paddingLeft: '0.5em',
-}
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-  fontSize: '12px',
+  fontSize: '32px',
   letterSpacing: '0.4em',
-  textTransform: 'uppercase' as const,
-  borderRadius: '0px',
-  padding: '16px 28px',
-  textDecoration: 'none',
-  display: 'inline-block',
+  color: '#000000',
+  margin: '0 0 24px',
+  paddingLeft: '0.4em',
 }
 const small = {
   fontSize: '12px',
-  color: '#666666',
-  margin: '0 0 24px',
-}
-const linkText = {
-  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-  fontSize: '11px',
-  color: '#000000',
-  wordBreak: 'break-all' as const,
-  margin: '0 0 32px',
-}
-const footer = {
-  fontSize: '12px',
-  color: '#666666',
-  margin: '24px 0 8px',
-}
-const signoff = {
-  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-  fontSize: '10px',
-  letterSpacing: '0.3em',
-  textTransform: 'uppercase' as const,
-  color: '#000000',
-  margin: '16px 0 0',
+  color: '#555555',
+  margin: '0 0 8px',
 }

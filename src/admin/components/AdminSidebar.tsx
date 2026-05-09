@@ -12,7 +12,8 @@ import {
   UserCheck,
   Camera,
   Database,
-  Film
+  Film,
+  Mail
 } from 'lucide-react';
 import {
   Sidebar,
@@ -58,6 +59,7 @@ const navigationItems = [
       { title: 'Subscribers', url: '/admin/management/subscribers', icon: UserCheck },
       { title: 'Moments Moderation', url: '/admin/management/moments', icon: Camera },
       { title: 'Cinema Management', url: '/admin/management/cinema', icon: Film },
+      { title: 'Email Delivery', url: '/admin/management/email-delivery', icon: Mail },
       { title: 'Member Database', url: '/admin/member-analytics', icon: Database },
     ],
   },
