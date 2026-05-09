@@ -87,19 +87,13 @@ const MemberProfile: React.FC = () => {
         <meta name="description" content="Manage your Crazy Bear member profile and Apple Wallet card." />
       </Helmet>
 
-      <div className="min-h-screen relative">
-        <div
-          className="fixed inset-0 bg-cover bg-center bg-no-repeat z-0"
-          style={{ backgroundImage: `url(${denBg})`, filter: 'grayscale(1) contrast(1.05)' }}
-        />
-        <div className="fixed inset-0 bg-white/92 z-0" />
-
+      <div className="min-h-screen relative bg-[#f5f4f0]">
         <div className="relative z-10">
           <Navigation />
 
           <div
             className="container mx-auto px-4 py-8 max-w-6xl"
-            style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 140px)' }}
+            style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 120px)' }}
           >
             {/* Breadcrumb */}
             <div className="mb-6">
@@ -113,12 +107,12 @@ const MemberProfile: React.FC = () => {
             </div>
 
             {/* Header */}
-            <div className="mb-8">
+            <div className="mb-8 border-b-2 border-black pb-6">
               <p className="font-mono text-[10px] tracking-[0.5em] uppercase text-black/60 mb-3">Member</p>
-              <h1 className="font-display uppercase text-5xl md:text-7xl tracking-tight leading-none mb-3 text-black">
+              <h1 className="font-display uppercase text-4xl md:text-6xl tracking-tight leading-none mb-3 text-black">
                 Profile
               </h1>
-              <p className="font-sans text-base md:text-lg text-black/70">Your details. Your card.</p>
+              <p className="font-sans text-base text-black/70">Your details. Your card.</p>
             </div>
 
             <Tabs defaultValue="profile" className="space-y-6">
