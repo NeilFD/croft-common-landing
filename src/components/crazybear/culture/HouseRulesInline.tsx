@@ -28,6 +28,9 @@ const HouseRulesInline = ({ tone = "dark" }: Props) => {
         <h2 className="mt-3 font-display text-3xl md:text-5xl uppercase tracking-tight">
           House Rules.
         </h2>
+        <p className={`mt-6 max-w-3xl font-display text-2xl md:text-4xl uppercase tracking-tight leading-[1.05]`}>
+          We identify as anything you want us to be.
+        </p>
         <p className={`mt-5 max-w-2xl font-cb-sans text-lg ${isLight ? "opacity-85" : "text-foreground/80"}`}>
           Read once. Never think twice.
         </p>
