@@ -62,22 +62,22 @@ const VenuesList = () => {
           {/* Header with Back Navigation */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-start gap-3 md:gap-4">
-              <Button variant="ghost" size="sm" asChild className="font-industrial">
+              <Button variant="ghost" size="sm" asChild className="font-cb-sans">
                 <Link to="/management/spaces" className="flex items-center space-x-2">
                   <ArrowLeft className="h-4 w-4" />
                   <span>Back</span>
                 </Link>
               </Button>
               <div>
-                <h1 className="font-brutalist text-2xl md:text-4xl font-black uppercase tracking-wider text-foreground">VENUES</h1>
-                <p className="font-industrial text-muted-foreground text-sm md:text-base">
+                <h1 className="font-display text-2xl md:text-4xl font-black uppercase tracking-wider text-foreground">VENUES</h1>
+                <p className="font-cb-sans text-muted-foreground text-sm md:text-base">
                   Physical spaces & capacities
                 </p>
               </div>
             </div>
             
             {canEdit() && (
-              <Button asChild className="btn-primary font-brutalist uppercase tracking-wide h-10 md:h-11 text-sm">
+              <Button asChild className="btn-primary font-display uppercase tracking-wide h-10 md:h-11 text-sm">
                 <Link to="/management/spaces/venues/new" className="flex items-center space-x-2">
                   <Plus className="h-4 w-4" />
                   <span>ADD</span>

@@ -72,10 +72,10 @@ export const BookingsList = ({ eventId, bookings }: BookingsListProps) => {
       <Card className="border-industrial">
         <CardContent className="p-8 md:p-12 text-center">
           <Building className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="font-brutalist text-lg font-black uppercase tracking-wide mb-2">
+          <h3 className="font-display text-lg font-black uppercase tracking-wide mb-2">
             NO BOOKINGS YET
           </h3>
-          <p className="font-industrial text-muted-foreground">
+          <p className="font-cb-sans text-muted-foreground">
             Add holds to start booking spaces for this event
           </p>
         </CardContent>
@@ -91,10 +91,10 @@ export const BookingsList = ({ eventId, bookings }: BookingsListProps) => {
             <div className="flex items-start justify-between">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <CardTitle className="font-brutalist text-lg font-black uppercase tracking-wide">
+                  <CardTitle className="font-display text-lg font-black uppercase tracking-wide">
                     {booking.title}
                   </CardTitle>
-                  <Badge className={`font-industrial text-xs uppercase ${getStatusColor(booking.status)}`}>
+                  <Badge className={`font-cb-sans text-xs uppercase ${getStatusColor(booking.status)}`}>
                     {formatStatus(booking.status)}
                   </Badge>
                 </div>
@@ -102,19 +102,19 @@ export const BookingsList = ({ eventId, bookings }: BookingsListProps) => {
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Building className="h-4 w-4" />
-                    <span className="font-industrial">{booking.space?.name}</span>
+                    <span className="font-cb-sans">{booking.space?.name}</span>
                   </div>
                   
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
-                    <span className="font-industrial">
+                    <span className="font-cb-sans">
                       {format(new Date(booking.start_ts), 'dd MMM yyyy')}
                     </span>
                   </div>
                   
                   <div className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
-                    <span className="font-industrial">
+                    <span className="font-cb-sans">
                       {format(new Date(booking.start_ts), 'HH:mm')} - {format(new Date(booking.end_ts), 'HH:mm')}
                     </span>
                   </div>
@@ -130,7 +130,7 @@ export const BookingsList = ({ eventId, bookings }: BookingsListProps) => {
                 <DropdownMenuContent align="end" className="w-48 bg-background border border-industrial">
                   <DropdownMenuItem
                     onClick={() => setEditBooking(booking)}
-                    className="font-industrial"
+                    className="font-cb-sans"
                   >
                     <Edit className="h-4 w-4 mr-2" />
                     Edit Booking
@@ -140,13 +140,13 @@ export const BookingsList = ({ eventId, bookings }: BookingsListProps) => {
                     <>
                       <DropdownMenuItem
                         onClick={() => handlePromoteHold(booking.id, 'hold_firm')}
-                        className="font-industrial"
+                        className="font-cb-sans"
                       >
                         Promote to Firm Hold
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => handlePromoteHold(booking.id, 'definite')}
-                        className="font-industrial"
+                        className="font-cb-sans"
                       >
                         Promote to Definite
                       </DropdownMenuItem>
@@ -156,7 +156,7 @@ export const BookingsList = ({ eventId, bookings }: BookingsListProps) => {
                   {booking.status === 'hold_firm' && (
                     <DropdownMenuItem
                       onClick={() => handlePromoteHold(booking.id, 'definite')}
-                      className="font-industrial"
+                      className="font-cb-sans"
                     >
                       Promote to Definite
                     </DropdownMenuItem>
@@ -170,12 +170,12 @@ export const BookingsList = ({ eventId, bookings }: BookingsListProps) => {
             <CardContent className="pt-0">
               <div className="flex gap-4 text-sm text-muted-foreground">
                 {booking.setup_min > 0 && (
-                  <span className="font-industrial">
+                  <span className="font-cb-sans">
                     Setup: {booking.setup_min} min
                   </span>
                 )}
                 {booking.teardown_min > 0 && (
-                  <span className="font-industrial">
+                  <span className="font-cb-sans">
                     Teardown: {booking.teardown_min} min
                   </span>
                 )}

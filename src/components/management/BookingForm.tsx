@@ -170,10 +170,10 @@ export const BookingForm = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px] bg-background border-2 border-foreground shadow-brutal">
         <DialogHeader>
-          <DialogTitle className="font-brutalist text-xl font-bold uppercase">
+          <DialogTitle className="font-display text-xl font-bold uppercase">
             {booking ? "Edit Booking" : "Create New Booking"}
           </DialogTitle>
-          <DialogDescription className="font-industrial">
+          <DialogDescription className="font-cb-sans">
             {booking 
               ? "Update the booking details below"
               : "Fill in the details to create a new booking"
@@ -189,20 +189,20 @@ export const BookingForm = ({
               name="space_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-industrial font-bold text-foreground uppercase">Space</FormLabel>
+                  <FormLabel className="font-cb-sans font-bold text-foreground uppercase">Space</FormLabel>
                   <Select
                     value={field.value}
                     onValueChange={field.onChange}
                     disabled={!!booking} // Can't change space for existing bookings
                   >
                     <FormControl>
-                      <SelectTrigger className="bg-background border-2 border-foreground font-industrial">
+                      <SelectTrigger className="bg-background border-2 border-foreground font-cb-sans">
                         <SelectValue placeholder="Select a space" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="bg-background border-2 border-foreground shadow-brutal">
                       {spaces.map((space) => (
-                        <SelectItem key={space.id} value={space.id} className="font-industrial">
+                        <SelectItem key={space.id} value={space.id} className="font-cb-sans">
                           {space.name}
                         </SelectItem>
                       ))}
@@ -219,11 +219,11 @@ export const BookingForm = ({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-industrial font-bold text-foreground uppercase">Booking Title</FormLabel>
+                  <FormLabel className="font-cb-sans font-bold text-foreground uppercase">Booking Title</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="e.g. Corporate Event, Wedding Reception"
-                      className="border-2 border-foreground font-industrial"
+                      className="border-2 border-foreground font-cb-sans"
                       {...field}
                     />
                   </FormControl>
@@ -239,11 +239,11 @@ export const BookingForm = ({
                 name="start_ts"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="font-industrial font-bold text-foreground uppercase">Start Date & Time</FormLabel>
+                    <FormLabel className="font-cb-sans font-bold text-foreground uppercase">Start Date & Time</FormLabel>
                     <FormControl>
                       <Input
                         type="datetime-local"
-                        className="border-2 border-foreground font-industrial"
+                        className="border-2 border-foreground font-cb-sans"
                         {...field}
                       />
                     </FormControl>
@@ -257,11 +257,11 @@ export const BookingForm = ({
                 name="end_ts"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="font-industrial font-bold text-foreground uppercase">End Date & Time</FormLabel>
+                    <FormLabel className="font-cb-sans font-bold text-foreground uppercase">End Date & Time</FormLabel>
                     <FormControl>
                       <Input
                         type="datetime-local"
-                        className="border-2 border-foreground font-industrial"
+                        className="border-2 border-foreground font-cb-sans"
                         {...field}
                       />
                     </FormControl>
@@ -278,12 +278,12 @@ export const BookingForm = ({
                 name="setup_min"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="font-industrial font-bold text-foreground uppercase">Setup Time (minutes)</FormLabel>
+                    <FormLabel className="font-cb-sans font-bold text-foreground uppercase">Setup Time (minutes)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         min="0"
-                        className="border-2 border-foreground font-industrial"
+                        className="border-2 border-foreground font-cb-sans"
                         {...field}
                         onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                       />
@@ -298,12 +298,12 @@ export const BookingForm = ({
                 name="teardown_min"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="font-industrial font-bold text-foreground uppercase">Teardown Time (minutes)</FormLabel>
+                    <FormLabel className="font-cb-sans font-bold text-foreground uppercase">Teardown Time (minutes)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         min="0"
-                        className="border-2 border-foreground font-industrial"
+                        className="border-2 border-foreground font-cb-sans"
                         {...field}
                         onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                       />
@@ -319,14 +319,14 @@ export const BookingForm = ({
                 type="button" 
                 variant="outline" 
                 onClick={onClose}
-                className="border-2 border-foreground font-industrial font-bold"
+                className="border-2 border-foreground font-cb-sans font-bold"
               >
                 CANCEL
               </Button>
               <Button 
                 type="submit" 
                 disabled={isLoading}
-                className="bg-accent text-accent-foreground hover:bg-accent/80 border-2 border-foreground font-industrial font-bold"
+                className="bg-accent text-accent-foreground hover:bg-accent/80 border-2 border-foreground font-cb-sans font-bold"
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {booking ? "UPDATE BOOKING" : "CREATE BOOKING"}

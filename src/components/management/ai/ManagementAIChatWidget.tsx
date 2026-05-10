@@ -486,7 +486,7 @@ export const ManagementAIChatWidget = () => {
             <Bot className="h-4 w-4 text-foreground" />
           </div>
           <div>
-            <h3 className="font-semibold text-sm font-brutalist">Cleo</h3>
+            <h3 className="font-semibold text-sm font-display">Cleo</h3>
             <p className="text-xs text-muted-foreground">
               {isDragging ? 'Dragging...' : 'Your AI assistant'}
             </p>
@@ -532,7 +532,7 @@ export const ManagementAIChatWidget = () => {
                 <div className="h-16 w-16 rounded-full bg-accent-pink border-2 border-foreground flex items-center justify-center mb-4">
                   <Bot className="h-8 w-8 text-foreground" />
                 </div>
-                <h4 className="font-semibold font-brutalist mb-2">Hi! I'm Cleo</h4>
+                <h4 className="font-semibold font-display mb-2">Hi! I'm Cleo</h4>
                 <p className="text-sm text-muted-foreground mb-6">
                   Ask me about bookings, events, leads, or anything else related to management.
                 </p>
@@ -579,7 +579,7 @@ export const ManagementAIChatWidget = () => {
           {/* Input */}
           <div className="relative border-t p-4 pb-6">
             {isRecording && (
-              <div className="absolute -top-14 left-4 right-4 flex items-center gap-2 text-xs font-industrial bg-accent-pink/95 backdrop-blur-sm p-2.5 rounded-lg border-2 border-accent-pink shadow-lg animate-in fade-in slide-in-from-bottom-2">
+              <div className="absolute -top-14 left-4 right-4 flex items-center gap-2 text-xs font-cb-sans bg-accent-pink/95 backdrop-blur-sm p-2.5 rounded-lg border-2 border-accent-pink shadow-lg animate-in fade-in slide-in-from-bottom-2">
                 <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
                 <span className="text-foreground font-medium">Listening...</span>
               </div>
@@ -599,7 +599,7 @@ export const ManagementAIChatWidget = () => {
                   placeholder="Ask me anything..."
                   disabled={isLoading || isRecording}
                   className={cn(
-                    "pr-24 border-2 border-foreground font-industrial placeholder:text-muted-foreground/60",
+                    "pr-24 border-2 border-foreground font-cb-sans placeholder:text-muted-foreground/60",
                     isSupported && "pl-4"
                   )}
                 />

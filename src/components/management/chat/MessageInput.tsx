@@ -130,7 +130,7 @@ export const MessageInput = ({
     <div className="relative">
       <div className="p-4 border-t border-border">
         {replyToMessage && (
-          <div className="mb-2 flex items-center gap-2 text-sm bg-muted px-3 py-2 rounded-md font-industrial">
+          <div className="mb-2 flex items-center gap-2 text-sm bg-muted px-3 py-2 rounded-md font-cb-sans">
             <span className="text-muted-foreground">Replying to</span>
             <span className="font-bold">{replyToMessage.sender_name || 'Unknown'}</span>
             <span className="text-muted-foreground truncate flex-1">
@@ -148,7 +148,7 @@ export const MessageInput = ({
           </div>
         )}
         {editingMessage && (
-          <div className="mb-2 flex items-center gap-2 text-sm bg-muted px-3 py-2 rounded-md font-industrial">
+          <div className="mb-2 flex items-center gap-2 text-sm bg-muted px-3 py-2 rounded-md font-cb-sans">
             <span className="text-muted-foreground">Editing message</span>
             <Button
               variant="ghost"
@@ -161,13 +161,13 @@ export const MessageInput = ({
           </div>
         )}
         {cleoMentioned && (
-          <div className="mb-2 flex items-center gap-2 text-sm bg-[hsl(var(--accent-pink))]/10 px-3 py-2 rounded-md font-industrial">
+          <div className="mb-2 flex items-center gap-2 text-sm bg-[hsl(var(--accent-pink))]/10 px-3 py-2 rounded-md font-cb-sans">
             <span className="font-bold text-[hsl(var(--accent-pink))]">Cleo</span>
             <span className="text-muted-foreground">will respond to this message</span>
           </div>
         )}
         {image && (
-          <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground font-industrial">
+          <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground font-cb-sans">
             <ImageIcon className="h-4 w-4" />
             <span className="truncate">{image.name}</span>
             <Button
@@ -207,7 +207,7 @@ export const MessageInput = ({
               style={{
                 control: {
                   fontSize: '0.875rem',
-                  fontFamily: 'var(--font-industrial)',
+                  fontFamily: 'var(--font-cb-sans)',
                   minHeight: '40px',
                 },
                 input: {
@@ -239,7 +239,7 @@ export const MessageInput = ({
                   },
                   item: {
                     padding: '0.5rem 0.75rem',
-                    fontFamily: 'var(--font-industrial)',
+                    fontFamily: 'var(--font-cb-sans)',
                     color: 'hsl(var(--foreground))',
                     cursor: 'pointer',
                     '&focused': {

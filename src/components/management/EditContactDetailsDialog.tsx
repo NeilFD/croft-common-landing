@@ -86,15 +86,15 @@ export const EditContactDetailsDialog = ({ eventId, event, open, onOpenChange }:
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-brutalist uppercase tracking-wide">EDIT CONTACT DETAILS</DialogTitle>
-          <DialogDescription className="font-industrial">
+          <DialogTitle className="font-display uppercase tracking-wide">EDIT CONTACT DETAILS</DialogTitle>
+          <DialogDescription className="font-cb-sans">
             Update client contact information for {event?.code}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="client_name" className="font-industrial uppercase text-xs tracking-wide">
+            <Label htmlFor="client_name" className="font-cb-sans uppercase text-xs tracking-wide">
               Client Name *
             </Label>
             <Input
@@ -103,13 +103,13 @@ export const EditContactDetailsDialog = ({ eventId, event, open, onOpenChange }:
               value={formData.client_name}
               onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
               placeholder="Enter client name"
-              className="font-industrial"
+              className="font-cb-sans"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="client_email" className="font-industrial uppercase text-xs tracking-wide">
+            <Label htmlFor="client_email" className="font-cb-sans uppercase text-xs tracking-wide">
               Client Email
             </Label>
             <Input
@@ -118,12 +118,12 @@ export const EditContactDetailsDialog = ({ eventId, event, open, onOpenChange }:
               value={formData.client_email}
               onChange={(e) => setFormData({ ...formData, client_email: e.target.value })}
               placeholder="Enter client email"
-              className="font-industrial"
+              className="font-cb-sans"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="client_phone" className="font-industrial uppercase text-xs tracking-wide">
+            <Label htmlFor="client_phone" className="font-cb-sans uppercase text-xs tracking-wide">
               Client Phone
             </Label>
             <Input
@@ -132,7 +132,7 @@ export const EditContactDetailsDialog = ({ eventId, event, open, onOpenChange }:
               value={formData.client_phone}
               onChange={(e) => setFormData({ ...formData, client_phone: e.target.value })}
               placeholder="Enter client phone"
-              className="font-industrial"
+              className="font-cb-sans"
             />
           </div>
 
@@ -141,14 +141,14 @@ export const EditContactDetailsDialog = ({ eventId, event, open, onOpenChange }:
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="flex-1 font-brutalist uppercase tracking-wide border-industrial"
+              className="flex-1 font-display uppercase tracking-wide border-industrial"
             >
               CANCEL
             </Button>
             <Button
               type="submit"
               disabled={loading}
-              className="flex-1 btn-primary font-brutalist uppercase tracking-wide"
+              className="flex-1 btn-primary font-display uppercase tracking-wide"
             >
               {loading ? 'UPDATING...' : 'UPDATE CONTACT'}
             </Button>

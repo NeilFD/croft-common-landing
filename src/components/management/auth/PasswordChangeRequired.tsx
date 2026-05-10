@@ -81,7 +81,7 @@ const PasswordChangeRequired = () => {
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="font-brutalist text-2xl">Change Password Required</CardTitle>
+          <CardTitle className="font-display text-2xl">Change Password Required</CardTitle>
           <CardDescription>
             Please set a new password to continue
           </CardDescription>

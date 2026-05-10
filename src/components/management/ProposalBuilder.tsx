@@ -385,7 +385,7 @@ hello@thehive-hospitality.com`;
     <div className="space-y-6">
       <Card className="border-4 border-black shadow-brutal">
         <CardHeader className="bg-black text-white">
-          <CardTitle className="font-brutalist text-xl uppercase tracking-wider">
+          <CardTitle className="font-display text-xl uppercase tracking-wider">
             PROPOSAL BUILDER
           </CardTitle>
         </CardHeader>
@@ -503,7 +503,7 @@ hello@thehive-hospitality.com`;
       {/* Totals Panel */}
       <Card className="border-4 border-black shadow-brutal">
         <CardHeader className="bg-black text-white">
-          <CardTitle className="font-brutalist text-xl uppercase tracking-wider">
+          <CardTitle className="font-display text-xl uppercase tracking-wider">
             PROPOSAL TOTALS
           </CardTitle>
         </CardHeader>
@@ -549,13 +549,13 @@ hello@thehive-hospitality.com`;
             <Button 
               onClick={() => saveProposal.mutate(lineItems)}
               disabled={saveProposal.isPending}
-              className="font-industrial uppercase tracking-wider"
+              className="font-cb-sans uppercase tracking-wider"
             >
               {saveProposal.isPending ? 'SAVING...' : 'SAVE PROPOSAL'}
             </Button>
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="outline" className="font-industrial uppercase tracking-wider">
+                <Button variant="outline" className="font-cb-sans uppercase tracking-wider">
                   <Eye className="h-4 w-4 mr-2" />
                   PREVIEW
                 </Button>
@@ -572,12 +572,12 @@ hello@thehive-hospitality.com`;
                       <div className="flex items-center gap-4">
                         <CroftLogo size="lg" className="h-12 w-12" />
                         <div>
-                          <h1 className="text-3xl font-brutalist uppercase tracking-wider">CROFT COMMON</h1>
-                          <p className="text-lg font-industrial uppercase tracking-wide text-muted-foreground">Private Events & Corporate Hire</p>
+                          <h1 className="text-3xl font-display uppercase tracking-wider">CROFT COMMON</h1>
+                          <p className="text-lg font-cb-sans uppercase tracking-wide text-muted-foreground">Private Events & Corporate Hire</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <h2 className="text-2xl font-brutalist uppercase tracking-wider">PROPOSAL</h2>
+                        <h2 className="text-2xl font-display uppercase tracking-wider">PROPOSAL</h2>
                         <div className="text-sm text-muted-foreground space-y-1 mt-2">
                           <p><strong>Proposal Ref:</strong> {eventDetails?.code || '2025002'}</p>
                           <p><strong>Date:</strong> {new Date().toLocaleDateString('en-GB')}</p>
@@ -590,7 +590,7 @@ hello@thehive-hospitality.com`;
                   {/* Client and Event Details */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                     <div>
-                      <h3 className="text-lg font-brutalist uppercase tracking-wider border-b-2 border-black pb-2 mb-4">
+                      <h3 className="text-lg font-display uppercase tracking-wider border-b-2 border-black pb-2 mb-4">
                         CLIENT DETAILS
                       </h3>
                       <div className="space-y-2 text-sm">
@@ -601,7 +601,7 @@ hello@thehive-hospitality.com`;
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-lg font-brutalist uppercase tracking-wider border-b-2 border-black pb-2 mb-4">
+                      <h3 className="text-lg font-display uppercase tracking-wider border-b-2 border-black pb-2 mb-4">
                         EVENT DETAILS
                       </h3>
                       <div className="space-y-2 text-sm">
@@ -618,7 +618,7 @@ hello@thehive-hospitality.com`;
 
                   {/* Venue Information */}
                   <div className="mb-8">
-                    <h3 className="text-lg font-brutalist uppercase tracking-wider border-b-2 border-black pb-2 mb-4">
+                    <h3 className="text-lg font-display uppercase tracking-wider border-b-2 border-black pb-2 mb-4">
                       VENUE DETAILS
                     </h3>
                     <div className="bg-gray-50 p-4 border-2 border-gray-300">
@@ -630,7 +630,7 @@ hello@thehive-hospitality.com`;
 
                   {/* Line Items */}
                   <div className="mb-8">
-                    <h3 className="text-lg font-brutalist uppercase tracking-wider border-b-2 border-black pb-2 mb-4">
+                    <h3 className="text-lg font-display uppercase tracking-wider border-b-2 border-black pb-2 mb-4">
                       PROPOSAL BREAKDOWN
                     </h3>
                     <div className="space-y-3">
@@ -702,7 +702,7 @@ hello@thehive-hospitality.com`;
             </Dialog>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" disabled={generatingPDF || sharingEmail || sharingWhatsApp || !eventDetails?.code} className="font-industrial uppercase tracking-wider">
+                <Button variant="outline" disabled={generatingPDF || sharingEmail || sharingWhatsApp || !eventDetails?.code} className="font-cb-sans uppercase tracking-wider">
                   {(generatingPDF || sharingEmail || sharingWhatsApp) ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   ) : (

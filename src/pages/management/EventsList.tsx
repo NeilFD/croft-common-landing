@@ -81,7 +81,7 @@ const EventsList = () => {
       <div className="space-y-4 md:space-y-6 p-3 md:p-6 overflow-x-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3 md:gap-4">
-            <Button variant="ghost" size="sm" className="font-industrial" onClick={() => navigate('/management/spaces')}
+            <Button variant="ghost" size="sm" className="font-cb-sans" onClick={() => navigate('/management/spaces')}
             >
               <div className="flex items-center space-x-2">
                 <ArrowLeft className="h-4 w-4" />
@@ -89,8 +89,8 @@ const EventsList = () => {
               </div>
             </Button>
             <div>
-              <h1 className="font-brutalist text-2xl md:text-4xl font-black uppercase tracking-wider">EVENTS</h1>
-              <p className="font-industrial text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
+              <h1 className="font-display text-2xl md:text-4xl font-black uppercase tracking-wider">EVENTS</h1>
+              <p className="font-cb-sans text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
                 Manage multi-space events and bookings
               </p>
             </div>
@@ -98,7 +98,7 @@ const EventsList = () => {
           
           <Button 
             onClick={() => setShowCreateDialog(true)}
-            className="btn-primary font-brutalist uppercase tracking-wide h-10 md:h-11"
+            className="btn-primary font-display uppercase tracking-wide h-10 md:h-11"
           >
             <Plus className="h-4 w-4 mr-2" />
             CREATE EVENT
@@ -117,7 +117,7 @@ const EventsList = () => {
                       placeholder="Search events..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 font-industrial w-full"
+                      className="pl-10 font-cb-sans w-full"
                       onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                     />
                   </div>
@@ -125,7 +125,7 @@ const EventsList = () => {
                 
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-full sm:w-40 font-industrial">
+                    <SelectTrigger className="w-full sm:w-40 font-cb-sans">
                       <Filter className="h-4 w-4 mr-2" />
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
@@ -141,7 +141,7 @@ const EventsList = () => {
                   <div className="flex flex-col sm:flex-row gap-2 w-full">
                     <Button 
                       onClick={handleSearch}
-                      className="btn-primary font-brutalist uppercase tracking-wide w-full sm:w-auto"
+                      className="btn-primary font-display uppercase tracking-wide w-full sm:w-auto"
                     >
                       SEARCH
                     </Button>
@@ -150,7 +150,7 @@ const EventsList = () => {
                       <Button 
                         variant="outline" 
                         onClick={handleClearSearch}
-                        className="font-brutalist uppercase tracking-wide border-industrial w-full sm:w-auto"
+                        className="font-display uppercase tracking-wide border-industrial w-full sm:w-auto"
                       >
                         CLEAR
                       </Button>
@@ -162,10 +162,10 @@ const EventsList = () => {
               {!showResults && (
                 <div className="text-center py-8">
                   <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="font-brutalist text-lg font-black uppercase tracking-wide mb-2">
+                  <h3 className="font-display text-lg font-black uppercase tracking-wide mb-2">
                     SEARCH FOR EVENTS
                   </h3>
-                  <p className="font-industrial text-muted-foreground">
+                  <p className="font-cb-sans text-muted-foreground">
                     Use the search and filter options above to find events
                   </p>
                 </div>
@@ -190,19 +190,19 @@ const EventsList = () => {
                         <div className="space-y-2">
                           <div className="flex items-center gap-3">
                             <div className="space-y-1">
-                              <CardTitle className="font-brutalist text-lg md:text-xl font-black uppercase tracking-wide">
+                              <CardTitle className="font-display text-lg md:text-xl font-black uppercase tracking-wide">
                                 {event.event_type || 'Event'}
                               </CardTitle>
                               {event.client_name && (
-                                <p className="font-industrial text-base md:text-lg text-[hsl(var(--foreground))] font-medium">
+                                <p className="font-cb-sans text-base md:text-lg text-[hsl(var(--foreground))] font-medium">
                                   {event.client_name}
                                 </p>
                               )}
-                              <p className="font-industrial text-sm text-muted-foreground">
+                              <p className="font-cb-sans text-sm text-muted-foreground">
                                 {event.code}
                               </p>
                             </div>
-                            <Badge className={`font-industrial text-xs uppercase ${getStatusColor(event.status)} ml-4`}>
+                            <Badge className={`font-cb-sans text-xs uppercase ${getStatusColor(event.status)} ml-4`}>
                               {event.status}
                             </Badge>
                           </div>
@@ -212,20 +212,20 @@ const EventsList = () => {
                           {event.primary_date && (
                             <div className="flex items-center gap-1 text-sm text-muted-foreground">
                               <Calendar className="h-4 w-4" />
-                              <span className="font-industrial">{format(new Date(event.primary_date), 'dd MMM yyyy')}</span>
+                              <span className="font-cb-sans">{format(new Date(event.primary_date), 'dd MMM yyyy')}</span>
                             </div>
                           )}
                           
                           {event.headcount && (
                             <div className="flex items-center gap-1 text-sm text-muted-foreground">
                               <Users className="h-4 w-4" />
-                              <span className="font-industrial">{event.headcount}</span>
+                              <span className="font-cb-sans">{event.headcount}</span>
                             </div>
                           )}
                           
                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
                             <Building className="h-4 w-4" />
-                            <span className="font-industrial">{event.bookings?.length || 0} spaces</span>
+                            <span className="font-cb-sans">{event.bookings?.length || 0} spaces</span>
                           </div>
                         </div>
                       </div>
@@ -234,7 +234,7 @@ const EventsList = () => {
                     <CardContent className="p-4 md:p-6 pt-0">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         {event.notes && (
-                          <p className="font-industrial text-sm text-muted-foreground line-clamp-2 flex-1 min-w-0 mr-0 sm:mr-4">
+                          <p className="font-cb-sans text-sm text-muted-foreground line-clamp-2 flex-1 min-w-0 mr-0 sm:mr-4">
                             {event.notes}
                           </p>
                         )}
@@ -242,14 +242,14 @@ const EventsList = () => {
                         {(event.client_email || event.client_phone) && (
                           <div className="flex flex-wrap gap-x-2 gap-y-1 text-xs text-muted-foreground mr-0 sm:mr-4 break-words">
                             {event.client_email && (
-                              <a href={`mailto:${event.client_email}`} className="text-primary hover:underline font-industrial">
+                              <a href={`mailto:${event.client_email}`} className="text-primary hover:underline font-cb-sans">
                                 {event.client_email}
                               </a>
                             )}
                             {event.client_phone && (
                               <>
                                 {event.client_email && <span>•</span>}
-                                <a href={`tel:${event.client_phone}`} className="text-primary hover:underline font-industrial">
+                                <a href={`tel:${event.client_phone}`} className="text-primary hover:underline font-cb-sans">
                                   {event.client_phone}
                                 </a>
                               </>
@@ -257,7 +257,7 @@ const EventsList = () => {
                           </div>
                         )}
                         
-                        <Button asChild variant="outline" className="font-brutalist uppercase tracking-wide border-industrial w-full sm:w-auto sm:shrink-0">
+                        <Button asChild variant="outline" className="font-display uppercase tracking-wide border-industrial w-full sm:w-auto sm:shrink-0">
                           <Link to={`/management/events/${event.id}`}>
                             VIEW EVENT
                           </Link>
@@ -271,15 +271,15 @@ const EventsList = () => {
               <Card className="border-industrial">
                 <CardContent className="p-8 md:p-12 text-center">
                   <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="font-brutalist text-lg font-black uppercase tracking-wide mb-2">
+                  <h3 className="font-display text-lg font-black uppercase tracking-wide mb-2">
                     NO EVENTS FOUND
                   </h3>
-                  <p className="font-industrial text-muted-foreground mb-4">
+                  <p className="font-cb-sans text-muted-foreground mb-4">
                     Try adjusting your search criteria or create a new event
                   </p>
                   <Button 
                     onClick={() => setShowCreateDialog(true)}
-                    className="btn-primary font-brutalist uppercase tracking-wide"
+                    className="btn-primary font-display uppercase tracking-wide"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     CREATE EVENT

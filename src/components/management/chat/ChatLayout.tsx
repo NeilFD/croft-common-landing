@@ -198,7 +198,7 @@ export const ChatLayout = () => {
           <ActiveChat chatId={selectedChatId} />
         ) : (
           <div className="h-full flex items-center justify-center border border-border rounded-lg bg-muted/20">
-            <p className="text-muted-foreground font-industrial">Select a chat to start messaging</p>
+            <p className="text-muted-foreground font-cb-sans">Select a chat to start messaging</p>
           </div>
         )}
       </div>

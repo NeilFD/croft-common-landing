@@ -41,12 +41,12 @@ const EventInvoices = () => {
     <ManagementLayout>
       <div className="space-y-4 md:space-y-6 p-3 md:p-6">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground font-industrial">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground font-cb-sans">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate('/management/events')}
-            className="font-industrial p-0 h-auto text-muted-foreground hover:text-primary"
+            className="font-cb-sans p-0 h-auto text-muted-foreground hover:text-primary"
           >
             Events
           </Button>
@@ -55,7 +55,7 @@ const EventInvoices = () => {
             variant="ghost"
             size="sm"
             onClick={() => navigate(`/management/events/${id}`)}
-            className="font-industrial p-0 h-auto text-muted-foreground hover:text-primary"
+            className="font-cb-sans p-0 h-auto text-muted-foreground hover:text-primary"
           >
             {event.code}
           </Button>
@@ -69,17 +69,17 @@ const EventInvoices = () => {
               variant="outline"
               size="sm"
               onClick={() => navigate(`/management/events/${id}`)}
-              className="font-brutalist uppercase tracking-wide border-industrial"
+              className="font-display uppercase tracking-wide border-industrial"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               BACK TO EVENT
             </Button>
             
             <div>
-              <h1 className="font-brutalist text-2xl md:text-4xl font-black uppercase tracking-wider">
+              <h1 className="font-display text-2xl md:text-4xl font-black uppercase tracking-wider">
                 INVOICES
               </h1>
-              <p className="font-industrial text-lg text-muted-foreground">
+              <p className="font-cb-sans text-lg text-muted-foreground">
                 {event.event_type} - {event.code}
               </p>
             </div>

@@ -55,7 +55,7 @@ export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center space-x-2 md:space-x-3">
                   <CroftLogo size="sm" className="shrink-0 h-8 w-8 md:h-10 md:w-10" />
-                  <h1 className="font-brutalist text-sm md:text-xl font-black uppercase tracking-wider text-foreground">
+                  <h1 className="font-display text-sm md:text-xl font-black uppercase tracking-wider text-foreground">
                     {BRAND_NAME.toUpperCase()}
                   </h1>
                 </div>

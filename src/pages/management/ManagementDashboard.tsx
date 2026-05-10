@@ -64,8 +64,8 @@ const ManagementDashboard = () => {
     <ManagementLayout>
       <div className="space-y-4 md:space-y-6 p-3 md:p-6">
         <div>
-          <h1 className="text-brutalist text-2xl md:text-4xl font-black uppercase tracking-wider">MANAGEMENT</h1>
-          <p className="font-industrial text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
+          <h1 className="font-display uppercase tracking-tight text-2xl md:text-4xl font-black uppercase tracking-wider">MANAGEMENT</h1>
+          <p className="font-cb-sans text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
             {managementUser?.user.email}
           </p>
         </div>
@@ -76,12 +76,12 @@ const ManagementDashboard = () => {
               <CardHeader className="pb-3 p-4 md:p-6">
                 <div className="flex items-center space-x-2">
                   <action.icon className={`h-5 w-5 md:h-6 md:w-6 ${action.color}`} />
-                  <CardTitle className="font-brutalist text-lg md:text-xl font-black uppercase tracking-wide">{action.title}</CardTitle>
+                  <CardTitle className="font-display text-lg md:text-xl font-black uppercase tracking-wide">{action.title}</CardTitle>
                 </div>
-                <CardDescription className="font-industrial text-sm md:text-base">{action.description}</CardDescription>
+                <CardDescription className="font-cb-sans text-sm md:text-base">{action.description}</CardDescription>
               </CardHeader>
               <CardContent className="p-4 md:p-6 pt-0">
-                <Button asChild className="w-full btn-primary font-brutalist uppercase tracking-wide h-10 md:h-11 hover:bg-[hsl(var(--accent-pink))] hover:text-black transition-colors">
+                <Button asChild className="w-full btn-primary font-display uppercase tracking-wide h-10 md:h-11 hover:bg-[hsl(var(--accent-pink))] hover:text-black transition-colors">
                   <Link to={action.href} className="flex items-center justify-center space-x-2">
                     <action.icon className="h-4 w-4" />
                     <span>OPEN</span>
@@ -94,13 +94,13 @@ const ManagementDashboard = () => {
 
         <Card className="border-industrial transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:bg-card/80 backdrop-blur-sm">
           <CardHeader className="p-4 md:p-6">
-            <CardTitle className="flex items-center space-x-2 font-brutalist uppercase tracking-wide text-base md:text-lg">
+            <CardTitle className="flex items-center space-x-2 font-display uppercase tracking-wide text-base md:text-lg">
               <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-[hsl(var(--accent-pink))]" />
               <span>ACCESS</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 md:p-6 pt-0">
-            <div className="font-industrial text-sm text-muted-foreground space-y-2">
+            <div className="font-cb-sans text-sm text-muted-foreground space-y-2">
               <div className="flex justify-between items-center">
                 <span>Role:</span>
                 <span className="capitalize font-medium text-foreground">{managementUser?.role}</span>
@@ -123,12 +123,12 @@ const ManagementDashboard = () => {
               <CollapsibleTrigger className="w-full">
                 <CardHeader className="p-4 md:p-6 cursor-pointer hover:bg-muted/50 transition-colors">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center space-x-2 font-brutalist uppercase tracking-wide text-base md:text-lg">
+                    <CardTitle className="flex items-center space-x-2 font-display uppercase tracking-wide text-base md:text-lg">
                       <span>🔧 Push Diagnostics</span>
                     </CardTitle>
                     <ChevronDown className={`h-5 w-5 transition-transform ${diagnosticsOpen ? 'rotate-180' : ''}`} />
                   </div>
-                  <CardDescription className="font-industrial text-left">
+                  <CardDescription className="font-cb-sans text-left">
                     Debug and test push notifications manually
                   </CardDescription>
                 </CardHeader>

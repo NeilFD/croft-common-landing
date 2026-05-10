@@ -182,8 +182,8 @@ export const ManagementSidebar = () => {
       >
         <SidebarHeader className="pt-16 pb-4 px-4 md:p-4 bg-background">
           {showText && (
-            <div className="font-industrial text-sm md:text-sm text-muted-foreground">
-              <div className="font-brutalist font-black uppercase tracking-wide text-foreground text-base md:text-base">MANAGEMENT</div>
+            <div className="font-cb-sans text-sm md:text-sm text-muted-foreground">
+              <div className="font-display font-black uppercase tracking-wide text-foreground text-base md:text-base">MANAGEMENT</div>
               <div className="capitalize text-[hsl(var(--accent-pink))] text-sm md:text-sm">{managementUser?.role}</div>
             </div>
           )}
@@ -208,7 +208,7 @@ export const ManagementSidebar = () => {
                         </SidebarMenuButton>
                       </TooltipTrigger>
                       <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                        <p className="font-industrial">Management</p>
+                        <p className="font-cb-sans">Management</p>
                       </TooltipContent>
                     </Tooltip>
                   </SidebarMenuItem>
@@ -225,7 +225,7 @@ export const ManagementSidebar = () => {
                         </SidebarMenuButton>
                       </TooltipTrigger>
                       <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                        <p className="font-industrial">Spaces</p>
+                        <p className="font-cb-sans">Spaces</p>
                       </TooltipContent>
                     </Tooltip>
                   </SidebarMenuItem>
@@ -242,7 +242,7 @@ export const ManagementSidebar = () => {
                         </SidebarMenuButton>
                       </TooltipTrigger>
                       <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                        <p className="font-industrial">CMS</p>
+                        <p className="font-cb-sans">CMS</p>
                       </TooltipContent>
                     </Tooltip>
                   </SidebarMenuItem>
@@ -259,7 +259,7 @@ export const ManagementSidebar = () => {
                         </SidebarMenuButton>
                       </TooltipTrigger>
                       <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                        <p className="font-industrial">Admin</p>
+                        <p className="font-cb-sans">Admin</p>
                       </TooltipContent>
                     </Tooltip>
                   </SidebarMenuItem>
@@ -277,7 +277,7 @@ export const ManagementSidebar = () => {
                           </SidebarMenuButton>
                         </TooltipTrigger>
                         <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                          <p className="font-industrial">Feedback</p>
+                          <p className="font-cb-sans">Feedback</p>
                         </TooltipContent>
                       </Tooltip>
                     </SidebarMenuItem>
@@ -295,7 +295,7 @@ export const ManagementSidebar = () => {
               >
                 <CollapsibleTrigger asChild>
                   <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2 text-base">
-                    <span className="flex items-center font-brutalist uppercase tracking-wide">
+                    <span className="flex items-center font-display uppercase tracking-wide">
                       <Settings className="mr-2 h-5 w-5" />
                       MGMT
                     </span>
@@ -313,7 +313,7 @@ export const ManagementSidebar = () => {
                                 asChild
                                 className={getNavClass(isActive(module.path, module.exactMatch))}
                               >
-                                <NavLink to={module.path} className="font-industrial flex items-center justify-between w-full">
+                                <NavLink to={module.path} className="font-cb-sans flex items-center justify-between w-full">
                                   <span className="flex items-center">
                                     <module.icon className="mr-2 h-4 w-4" />
                                     {module.name}
@@ -327,7 +327,7 @@ export const ManagementSidebar = () => {
                               </SidebarMenuButton>
                             </TooltipTrigger>
                            <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                              <p className="font-industrial">{module.name}</p>
+                              <p className="font-cb-sans">{module.name}</p>
                             </TooltipContent>
                           </Tooltip>
                         </SidebarMenuItem>
@@ -349,7 +349,7 @@ export const ManagementSidebar = () => {
               >
                 <CollapsibleTrigger asChild>
                   <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2 text-base">
-                    <span className="flex items-center font-brutalist uppercase tracking-wide">
+                    <span className="flex items-center font-display uppercase tracking-wide">
                       <Building2 className="mr-2 h-5 w-5 text-[hsl(var(--accent-pink))]" />
                       SPACES
                     </span>
@@ -367,14 +367,14 @@ export const ManagementSidebar = () => {
                               asChild
                               className={getNavClass(isActive('/management/spaces', true))}
                             >
-                              <NavLink to="/management/spaces" className="font-industrial">
+                              <NavLink to="/management/spaces" className="font-cb-sans">
                                 <BarChart3 className="mr-2 h-4 w-4" />
                                 Dashboard
                               </NavLink>
                             </SidebarMenuButton>
                           </TooltipTrigger>
                        <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                         <p className="font-industrial">Spaces Dashboard</p>
+                         <p className="font-cb-sans">Spaces Dashboard</p>
                        </TooltipContent>
                          </Tooltip>
                        </SidebarMenuItem>
@@ -388,14 +388,14 @@ export const ManagementSidebar = () => {
                                  asChild
                                  className={getNavClass(isActive(module.path, module.exactMatch))}
                                >
-                                 <NavLink to={module.path} className="font-industrial">
+                                 <NavLink to={module.path} className="font-cb-sans">
                                    <module.icon className="mr-2 h-4 w-4" />
                                    {module.name}
                                  </NavLink>
                                </SidebarMenuButton>
                              </TooltipTrigger>
                              <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                              <p className="font-industrial">{module.name}</p>
+                              <p className="font-cb-sans">{module.name}</p>
                             </TooltipContent>
                           </Tooltip>
                         </SidebarMenuItem>
@@ -416,7 +416,7 @@ export const ManagementSidebar = () => {
               >
                 <CollapsibleTrigger asChild>
                   <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2 text-base">
-                    <span className="flex items-center font-brutalist uppercase tracking-wide">
+                    <span className="flex items-center font-display uppercase tracking-wide">
                       <Layout className="mr-2 h-5 w-5 text-[hsl(var(--accent-pink))]" />
                       CMS
                     </span>
@@ -433,14 +433,14 @@ export const ManagementSidebar = () => {
                               asChild
                               className={getNavClass(isActive('/management/cms', false))}
                             >
-                              <NavLink to="/management/cms" className="font-industrial">
+                              <NavLink to="/management/cms" className="font-cb-sans">
                                 <Layout className="mr-2 h-4 w-4" />
                                 Dashboard
                               </NavLink>
                             </SidebarMenuButton>
                           </TooltipTrigger>
                           <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                            <p className="font-industrial">CMS Dashboard</p>
+                            <p className="font-cb-sans">CMS Dashboard</p>
                           </TooltipContent>
                         </Tooltip>
                       </SidebarMenuItem>
@@ -460,7 +460,7 @@ export const ManagementSidebar = () => {
               >
                 <CollapsibleTrigger asChild>
                   <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2 text-base">
-                    <span className="flex items-center font-brutalist uppercase tracking-wide">
+                    <span className="flex items-center font-display uppercase tracking-wide">
                       <Shield className="mr-2 h-5 w-5 text-[hsl(var(--accent-pink))]" />
                       ADMIN
                     </span>
@@ -478,14 +478,14 @@ export const ManagementSidebar = () => {
                               asChild
                               className={getNavClass(isActive('/management/admin', true))}
                             >
-                              <NavLink to="/management/admin" end className="font-industrial">
+                              <NavLink to="/management/admin" end className="font-cb-sans">
                                 <Home className="mr-2 h-4 w-4" />
                                 Overview
                               </NavLink>
                             </SidebarMenuButton>
                           </TooltipTrigger>
                           <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                            <p className="font-industrial">Admin Overview</p>
+                            <p className="font-cb-sans">Admin Overview</p>
                           </TooltipContent>
                         </Tooltip>
                       </SidebarMenuItem>
@@ -496,7 +496,7 @@ export const ManagementSidebar = () => {
                           open={expandedSections.adminNotifications}
                           onOpenChange={(open) => setExpandedSections(prev => ({ ...prev, adminNotifications: open }))}
                         >
-                          <CollapsibleTrigger className="flex items-center justify-between w-full px-2 py-1.5 text-sm hover:bg-accent/50 rounded-md font-industrial">
+                          <CollapsibleTrigger className="flex items-center justify-between w-full px-2 py-1.5 text-sm hover:bg-accent/50 rounded-md font-cb-sans">
                             <div className="flex items-center gap-2">
                               <Bell className="h-4 w-4" />
                               <span>Notifications</span>
@@ -512,14 +512,14 @@ export const ManagementSidebar = () => {
                                       asChild
                                       className={getNavClass(isActive('/management/admin/notifications/compose', false))}
                                     >
-                                      <NavLink to="/management/admin/notifications/compose" className="font-industrial">
+                                      <NavLink to="/management/admin/notifications/compose" className="font-cb-sans">
                                         <Send className="mr-2 h-4 w-4" />
                                         Compose
                                       </NavLink>
                                     </SidebarMenuButton>
                                   </TooltipTrigger>
                                   <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                                    <p className="font-industrial">Compose Notification</p>
+                                    <p className="font-cb-sans">Compose Notification</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </SidebarMenuItem>
@@ -530,14 +530,14 @@ export const ManagementSidebar = () => {
                                       asChild
                                       className={getNavClass(isActive('/management/admin/notifications/history', false))}
                                     >
-                                      <NavLink to="/management/admin/notifications/history" className="font-industrial">
+                                      <NavLink to="/management/admin/notifications/history" className="font-cb-sans">
                                         <History className="mr-2 h-4 w-4" />
                                         History
                                       </NavLink>
                                     </SidebarMenuButton>
                                   </TooltipTrigger>
                                   <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                                    <p className="font-industrial">Notification History</p>
+                                    <p className="font-cb-sans">Notification History</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </SidebarMenuItem>
@@ -552,7 +552,7 @@ export const ManagementSidebar = () => {
                           open={expandedSections.adminAnalytics}
                           onOpenChange={(open) => setExpandedSections(prev => ({ ...prev, adminAnalytics: open }))}
                         >
-                          <CollapsibleTrigger className="flex items-center justify-between w-full px-2 py-1.5 text-sm hover:bg-accent/50 rounded-md font-industrial">
+                          <CollapsibleTrigger className="flex items-center justify-between w-full px-2 py-1.5 text-sm hover:bg-accent/50 rounded-md font-cb-sans">
                             <div className="flex items-center gap-2">
                               <BarChart3 className="h-4 w-4" />
                               <span>Analytics</span>
@@ -568,14 +568,14 @@ export const ManagementSidebar = () => {
                                       asChild
                                       className={getNavClass(isActive('/management/admin/analytics/opt-in', false))}
                                     >
-                                      <NavLink to="/management/admin/analytics/opt-in" className="font-industrial">
+                                      <NavLink to="/management/admin/analytics/opt-in" className="font-cb-sans">
                                         <TrendingUp className="mr-2 h-4 w-4" />
                                         Opt-in Analytics
                                       </NavLink>
                                     </SidebarMenuButton>
                                   </TooltipTrigger>
                                   <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                                    <p className="font-industrial">Opt-in Analytics</p>
+                                    <p className="font-cb-sans">Opt-in Analytics</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </SidebarMenuItem>
@@ -586,14 +586,14 @@ export const ManagementSidebar = () => {
                                       asChild
                                       className={getNavClass(isActive('/management/admin/analytics/users', false))}
                                     >
-                                      <NavLink to="/management/admin/analytics/users" className="font-industrial">
+                                      <NavLink to="/management/admin/analytics/users" className="font-cb-sans">
                                         <Users className="mr-2 h-4 w-4" />
                                         User Analytics
                                       </NavLink>
                                     </SidebarMenuButton>
                                   </TooltipTrigger>
                                   <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                                    <p className="font-industrial">User Analytics</p>
+                                    <p className="font-cb-sans">User Analytics</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </SidebarMenuItem>
@@ -604,14 +604,14 @@ export const ManagementSidebar = () => {
                                       asChild
                                       className={getNavClass(isActive('/management/admin/analytics/granular', false))}
                                     >
-                                      <NavLink to="/management/admin/analytics/granular" className="font-industrial">
+                                      <NavLink to="/management/admin/analytics/granular" className="font-cb-sans">
                                         <BarChart3 className="mr-2 h-4 w-4" />
                                         Granular Analytics
                                       </NavLink>
                                     </SidebarMenuButton>
                                   </TooltipTrigger>
                                   <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                                    <p className="font-industrial">Granular Analytics</p>
+                                    <p className="font-cb-sans">Granular Analytics</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </SidebarMenuItem>
@@ -622,14 +622,14 @@ export const ManagementSidebar = () => {
                                       asChild
                                       className={getNavClass(isActive('/management/admin/analytics/member-analytics', false))}
                                     >
-                                      <NavLink to="/management/admin/analytics/member-analytics" className="font-industrial">
+                                      <NavLink to="/management/admin/analytics/member-analytics" className="font-cb-sans">
                                         <Users className="mr-2 h-4 w-4" />
                                         Member Analytics
                                       </NavLink>
                                     </SidebarMenuButton>
                                   </TooltipTrigger>
                                   <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                                    <p className="font-industrial">Member Analytics</p>
+                                    <p className="font-cb-sans">Member Analytics</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </SidebarMenuItem>
@@ -640,14 +640,14 @@ export const ManagementSidebar = () => {
                                       asChild
                                       className={getNavClass(isActive('/management/admin/analytics/member-analytics-legacy', false))}
                                     >
-                                      <NavLink to="/management/admin/analytics/member-analytics-legacy" className="font-industrial">
+                                      <NavLink to="/management/admin/analytics/member-analytics-legacy" className="font-cb-sans">
                                         <Users className="mr-2 h-4 w-4" />
                                         Legacy Member Analytics
                                       </NavLink>
                                     </SidebarMenuButton>
                                   </TooltipTrigger>
                                   <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                                    <p className="font-industrial">Legacy Member Analytics</p>
+                                    <p className="font-cb-sans">Legacy Member Analytics</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </SidebarMenuItem>
@@ -662,7 +662,7 @@ export const ManagementSidebar = () => {
                           open={expandedSections.adminManagement}
                           onOpenChange={(open) => setExpandedSections(prev => ({ ...prev, adminManagement: open }))}
                         >
-                          <CollapsibleTrigger className="flex items-center justify-between w-full px-2 py-1.5 text-sm hover:bg-accent/50 rounded-md font-industrial">
+                          <CollapsibleTrigger className="flex items-center justify-between w-full px-2 py-1.5 text-sm hover:bg-accent/50 rounded-md font-cb-sans">
                             <div className="flex items-center gap-2">
                               <Settings className="h-4 w-4" />
                               <span>Management</span>
@@ -678,14 +678,14 @@ export const ManagementSidebar = () => {
                                       asChild
                                       className={getNavClass(isActive('/management/admin/management/subscribers', false))}
                                     >
-                                      <NavLink to="/management/admin/management/subscribers" className="font-industrial">
+                                      <NavLink to="/management/admin/management/subscribers" className="font-cb-sans">
                                         <UserCheck className="mr-2 h-4 w-4" />
                                         Subscribers
                                       </NavLink>
                                     </SidebarMenuButton>
                                   </TooltipTrigger>
                                   <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                                    <p className="font-industrial">Subscribers</p>
+                                    <p className="font-cb-sans">Subscribers</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </SidebarMenuItem>
@@ -696,14 +696,14 @@ export const ManagementSidebar = () => {
                                       asChild
                                       className={getNavClass(isActive('/management/admin/management/moments', false))}
                                     >
-                                      <NavLink to="/management/admin/management/moments" className="font-industrial">
+                                      <NavLink to="/management/admin/management/moments" className="font-cb-sans">
                                         <Camera className="mr-2 h-4 w-4" />
                                         Moments Moderation
                                       </NavLink>
                                     </SidebarMenuButton>
                                   </TooltipTrigger>
                                   <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                                    <p className="font-industrial">Moments Moderation</p>
+                                    <p className="font-cb-sans">Moments Moderation</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </SidebarMenuItem>
@@ -714,14 +714,14 @@ export const ManagementSidebar = () => {
                                       asChild
                                       className={getNavClass(isActive('/management/admin/management/cinema', false))}
                                     >
-                                      <NavLink to="/management/admin/management/cinema" className="font-industrial">
+                                      <NavLink to="/management/admin/management/cinema" className="font-cb-sans">
                                         <Film className="mr-2 h-4 w-4" />
                                         Cinema Management
                                       </NavLink>
                                     </SidebarMenuButton>
                                   </TooltipTrigger>
                                   <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                                    <p className="font-industrial">Cinema Management</p>
+                                    <p className="font-cb-sans">Cinema Management</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </SidebarMenuItem>
@@ -732,14 +732,14 @@ export const ManagementSidebar = () => {
                                       asChild
                                       className={getNavClass(isActive('/management/admin/analytics/member-analytics', false))}
                                     >
-                                      <NavLink to="/management/admin/analytics/member-analytics" className="font-industrial">
+                                      <NavLink to="/management/admin/analytics/member-analytics" className="font-cb-sans">
                                         <Database className="mr-2 h-4 w-4" />
                                         Member Database
                                       </NavLink>
                                     </SidebarMenuButton>
                                   </TooltipTrigger>
                                   <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                                    <p className="font-industrial">Member Database</p>
+                                    <p className="font-cb-sans">Member Database</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </SidebarMenuItem>
@@ -765,7 +765,7 @@ export const ManagementSidebar = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate('/management/settings')}
-                  className={`w-full flex items-center justify-start space-x-2 font-industrial h-10 md:h-9 text-sm md:text-sm mb-2 ${
+                  className={`w-full flex items-center justify-start space-x-2 font-cb-sans h-10 md:h-9 text-sm md:text-sm mb-2 ${
                     isActive('/management/settings') ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'
                   }`}
                 >
@@ -782,7 +782,7 @@ export const ManagementSidebar = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleNavigateToSite}
-                className="w-full flex items-center justify-center space-x-2 font-brutalist uppercase tracking-wide h-10 md:h-9 text-sm md:text-sm"
+                className="w-full flex items-center justify-center space-x-2 font-display uppercase tracking-wide h-10 md:h-9 text-sm md:text-sm"
               >
                 <LogOut className="h-4 w-4 md:h-4 md:w-4" />
                 {showText && <span>SITE</span>}
@@ -790,7 +790,7 @@ export const ManagementSidebar = () => {
             </TooltipTrigger>
             {!showText && (
               <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                <p className="font-industrial">Back to Main Site</p>
+                <p className="font-cb-sans">Back to Main Site</p>
               </TooltipContent>
             )}
           </Tooltip>
