@@ -231,16 +231,26 @@ export function SeoBulkAiReview({ open, onOpenChange, suggestions }: Props) {
           </div>
         </ScrollArea>
 
-        <DialogFooter className="border-t border-foreground/10 pt-3">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={save.isPending}>
+        <DialogFooter className="border-t border-foreground/10 pt-3 flex-col sm:flex-row sm:items-center sm:justify-end gap-2">
+          {retestProgress && (
+            <div className="text-xs text-muted-foreground sm:mr-auto font-cb-sans">
+              Re-testing {retestProgress.done + (retestProgress.route ? 1 : 0)} / {retestProgress.total}
+              {retestProgress.route ? ` · ${retestProgress.route}` : ''}
+            </div>
+          )}
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={save.isPending || retestProgress !== null}>
             Cancel
           </Button>
           <Button
             onClick={() => save.mutate()}
-            disabled={save.isPending || selectedCount === 0}
+            disabled={save.isPending || retestProgress !== null || selectedCount === 0}
             className="font-display uppercase tracking-wide"
           >
-            {save.isPending ? 'Saving…' : `Save ${selectedCount} page${selectedCount === 1 ? '' : 's'}`}
+            {save.isPending
+              ? 'Saving…'
+              : retestProgress
+                ? 'Re-testing…'
+                : `Save & re-test ${selectedCount} page${selectedCount === 1 ? '' : 's'}`}
           </Button>
         </DialogFooter>
       </DialogContent>
