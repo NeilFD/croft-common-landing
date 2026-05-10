@@ -130,6 +130,9 @@ const BookingDetail = lazy(() => import("./pages/management/BookingDetail"));
 const EventsList = lazy(() => import("./pages/management/EventsList"));
 const EventDetail = lazy(() => import("./pages/management/EventDetail"));
 const Chat = lazy(() => import("./pages/management/Chat"));
+const SeoDashboard = lazy(() => import("./pages/management/seo/SeoDashboard"));
+const SeoPageEditor = lazy(() => import("./pages/management/seo/SeoPageEditor"));
+const SeoSettings = lazy(() => import("./pages/management/seo/SeoSettings"));
 const BeoViewer = lazy(() => import("./pages/BeoViewer"));
 const ClientMagicLogin = lazy(() => import("./pages/ClientMagicLogin"));
 const ClientPortal = lazy(() => import("./pages/ClientPortal"));
@@ -415,6 +418,11 @@ const App = () => {
                         <Route path="/management/ai-assistant" element={<ManagementAIAssistant />} />
                         <Route path="/management/feedback" element={<FeedbackManagement />} />
                         <Route path="/management/settings" element={<Settings />} />
+
+                        {/* SEO Monitor */}
+                        <Route path="/management/seo" element={<SeoDashboard />} />
+                        <Route path="/management/seo/page" element={<SeoPageEditor />} />
+                        <Route path="/management/seo/settings" element={<SeoSettings />} />
                         
                         {/* CMS under Management */}
                         <Route path="/management/cms/kitchens" element={<CMSKitchens />} />
