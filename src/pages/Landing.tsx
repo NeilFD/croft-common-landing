@@ -90,14 +90,6 @@ const Landing = () => {
               </Link>
             </div>
           </div>
-
-          {/* Discreet management entry */}
-          <Link
-            to="/management/login"
-            className="absolute bottom-3 left-4 z-20 font-cb-mono text-[9px] tracking-[0.4em] uppercase text-white/40 hover:text-white transition-colors"
-          >
-            Management
-          </Link>
         </section>
 
         <section className="border-t border-white/15 bg-black px-6 py-20 md:py-28">

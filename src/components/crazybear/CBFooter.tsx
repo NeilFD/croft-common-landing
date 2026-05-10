@@ -92,6 +92,12 @@ const CBFooter = () => {
             <p className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-50">
               &copy; {new Date().getFullYear()} The Crazy Bear
             </p>
+            <Link
+              to="/management/login"
+              className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-40 hover:opacity-100 transition-opacity"
+            >
+              Management
+            </Link>
           </div>
           <div className="flex items-center gap-6">
             <Link
