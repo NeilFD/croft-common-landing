@@ -2,7 +2,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Save, Eye, RefreshCw, Edit as EditIcon, Globe } from 'lucide-react';
-import CroftLogo from '@/components/CroftLogo';
+import CrazyBearLogo from '@/components/CrazyBearLogo';
 import { useEditMode } from '@/contexts/EditModeContext';
 
 interface CMSVisualHeaderProps {
@@ -30,9 +30,9 @@ export const CMSVisualHeader = ({
     <header className="fixed top-0 left-0 right-0 z-[9999] flex items-center justify-between h-16 px-3 sm:px-6 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
         <SidebarTrigger className="p-2 hover:bg-accent rounded-md border border-border bg-background shadow-sm flex-shrink-0" />
-        <CroftLogo size="lg" className="hidden sm:block ml-2" priority />
+        <CrazyBearLogo className="hidden sm:block ml-2 h-8 w-8" />
         <div className="hidden lg:flex flex-col">
-          <h2 className="text-lg font-bold tracking-wide text-foreground">CROFT COMMON</h2>
+          <h2 className="font-display text-lg uppercase tracking-wide text-foreground">CRAZY BEAR</h2>
         </div>
         <div className="hidden lg:block border-l border-border h-8 mx-2" />
         <div className="min-w-0">

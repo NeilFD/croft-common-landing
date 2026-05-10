@@ -27,9 +27,11 @@ interface MenuRouteProps {
   description: string;
   cuisine: string[];
   faqKey?: string;
+  /** CMS namespace for editable hero text, e.g. "town/food/black-bear" */
+  cmsPage?: string;
 }
 
-const MenuRoute = ({ menu, property, path, title, description, cuisine, faqKey }: MenuRouteProps) => {
+const MenuRoute = ({ menu, property, path, title, description, cuisine, faqKey, cmsPage }: MenuRouteProps) => {
   const faqEntry = faqKey ? cbFaqs[faqKey] : undefined;
   const ld: Record<string, any>[] = [
     breadcrumbSchema(path),
@@ -39,7 +41,7 @@ const MenuRoute = ({ menu, property, path, title, description, cuisine, faqKey }
   return (
     <>
       <CBSeo title={`${title} | Crazy Bear`} description={description.slice(0, 158)} path={path} jsonLd={ld} />
-      <CBMenuPage menu={menu} />
+      <CBMenuPage menu={menu} cmsPage={cmsPage} />
       {faqEntry && <CBFAQ faqs={faqEntry.faqs} title={faqEntry.title} />}
     </>
   );
@@ -214,6 +216,7 @@ export const TownBlackBear = () =>
       description="Modern British plates, charcoal and fire. The Black Bear restaurant at Crazy Bear Town."
       cuisine={["British", "Modern European"]}
       faqKey="/town/food"
+      cmsPage="town/food/black-bear"
     />
   );
 export const TownBnB = () =>
