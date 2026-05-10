@@ -211,11 +211,11 @@ export default function SeoPageEditor() {
             >
               {aiBusy === 'all' ? 'Writing…' : '✨ Suggest with AI'}
             </Button>
-            <Button variant="outline" onClick={runAudit} disabled={retesting}>
-              {retesting ? 'Testing…' : 'Re-test'}
+            <Button variant="outline" onClick={manualRetest} disabled={retesting || save.isPending}>
+              {retesting && !save.isPending ? 'Testing…' : 'Re-test'}
             </Button>
-            <Button onClick={() => save.mutate()} disabled={save.isPending}>
-              {save.isPending ? 'Saving…' : 'Save'}
+            <Button onClick={() => save.mutate()} disabled={save.isPending || retesting}>
+              {save.isPending ? 'Saving…' : retesting ? 'Re-testing…' : 'Save'}
             </Button>
           </div>
         </div>
