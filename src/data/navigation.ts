@@ -32,6 +32,7 @@ export const countryNav: NavItem[] = [
       { label: "Business", path: "/country/events/business" },
     ],
   },
+  { label: "Culture", path: "/country/culture" },
   { label: "Members", path: "/members" },
 ];
 
