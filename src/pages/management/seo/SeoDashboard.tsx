@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -46,6 +46,8 @@ export default function SeoDashboard() {
   const qc = useQueryClient();
   const [auditing, setAuditing] = useState<string | null>(null);
   const [auditingAll, setAuditingAll] = useState(false);
+  const [runStartedAt, setRunStartedAt] = useState<string | null>(null);
+  const [progressDone, setProgressDone] = useState(0);
 
   const { data: pages = [], isLoading: pagesLoading } = useQuery({
     queryKey: ['seo-pages'],
@@ -117,6 +119,8 @@ export default function SeoDashboard() {
   const runAll = useMutation({
     mutationFn: async () => {
       setAuditingAll(true);
+      setProgressDone(0);
+      setRunStartedAt(new Date().toISOString());
       const { data, error } = await supabase.functions.invoke('seo-audit', {
         body: { all: true },
       });
@@ -136,8 +140,30 @@ export default function SeoDashboard() {
       });
     },
     onError: (e: any) => toast({ title: 'Audit failed', description: e.message, variant: 'destructive' }),
-    onSettled: () => setAuditingAll(false),
+    onSettled: () => {
+      setAuditingAll(false);
+      setRunStartedAt(null);
+      setProgressDone(0);
+    },
   });
+
+  // Live progress: poll how many audits have been written since the run started.
+  // The edge function inserts one row per route as it finishes, so this gives
+  // a real time count without any extra schema or websocket plumbing.
+  useEffect(() => {
+    if (!auditingAll || !runStartedAt) return;
+    let cancelled = false;
+    const tick = async () => {
+      const { count } = await supabase
+        .from('seo_audits')
+        .select('*', { count: 'exact', head: true })
+        .gte('run_at', runStartedAt);
+      if (!cancelled && typeof count === 'number') setProgressDone(count);
+    };
+    tick();
+    const id = window.setInterval(tick, 2000);
+    return () => { cancelled = true; window.clearInterval(id); };
+  }, [auditingAll, runStartedAt]);
 
   const sortedRows = useMemo(() => {
     return [...pages].sort((a, b) => {
@@ -161,17 +187,36 @@ export default function SeoDashboard() {
               How your pages look to Google. Edit anything, retest anytime.
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button asChild variant="outline">
-              <Link to="/management/seo/settings">Settings</Link>
-            </Button>
-            <Button
-              onClick={() => runAll.mutate()}
-              disabled={auditingAll}
-              className="font-display uppercase tracking-wide"
-            >
-              {auditingAll ? 'Testing all pages…' : 'Re-test entire site'}
-            </Button>
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex gap-2">
+              <Button asChild variant="outline">
+                <Link to="/management/seo/settings">Settings</Link>
+              </Button>
+              <Button
+                onClick={() => runAll.mutate()}
+                disabled={auditingAll}
+                className="font-display uppercase tracking-wide"
+              >
+                {auditingAll
+                  ? `Testing ${Math.min(progressDone, pages.length)} / ${pages.length}…`
+                  : 'Re-test entire site'}
+              </Button>
+            </div>
+            {auditingAll && pages.length > 0 && (
+              <div className="w-full md:w-72 space-y-1">
+                <div className="h-1.5 w-full bg-muted overflow-hidden rounded-sm">
+                  <div
+                    className="h-full bg-foreground transition-all duration-500"
+                    style={{
+                      width: `${Math.min(100, Math.round((progressDone / pages.length) * 100))}%`,
+                    }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground font-cb-sans text-right">
+                  ~10s per page · pauses between requests to stay under PageSpeed limits
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
