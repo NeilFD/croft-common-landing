@@ -65,6 +65,13 @@ export default function SeoDashboard() {
   const [progressDone, setProgressDone] = useState(0);
   const [progressRoute, setProgressRoute] = useState<string | null>(null);
 
+  // Bulk AI state
+  const [bulkAiBusy, setBulkAiBusy] = useState(false);
+  const [bulkAiDone, setBulkAiDone] = useState(0);
+  const [bulkAiRoute, setBulkAiRoute] = useState<string | null>(null);
+  const [bulkAiSuggestions, setBulkAiSuggestions] = useState<BulkAiSuggestion[]>([]);
+  const [reviewOpen, setReviewOpen] = useState(false);
+
   const { data: pages = [], isLoading: pagesLoading } = useQuery({
     queryKey: ['seo-pages'],
     queryFn: async () => {
