@@ -59,6 +59,8 @@ export default function SeoPageEditor() {
   const [keywords, setKeywords] = useState('');
   const [noindex, setNoindex] = useState(false);
   const [retesting, setRetesting] = useState(false);
+  const [aiBusy, setAiBusy] = useState<null | 'all' | 'title' | 'description' | 'keywords'>(null);
+  const [aiRationale, setAiRationale] = useState<string | null>(null);
 
   const { data: page } = useQuery({
     queryKey: ['seo-page', route],
