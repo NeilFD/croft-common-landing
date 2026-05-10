@@ -139,15 +139,15 @@ const COUNTRY: Copy = {
   eyebrow: "Stadhampton / Est. 1993",
   headline: "Country. Misbehaving since 1993.",
   tagline:
-    "A 16th century inn, a turf floor, a cow in the dining room and a treehouse with a roll-top bath. Thirty years of Sundays that wouldn't end.",
+    "A 16th century inn. A turf floor. A cow in the dining room. Treehouse suites with roll-top baths above the canopy. Thirty years of Sundays that wouldn't end.",
   introKicker: "The soul of Country",
-  introBody: `In 1993 Jason Hunt took on a wonky little pub in Stadhampton, gave it a name, a kitchen, and a real turf floor. People came for a pint and stayed for the spectacle. Sheep wandered in. Nobody stopped them.
+  introBody: `In 1993 Jason Hunt took on a wonky little pub in the Oxfordshire village of Stadhampton, gave it a name, a kitchen, and a real turf floor. People came for a pint and stayed for the spectacle. Sheep wandered in. Nobody stopped them.
 
-The dining room got a cow. The bedrooms got mirrored ceilings, velvet walls, and roll-top baths. The garden got treehouses with baths above the canopy. Breakfast brought up by hand, slowly. Lunch followed, slower.
+The dining room got a cow. Taxidermy, mirrors and chandeliers in places chandeliers don't belong. The bedrooms got mirrored ceilings, velvet walls and roll-top baths. The garden got treehouses, with copper baths above the canopy and breakfast brought up by hand. Slowly. Lunch followed, slower.
 
-The pub still pours. The kitchen still takes itself seriously. Nothing else does.`,
+Hom Thai opened upstairs. Gold leaf, lanterns, proper heat. Quietly one of the best Thai rooms in the country. The pub still pours. The kitchen still takes itself seriously. Nothing else does.`,
   collageHeading: "The look.",
-  collageKicker: "Red bus. Copper bath. Open fire.",
+  collageKicker: "Red bus. Copper bath. Treehouse. Open fire.",
   playlistHeading: "The soundtrack.",
   playlistKicker: "Britpop, folk, long Sundays",
   playlistFallback: "https://open.spotify.com/playlist/4KCZQ5fOj3UauK3pTWDZo7",
@@ -164,8 +164,8 @@ The pub still pours. The kitchen still takes itself seriously. Nothing else does
   hero: countryHero,
   collageSeed: [
     { heading: "Reception by Routemaster.", body: "Check in via the old red bus. Neon sign. Ivy round the door. The arrival sets the tone.", meta: {} },
-    { heading: "Bedrooms with copper.", body: "Roll-top copper baths. Gold tufted walls. Red velvet. Rooms that don't ask permission.", meta: {} },
-    { heading: "The long Thai lunch.", body: "Lobster, prawns, curry, carved fruit. Thai kitchen taking itself seriously. Sunday slips into evening.", meta: {} },
+    { heading: "Treehouses, copper baths.", body: "Roll-top copper baths above the canopy. Gold tufted walls. Red velvet. Breakfast brought up by hand.", meta: {} },
+    { heading: "The long Thai lunch.", body: "Hom Thai upstairs. Lobster, prawns, curry, carved fruit. Gold leaf and lanterns. Sunday slips into evening.", meta: {} },
     { heading: "Firepit, after dark.", body: "Logs stacked. Fire lit. Lanterns in the palms. Dinner outside until the embers go down.", meta: {} },
   ],
   timelineSeed: [
