@@ -44,13 +44,8 @@ const ManagementLogin = () => {
   const [sessionValid, setSessionValid] = useState(false);
   const [sessionCheckComplete, setSessionCheckComplete] = useState(false);
 
-  const isCrazyBearHost = typeof window !== 'undefined' && window.location.hostname.includes('crazybear.dev');
-
-  useEffect(() => {
-    if (!isCrazyBearHost) return;
-    const target = '/set-password' + window.location.search + window.location.hash;
-    window.location.replace(target);
-  }, [isCrazyBearHost]);
+  // Management login lives at /management/login on every host, including crazybear.dev.
+  // Never redirect here to /set-password — that page is for Bears Den members only.
 
 
   // Utility: remove auth artefacts (# fragments and sensitive query params)
