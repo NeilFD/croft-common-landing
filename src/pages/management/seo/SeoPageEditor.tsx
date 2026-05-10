@@ -139,6 +139,35 @@ export default function SeoPageEditor() {
     }
   };
 
+  const aiSuggest = async (which: 'all' | 'title' | 'description' | 'keywords') => {
+    setAiBusy(which);
+    setAiRationale(null);
+    try {
+      const fields = which === 'all' ? ['title', 'description', 'keywords'] : [which];
+      const { data, error } = await supabase.functions.invoke('seo-copywriter', {
+        body: {
+          route,
+          label: page?.label,
+          fields,
+          current: { title, description },
+        },
+      });
+      if (error) throw error;
+      const d = data as any;
+      if (d?.error) throw new Error(d.error);
+      if (d.title && fields.includes('title')) setTitle(d.title);
+      if (d.description && fields.includes('description')) setDescription(d.description);
+      if (d.keywords && fields.includes('keywords'))
+        setKeywords(Array.isArray(d.keywords) ? d.keywords.join(', ') : String(d.keywords));
+      if (d.rationale) setAiRationale(d.rationale);
+      toast({ title: 'AI suggested copy ready', description: 'Review and Save when happy.' });
+    } catch (e: any) {
+      toast({ title: 'AI suggest failed', description: e.message, variant: 'destructive' });
+    } finally {
+      setAiBusy(null);
+    }
+  };
+
   const titleHint = lengthHint(title, 30, 60);
   const descHint = lengthHint(description, 70, 160);
   const previewTitle = title || '(no title set)';
