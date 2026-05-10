@@ -206,7 +206,68 @@ export default function SeoDashboard() {
     onError: (e: any) => toast({ title: 'Clear failed', description: e.message, variant: 'destructive' }),
   });
 
-  const sortedRows = useMemo(() => {
+  const runBulkAi = async () => {
+    if (bulkAiBusy) return;
+    if (!window.confirm(`Generate AI suggestions for all ${pages.length} pages? You'll review every change before anything is saved.`)) return;
+
+    setBulkAiBusy(true);
+    setBulkAiDone(0);
+    setBulkAiRoute(null);
+    const out: BulkAiSuggestion[] = [];
+
+    try {
+      for (let i = 0; i < pages.length; i++) {
+        const p = pages[i];
+        setBulkAiRoute(p.route);
+        try {
+          const { data, error } = await supabase.functions.invoke('seo-copywriter', {
+            body: {
+              route: p.route,
+              label: p.label,
+              fields: ['title', 'description', 'keywords'],
+              current: { title: p.title ?? '', description: p.description ?? '' },
+            },
+          });
+          if (error) throw error;
+          const d = (data ?? {}) as any;
+          if (d.error) throw new Error(d.error);
+          out.push({
+            route: p.route,
+            label: p.label,
+            current: { title: p.title, description: p.description, keywords: p.keywords },
+            suggested: {
+              title: d.title,
+              description: d.description,
+              keywords: d.keywords,
+              rationale: d.rationale,
+            },
+          });
+        } catch (e: any) {
+          out.push({
+            route: p.route,
+            label: p.label,
+            current: { title: p.title, description: p.description, keywords: p.keywords },
+            suggested: {},
+            error: e.message,
+          });
+        }
+        setBulkAiDone(i + 1);
+        if (i < pages.length - 1) await auditPause(1500);
+      }
+      setBulkAiSuggestions(out);
+      setReviewOpen(true);
+      const failed = out.filter(s => s.error).length;
+      toast({
+        title: 'AI drafts ready',
+        description: `${out.length - failed} pages drafted${failed ? `, ${failed} failed` : ''}. Review and save.`,
+      });
+    } finally {
+      setBulkAiBusy(false);
+      setBulkAiDone(0);
+      setBulkAiRoute(null);
+    }
+  };
+
     return [...pages].sort((a, b) => {
       const auditA = auditMap.get(a.route);
       const auditB = auditMap.get(b.route);
