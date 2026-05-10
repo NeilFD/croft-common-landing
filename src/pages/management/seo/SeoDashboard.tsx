@@ -3,11 +3,16 @@ import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { SeoBulkAiReview, type BulkAiSuggestion } from './SeoBulkAiReview';
+
+type FilterKey = 'all' | 'attention' | 'warnings' | 'passing' | 'untested' | 'failed';
+type SortKey = 'score-asc' | 'score-desc' | 'issues-desc' | 'tested-desc' | 'tested-asc' | 'route-asc';
 
 interface PageRow {
   id: string;
@@ -97,6 +102,11 @@ export default function SeoDashboard() {
   const [bulkAiRoute, setBulkAiRoute] = useState<string | null>(null);
   const [bulkAiSuggestions, setBulkAiSuggestions] = useState<BulkAiSuggestion[]>([]);
   const [reviewOpen, setReviewOpen] = useState(false);
+
+  // Filter + sort controls for the All Pages table
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<FilterKey>('all');
+  const [sort, setSort] = useState<SortKey>('score-asc');
 
   const { data: pages = [], isLoading: pagesLoading } = useQuery({
     queryKey: ['seo-pages'],
@@ -294,14 +304,90 @@ export default function SeoDashboard() {
     }
   };
 
+  const issuesFor = (a?: AuditRow) =>
+    Array.isArray(a?.internal_checks)
+      ? a!.internal_checks.filter((c: any) => c.status !== 'pass').length
+      : 0;
+
+  const filteredRows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return pages.filter(p => {
+      if (q) {
+        const hay = `${p.label ?? ''} ${p.route}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      const a = auditMap.get(p.route);
+      const issues = issuesFor(a);
+      const score = a?.overall_score ?? null;
+      switch (filter) {
+        case 'attention':
+          return !!a && (a.error || (score !== null && score < 70));
+        case 'warnings':
+          return !!a && !a.error && score !== null && score >= 70 && issues > 0;
+        case 'passing':
+          return !!a && !a.error && score !== null && score >= 70 && issues === 0;
+        case 'untested':
+          return !a;
+        case 'failed':
+          return !!a?.error;
+        default:
+          return true;
+      }
+    });
+  }, [pages, auditMap, search, filter]);
+
   const sortedRows = useMemo(() => {
-    return [...pages].sort((a, b) => {
+    const rows = [...filteredRows];
+    const SCORE_UNTESTED = 200;
+    const SCORE_ERROR = -1;
+    rows.sort((a, b) => {
       const auditA = auditMap.get(a.route);
       const auditB = auditMap.get(b.route);
-      const sa = auditA?.error ? -1 : auditA?.overall_score ?? 200;
-      const sb = auditB?.error ? -1 : auditB?.overall_score ?? 200;
-      return sa - sb;
+      switch (sort) {
+        case 'score-desc': {
+          const sa = auditA?.error ? SCORE_ERROR : auditA?.overall_score ?? SCORE_UNTESTED;
+          const sb = auditB?.error ? SCORE_ERROR : auditB?.overall_score ?? SCORE_UNTESTED;
+          return sb - sa;
+        }
+        case 'issues-desc':
+          return issuesFor(auditB) - issuesFor(auditA);
+        case 'tested-desc': {
+          const ta = auditA?.run_at ? new Date(auditA.run_at).getTime() : 0;
+          const tb = auditB?.run_at ? new Date(auditB.run_at).getTime() : 0;
+          return tb - ta;
+        }
+        case 'tested-asc': {
+          // "Oldest first" — pages never tested float to the top
+          const ta = auditA?.run_at ? new Date(auditA.run_at).getTime() : -Infinity;
+          const tb = auditB?.run_at ? new Date(auditB.run_at).getTime() : -Infinity;
+          return ta - tb;
+        }
+        case 'route-asc':
+          return a.route.localeCompare(b.route);
+        case 'score-asc':
+        default: {
+          const sa = auditA?.error ? SCORE_ERROR : auditA?.overall_score ?? SCORE_UNTESTED;
+          const sb = auditB?.error ? SCORE_ERROR : auditB?.overall_score ?? SCORE_UNTESTED;
+          return sa - sb;
+        }
+      }
     });
+    return rows;
+  }, [filteredRows, auditMap, sort]);
+
+  const filterCounts = useMemo(() => {
+    const counts = { all: pages.length, attention: 0, warnings: 0, passing: 0, untested: 0, failed: 0 };
+    for (const p of pages) {
+      const a = auditMap.get(p.route);
+      if (!a) { counts.untested += 1; continue; }
+      if (a.error) { counts.failed += 1; counts.attention += 1; continue; }
+      const score = a.overall_score;
+      const issues = issuesFor(a);
+      if (score !== null && score < 70) counts.attention += 1;
+      else if (issues > 0) counts.warnings += 1;
+      else counts.passing += 1;
+    }
+    return counts;
   }, [pages, auditMap]);
 
   return (
@@ -437,12 +523,64 @@ export default function SeoDashboard() {
         )}
 
         <Card>
-          <CardHeader>
-            <CardTitle className="font-display uppercase tracking-wide">All Pages</CardTitle>
+          <CardHeader className="space-y-4">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <CardTitle className="font-display uppercase tracking-wide">All Pages</CardTitle>
+              <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                <Input
+                  placeholder="Search route or label…"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="sm:w-64"
+                />
+                <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
+                  <SelectTrigger className="sm:w-56">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="score-asc">Score: worst first</SelectItem>
+                    <SelectItem value="score-desc">Score: best first</SelectItem>
+                    <SelectItem value="issues-desc">Most issues first</SelectItem>
+                    <SelectItem value="tested-desc">Recently tested</SelectItem>
+                    <SelectItem value="tested-asc">Oldest / never tested first</SelectItem>
+                    <SelectItem value="route-asc">Route A–Z</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {([
+                ['all', 'All', filterCounts.all],
+                ['attention', 'Needs attention', filterCounts.attention],
+                ['warnings', 'Warnings only', filterCounts.warnings],
+                ['passing', 'Passing', filterCounts.passing],
+                ['untested', 'Not tested', filterCounts.untested],
+                ['failed', 'Failed audits', filterCounts.failed],
+              ] as const).map(([key, label, count]) => {
+                const active = filter === key;
+                return (
+                  <Button
+                    key={key}
+                    type="button"
+                    size="sm"
+                    variant={active ? 'default' : 'outline'}
+                    onClick={() => setFilter(key)}
+                    className="font-cb-sans"
+                  >
+                    {label}
+                    <span className={`ml-2 text-xs ${active ? 'opacity-80' : 'text-muted-foreground'}`}>
+                      {count}
+                    </span>
+                  </Button>
+                );
+              })}
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             {pagesLoading ? (
               <div className="p-6 text-muted-foreground">Loading…</div>
+            ) : sortedRows.length === 0 ? (
+              <div className="p-6 text-muted-foreground">No pages match this filter.</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
