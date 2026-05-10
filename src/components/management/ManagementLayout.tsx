@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { useManagementAuth } from '@/hooks/useManagementAuth';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ManagementSidebar } from './ManagementSidebar';
@@ -53,12 +53,12 @@ export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
             <header className="border-t border-b border-industrial bg-background h-12 md:h-16 flex items-center px-3 md:px-4 mt-1 md:mt-2 mx-1 md:mx-2">
               <SidebarTrigger className="mr-2 md:mr-4 h-8 w-8 md:h-10 md:w-10" />
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center space-x-2 md:space-x-3">
+                <Link to="/" aria-label="Back to home" className="flex items-center space-x-2 md:space-x-3 hover:opacity-80 transition-opacity">
                   <CrazyBearLogo className="shrink-0 h-8 w-8 md:h-10 md:w-10" />
                   <h1 className="font-display text-sm md:text-xl font-black uppercase tracking-wider text-foreground">
                     {BRAND_NAME.toUpperCase()}
                   </h1>
-                </div>
+                </Link>
               </div>
             </header>
 
