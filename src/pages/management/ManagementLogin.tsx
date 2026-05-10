@@ -105,7 +105,6 @@ const ManagementLogin = () => {
 
       const hasRecoveryTokens = !!(type === 'recovery' || code || tokenHash || accessToken || refreshToken);
  
-      if (isCrazyBearHost) return;
       // Domain canonicalisation handled by index.html bootstrap
  
       // Detect recovery flow early
@@ -209,7 +208,7 @@ const ManagementLogin = () => {
     };
 
     processAuthTokens();
-  }, [isCrazyBearHost]);
+  }, []);
 
   // React to Supabase auth events
   useEffect(() => {
@@ -319,7 +318,7 @@ const ManagementLogin = () => {
       
       // Redirect to login
       setTimeout(() => {
-        window.location.assign(isCrazyBearHost ? 'https://www.crazybear.dev/' : 'https://www.croftcommontest.com/management/login');
+        window.location.assign('/management/login');
       }, 500);
       
     } catch (error: any) {
@@ -463,7 +462,7 @@ const ManagementLogin = () => {
     }
   };
 
-  if (isCrazyBearHost) return null;
+  
 
   return (
     <div className="min-h-screen bg-transparent px-4">
