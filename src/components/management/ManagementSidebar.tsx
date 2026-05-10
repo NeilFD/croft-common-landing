@@ -282,6 +282,25 @@ export const ManagementSidebar = () => {
                       </Tooltip>
                     </SidebarMenuItem>
                   )}
+                  {canAccessCMS() && (
+                    <SidebarMenuItem>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <SidebarMenuButton
+                            asChild
+                            className={getNavClass(isActive('/management/seo', false))}
+                          >
+                            <NavLink to="/management/seo">
+                              <TrendingUp className="h-5 w-5" />
+                            </NavLink>
+                          </SidebarMenuButton>
+                        </TooltipTrigger>
+                        <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                          <p className="font-cb-sans">SEO</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </SidebarMenuItem>
+                  )}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
