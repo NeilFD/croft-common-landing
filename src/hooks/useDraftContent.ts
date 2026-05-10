@@ -87,6 +87,8 @@ export const useDraftContent = (page: string) => {
     // Listen for draft content changes
     const handleDraftChange = (event: CustomEvent) => {
       console.log('🎯 useDraftContent: Received draftContentChanged event:', event.detail);
+      // Optimistic bump so the Publish button enables immediately
+      setDraftCount((c) => c + 1);
       fetchDraftCount();
     };
     

@@ -33,7 +33,10 @@ export const CMSText = ({
   href
 }: CMSTextProps) => {
   const { isEditMode, incrementPendingChanges, decrementPendingChanges } = useEditMode();
-  const { content, loading, error, refreshContent } = useCMSContent(page, section, contentKey, isEditMode);
+  // In the visual editor (edit OR preview tab), always show the latest draft
+  // so previewing reflects unsaved changes. Live site stays published-only.
+  const inVisualEditor = typeof window !== 'undefined' && window.location.pathname.includes('/cms/visual');
+  const { content, loading, error, refreshContent } = useCMSContent(page, section, contentKey, isEditMode || inVisualEditor);
   
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
