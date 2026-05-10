@@ -173,6 +173,7 @@ ${additionalComments ? `Additional comments:\n${additionalComments}` : ''}
       success: true,
       enquiryId: enquiryRecord.id,
       leadId: lead?.id || null,
+      bookingId,
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
   } catch (error) {
