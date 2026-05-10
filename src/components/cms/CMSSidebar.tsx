@@ -20,6 +20,8 @@ import {
   Globe,
   Eye,
   Mail,
+  BookOpen,
+  Music,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -46,6 +48,7 @@ const countryPages: Page[] = [
     { name: 'Birthdays', path: `${VISUAL}/country/events/birthdays` },
     { name: 'Business', path: `${VISUAL}/country/events/business` },
   ]},
+  { name: 'Country Culture', path: `${VISUAL}/country/culture`, icon: Music, sections: [] },
 ];
 
 const townPages: Page[] = [
@@ -63,6 +66,7 @@ const townPages: Page[] = [
     { name: 'Gallery', path: `${VISUAL}/town/rooms/gallery` },
   ]},
   { name: 'Town Pool', path: `${VISUAL}/town/pool`, icon: Waves, sections: [] },
+  { name: 'Town Culture', path: `${VISUAL}/town/culture`, icon: Music, sections: [] },
 ];
 
 const globalSections = [
@@ -167,6 +171,11 @@ export const CMSSidebar = () => {
       <NavLink to={CMS_BASE} end className={cn(itemBase, isActive(CMS_BASE) ? itemActive : itemIdle)}>
         <Home className="h-4 w-4" />
         <span>Overview</span>
+      </NavLink>
+
+      <NavLink to={`${VISUAL}/about`} className={cn(itemBase, isActive(`${VISUAL}/about`) ? itemActive : itemIdle)}>
+        <BookOpen className="h-4 w-4" />
+        <span>About</span>
       </NavLink>
 
       <Group label="Country" icon={Trees} keyName="country">

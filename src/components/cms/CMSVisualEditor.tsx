@@ -14,6 +14,9 @@ import {
   TownDrink, TownCocktails,
   TownRooms, TownRoomTypes, TownRoomGallery, TownPool,
 } from '@/pages/property';
+import TownCulture from '@/pages/property/TownCulture';
+import CountryCulture from '@/pages/property/CountryCulture';
+import About from '@/pages/crazybear/About';
 
 // Global preview pages
 import CMSFooterPreview from '@/pages/CMSFooterPreview';
@@ -51,6 +54,9 @@ const pageComponents: Record<string, React.ComponentType> = {
   'town/rooms/types': TownRoomTypes,
   'town/rooms/gallery': TownRoomGallery,
   'town/pool': TownPool,
+  'town/culture': TownCulture,
+  'country/culture': CountryCulture,
+  'about': About,
   // Global
   'global/footer': CMSFooterPreview,
   'global/navigation': CMSNavigationPreview,

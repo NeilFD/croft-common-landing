@@ -18,7 +18,9 @@ import {
   PartyPopper,
   Waves,
   ChefHat,
-  Clock
+  Clock,
+  BookOpen,
+  Music,
 } from 'lucide-react';
 
 interface OverviewStats {
@@ -96,14 +98,17 @@ export const CMSOverview = () => {
   };
 
   const pages = [
+    { name: 'About', icon: BookOpen, path: '/management/cms/visual/about', description: 'Origin story, timeline, press' },
     { name: 'Country Home', icon: Trees, path: '/management/cms/visual/country', description: 'Stadhampton landing' },
     { name: 'Country Pub', icon: UtensilsCrossed, path: '/management/cms/visual/country/pub', description: 'Pub, food, drink, hospitality' },
     { name: 'Country Rooms', icon: Bed, path: '/management/cms/visual/country/rooms', description: 'Bedrooms and gallery' },
     { name: 'Country Events', icon: PartyPopper, path: '/management/cms/visual/country/events', description: 'Weddings, birthdays, business' },
+    { name: 'Country Culture', icon: Music, path: '/management/cms/visual/country/culture', description: 'Stories, playlist, House Rules' },
     { name: 'Town Home', icon: Building2, path: '/management/cms/visual/town', description: 'Beaconsfield landing' },
     { name: 'Town Food', icon: ChefHat, path: '/management/cms/visual/town/food', description: 'Black Bear, B&B, Hom Thai' },
     { name: 'Town Drink', icon: Wine, path: '/management/cms/visual/town/drink', description: 'Bars and cocktails' },
-    { name: 'Town Pool', icon: Waves, path: '/management/cms/visual/town/pool', description: 'Hidden pool' }
+    { name: 'Town Pool', icon: Waves, path: '/management/cms/visual/town/pool', description: 'Hidden pool' },
+    { name: 'Town Culture', icon: Music, path: '/management/cms/visual/town/culture', description: 'Stories, playlist, House Rules' },
   ];
 
 
