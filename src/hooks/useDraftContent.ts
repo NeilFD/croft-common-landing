@@ -10,7 +10,7 @@ export const useDraftContent = (page: string) => {
       setLoading(true);
       console.log('🎯 useDraftContent: Fetching draft count for page:', page);
       
-      // Count page-specific drafts
+      // Count page-specific text drafts
       const { count: pageCount, error: pageError } = await (supabase as any)
         .from('cms_content')
         .select('*', { count: 'exact', head: true })
@@ -19,13 +19,21 @@ export const useDraftContent = (page: string) => {
 
       if (pageError) {
         console.warn('Failed to fetch page draft count:', pageError);
-        return;
       }
 
-      // Note: cms_global_content does not have a `published` column, so it
-      // is not part of the draft/publish flow.
-      const totalDrafts = pageCount || 0;
-      console.log('🎯 useDraftContent: Found', pageCount, 'page drafts for page:', page);
+      // Count image drafts for the same page
+      const { count: imgCount, error: imgError } = await (supabase as any)
+        .from('cms_images')
+        .select('*', { count: 'exact', head: true })
+        .eq('page', page)
+        .eq('is_draft', true);
+
+      if (imgError) {
+        console.warn('Failed to fetch image draft count:', imgError);
+      }
+
+      const totalDrafts = (pageCount || 0) + (imgCount || 0);
+      console.log('🎯 useDraftContent: Found', pageCount, 'text drafts and', imgCount, 'image drafts for page:', page);
       setDraftCount(totalDrafts);
     } catch (err) {
       console.warn('Error fetching draft count:', err);
@@ -38,7 +46,7 @@ export const useDraftContent = (page: string) => {
     try {
       console.log('🎯 useDraftContent: Publishing drafts for page:', page);
       
-      // Publish page-specific drafts
+      // Publish page-specific text drafts
       const { error: pageError } = await (supabase as any)
         .from('cms_content')
         .update({ published: true })
@@ -50,12 +58,31 @@ export const useDraftContent = (page: string) => {
         throw pageError;
       }
 
-      // Note: cms_global_content has no `published` column, so it is skipped here.
+      // Publish image drafts: replace published rows then flip drafts
+      const { data: draftImgs } = await (supabase as any)
+        .from('cms_images')
+        .select('slot')
+        .eq('page', page)
+        .eq('is_draft', true);
+      const slots = Array.from(new Set(((draftImgs as any[]) ?? []).map((r) => r.slot).filter(Boolean)));
+      for (const slot of slots) {
+        await (supabase as any)
+          .from('cms_images')
+          .delete()
+          .eq('page', page)
+          .eq('slot', slot)
+          .eq('published', true)
+          .eq('is_draft', false);
+        await (supabase as any)
+          .from('cms_images')
+          .update({ published: true, is_draft: false })
+          .eq('page', page)
+          .eq('slot', slot)
+          .eq('is_draft', true);
+      }
 
       console.log('🎯 useDraftContent: Publish successful for page:', page);
-      // Refresh draft count after publishing
       await fetchDraftCount();
-      
       return { success: true };
     } catch (error) {
       console.error('Failed to publish drafts:', error);

@@ -2,7 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import { CMSLayout } from './CMSLayout';
 import { CMSOverview } from './CMSOverview';
 import { GlobalContentManager } from './GlobalContentManager';
-import ImageManager from './ImageManager';
+import AssetsManager from './AssetsManager';
 import BrandManager from './BrandManager';
 import ImportManager from './ImportManager';
 import { ModalContentManager } from './ModalContentManager';
@@ -24,7 +24,7 @@ export default function CMSDashboard() {
         <Route path="email-templates/:template/preview" element={<CMSEmailPreview />} />
 
         {/* Assets */}
-        <Route path="images" element={<ImageManager />} />
+        <Route path="images" element={<AssetsManager />} />
         <Route path="brand" element={<BrandManager />} />
         <Route path="brand/tokens" element={<DesignTokenManager />} />
         <Route path="import" element={<ImportManager />} />
