@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -338,7 +339,7 @@ export default function CMSEmailPreview() {
             <div 
               className="border rounded-lg p-4 bg-white"
               style={{ maxHeight: '80vh', overflow: 'auto' }}
-              dangerouslySetInnerHTML={{ __html: generateEmailHtml() }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(generateEmailHtml() || '', { ADD_TAGS: ['style'], ADD_ATTR: ['style'] }) }}
             />
           </CardContent>
         </Card>
