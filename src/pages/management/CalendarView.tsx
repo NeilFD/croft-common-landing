@@ -155,15 +155,15 @@ const CalendarView = () => {
               </Button>
             </Link>
             <div>
-              <h1 className="text-2xl md:text-3xl font-brutalist font-bold tracking-tight text-foreground mb-1 md:mb-2">
+              <h1 className="text-2xl md:text-3xl font-display font-bold tracking-tight text-foreground mb-1 md:mb-2">
                 CALENDAR
               </h1>
-              <p className="text-muted-foreground font-industrial text-sm md:text-base">Manage space bookings and availability</p>
+              <p className="text-muted-foreground font-cb-sans text-sm md:text-base">Manage space bookings and availability</p>
             </div>
           </div>
           <Button 
             onClick={() => setShowBookingForm(true)} 
-            className="gap-2 font-industrial font-bold border-2 border-foreground bg-accent text-accent-foreground hover:bg-accent/80 h-9 md:h-10 text-sm"
+            className="gap-2 font-cb-sans font-bold border-2 border-foreground bg-accent text-accent-foreground hover:bg-accent/80 h-9 md:h-10 text-sm"
           >
             <Plus className="h-3 w-3 md:h-4 md:w-4" />
             NEW BOOKING
@@ -179,13 +179,13 @@ const CalendarView = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => navigateWeek('prev')}
-                  className="border-2 border-foreground hover:bg-foreground hover:text-background font-industrial"
+                  className="border-2 border-foreground hover:bg-foreground hover:text-background font-cb-sans"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <div className="flex items-center gap-2 min-w-[200px]">
                   <Calendar className="h-4 w-4 text-primary" />
-                  <span className="font-industrial font-bold text-foreground">
+                  <span className="font-cb-sans font-bold text-foreground">
                     {format(weekStart, "MMM d")} - {format(weekEnd, "MMM d, yyyy")}
                   </span>
                 </div>
@@ -193,7 +193,7 @@ const CalendarView = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => navigateWeek('next')}
-                  className="border-2 border-foreground hover:bg-foreground hover:text-background font-industrial"
+                  className="border-2 border-foreground hover:bg-foreground hover:text-background font-cb-sans"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -203,7 +203,7 @@ const CalendarView = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentDate(new Date())}
-                className="border-2 border-foreground hover:bg-accent hover:text-accent-foreground font-industrial font-bold"
+                className="border-2 border-foreground hover:bg-accent hover:text-accent-foreground font-cb-sans font-bold"
               >
                 TODAY
               </Button>
@@ -211,15 +211,15 @@ const CalendarView = () => {
 
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-industrial font-bold text-foreground">SPACE:</span>
+                <span className="text-sm font-cb-sans font-bold text-foreground">SPACE:</span>
                 <Select value={selectedSpaceId} onValueChange={setSelectedSpaceId}>
-                  <SelectTrigger className="w-[200px] bg-background border-2 border-foreground font-industrial">
+                  <SelectTrigger className="w-[200px] bg-background border-2 border-foreground font-cb-sans">
                     <SelectValue placeholder="Select space" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border-2 border-foreground shadow-brutal z-50">
-                    <SelectItem value="all" className="font-industrial">All Spaces</SelectItem>
+                    <SelectItem value="all" className="font-cb-sans">All Spaces</SelectItem>
                     {spaces.map((space) => (
-                      <SelectItem key={space.id} value={space.id} className="font-industrial">
+                      <SelectItem key={space.id} value={space.id} className="font-cb-sans">
                         {space.name}
                       </SelectItem>
                     ))}
@@ -233,8 +233,8 @@ const CalendarView = () => {
         {/* Calendar Grid */}
         <Card className="border-2 border-foreground shadow-brutal">
           <CardHeader>
-            <CardTitle className="font-brutalist text-xl">WEEK VIEW</CardTitle>
-            <CardDescription className="font-industrial">
+            <CardTitle className="font-display text-xl">WEEK VIEW</CardTitle>
+            <CardDescription className="font-cb-sans">
               Click on any time slot to create a new booking
             </CardDescription>
           </CardHeader>
@@ -244,12 +244,12 @@ const CalendarView = () => {
                 {/* Header Row */}
                 <div className="grid grid-cols-8 border-b-2 border-foreground bg-muted/50">
                   <div className="p-3 border-r-2 border-foreground">
-                    <span className="text-sm font-industrial font-bold text-foreground">TIME</span>
+                    <span className="text-sm font-cb-sans font-bold text-foreground">TIME</span>
                   </div>
                   {weekDays.map((day) => (
                     <div key={day.toISOString()} className="p-3 border-r-2 border-foreground last:border-r-0">
-                      <div className="text-sm font-industrial font-bold text-foreground">{format(day, "EEE").toUpperCase()}</div>
-                      <div className="text-lg font-brutalist font-bold text-primary">{format(day, "d")}</div>
+                      <div className="text-sm font-cb-sans font-bold text-foreground">{format(day, "EEE").toUpperCase()}</div>
+                      <div className="text-lg font-display font-bold text-primary">{format(day, "d")}</div>
                     </div>
                   ))}
                 </div>
@@ -261,7 +261,7 @@ const CalendarView = () => {
                     <div key={hour} className="grid grid-cols-8 border-b border-border">
                       {/* Time Column */}
                       <div className="p-3 border-r-2 border-foreground bg-muted/30">
-                        <div className="flex items-center gap-1 text-sm font-industrial font-bold text-foreground">
+                        <div className="flex items-center gap-1 text-sm font-cb-sans font-bold text-foreground">
                           <Clock className="h-3 w-3" />
                           {hour < 10 ? `0${hour}:00` : `${hour}:00`}
                         </div>
@@ -282,7 +282,7 @@ const CalendarView = () => {
                             key={`${day.toISOString()}-${hour}`}
                             className={`
                               p-2 border-r border-border last:border-r-0 min-h-[60px] cursor-pointer
-                              transition-colors hover:bg-accent/20 font-industrial
+                              transition-colors hover:bg-accent/20 font-cb-sans
                               ${isPastSlot ? 'bg-muted/20 cursor-not-allowed' : 'hover:shadow-sm'}
                             `}
                             onClick={() => !isPastSlot && handleSlotClick(day, hour)}
@@ -333,7 +333,7 @@ const CalendarView = () => {
                               {/* Setup Section */}
                               {booking.setup_min > 0 && (
                                 <div 
-                                  className="bg-orange-200 border-b border-orange-400 text-orange-800 px-2 py-1 text-xs font-industrial font-bold"
+                                  className="bg-orange-200 border-b border-orange-400 text-orange-800 px-2 py-1 text-xs font-cb-sans font-bold"
                                   style={{ 
                                     height: `${((actualStartDisplay - startDisplay) / (endDisplay - startDisplay)) * 100}%` 
                                   }}
@@ -344,7 +344,7 @@ const CalendarView = () => {
                               
                               {/* Main Event */}
                               <div 
-                                className="bg-accent text-background px-2 py-1 font-industrial flex-1 overflow-hidden border-y border-foreground"
+                                className="bg-accent text-background px-2 py-1 font-cb-sans flex-1 overflow-hidden border-y border-foreground"
                                 style={{ 
                                   height: `${((actualEndDisplay - actualStartDisplay) / (endDisplay - startDisplay)) * 100}%` 
                                 }}
@@ -360,7 +360,7 @@ const CalendarView = () => {
                               {/* Teardown Section */}
                               {booking.teardown_min > 0 && (
                                 <div 
-                                  className="bg-blue-200 border-t border-blue-400 text-blue-800 px-2 py-1 text-xs font-industrial font-bold"
+                                  className="bg-blue-200 border-t border-blue-400 text-blue-800 px-2 py-1 text-xs font-cb-sans font-bold"
                                   style={{ 
                                     height: `${((endDisplay - actualEndDisplay) / (endDisplay - startDisplay)) * 100}%` 
                                   }}
@@ -384,7 +384,7 @@ const CalendarView = () => {
         {isLoading && (
           <Card className="border-2 border-foreground shadow-brutal">
             <CardContent className="flex items-center justify-center p-8">
-              <div className="font-industrial font-bold text-foreground">LOADING CALENDAR...</div>
+              <div className="font-cb-sans font-bold text-foreground">LOADING CALENDAR...</div>
             </CardContent>
           </Card>
         )}

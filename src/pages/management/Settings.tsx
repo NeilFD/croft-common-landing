@@ -14,8 +14,8 @@ const Settings = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="font-brutalist text-xl mb-2">Loading...</div>
-          <div className="font-industrial text-muted-foreground">Verifying access...</div>
+          <div className="font-display text-xl mb-2">Loading...</div>
+          <div className="font-cb-sans text-muted-foreground">Verifying access...</div>
         </div>
       </div>
     );
@@ -28,7 +28,7 @@ const Settings = () => {
   return (
     <ManagementLayout>
       <div className="p-6">
-        <h1 className="font-brutalist text-3xl mb-6">Settings</h1>
+        <h1 className="font-display text-3xl mb-6">Settings</h1>
         
         <Tabs defaultValue={isAdmin ? "users" : "profile"} className="w-full">
           <TabsList>

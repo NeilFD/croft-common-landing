@@ -109,7 +109,7 @@ export const ShareInvoiceDialog: React.FC<ShareInvoiceDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="font-brutalist uppercase tracking-wider flex items-center gap-2">
+          <DialogTitle className="font-display uppercase tracking-wider flex items-center gap-2">
             <Mail className="h-5 w-5" />
             Share Invoice via Email
           </DialogTitle>
@@ -186,7 +186,7 @@ export const ShareInvoiceDialog: React.FC<ShareInvoiceDialogProps> = ({
             <Button
               onClick={handleShareViaEmail}
               disabled={isGenerating || !recipientEmail}
-              className="flex-1 font-industrial uppercase tracking-wider"
+              className="flex-1 font-cb-sans uppercase tracking-wider"
             >
               {isGenerating ? (
                 <>
@@ -204,7 +204,7 @@ export const ShareInvoiceDialog: React.FC<ShareInvoiceDialogProps> = ({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isGenerating}
-              className="font-industrial uppercase tracking-wider"
+              className="font-cb-sans uppercase tracking-wider"
             >
               Cancel
             </Button>

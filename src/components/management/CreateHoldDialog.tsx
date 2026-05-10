@@ -145,19 +145,19 @@ export const CreateHoldDialog = ({ eventId, open, onOpenChange }: CreateHoldDial
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-brutalist uppercase tracking-wide">ADD SPACE BOOKING</DialogTitle>
-          <DialogDescription className="font-industrial">
+          <DialogTitle className="font-display uppercase tracking-wide">ADD SPACE BOOKING</DialogTitle>
+          <DialogDescription className="font-cb-sans">
             Book a space for this event. Each booking represents a specific time slot in a venue space.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="space_id" className="font-industrial uppercase text-xs tracking-wide">
+            <Label htmlFor="space_id" className="font-cb-sans uppercase text-xs tracking-wide">
               Space
             </Label>
             <Select value={formData.space_id} onValueChange={(value) => setFormData({ ...formData, space_id: value })}>
-              <SelectTrigger className="font-industrial">
+              <SelectTrigger className="font-cb-sans">
                 <SelectValue placeholder="Select a space" />
               </SelectTrigger>
               <SelectContent>
@@ -171,7 +171,7 @@ export const CreateHoldDialog = ({ eventId, open, onOpenChange }: CreateHoldDial
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="title" className="font-industrial uppercase text-xs tracking-wide">
+            <Label htmlFor="title" className="font-cb-sans uppercase text-xs tracking-wide">
               Title
             </Label>
             <Input
@@ -179,14 +179,14 @@ export const CreateHoldDialog = ({ eventId, open, onOpenChange }: CreateHoldDial
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               placeholder="Booking title"
-              className="font-industrial"
+              className="font-cb-sans"
               required
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="start_ts" className="font-industrial uppercase text-xs tracking-wide">
+              <Label htmlFor="start_ts" className="font-cb-sans uppercase text-xs tracking-wide">
                 Start Time
               </Label>
               <Input
@@ -194,13 +194,13 @@ export const CreateHoldDialog = ({ eventId, open, onOpenChange }: CreateHoldDial
                 type="datetime-local"
                 value={formData.start_ts}
                 onChange={(e) => setFormData({ ...formData, start_ts: e.target.value })}
-                className="font-industrial"
+                className="font-cb-sans"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="end_ts" className="font-industrial uppercase text-xs tracking-wide">
+              <Label htmlFor="end_ts" className="font-cb-sans uppercase text-xs tracking-wide">
                 End Time
               </Label>
               <Input
@@ -208,7 +208,7 @@ export const CreateHoldDialog = ({ eventId, open, onOpenChange }: CreateHoldDial
                 type="datetime-local"
                 value={formData.end_ts}
                 onChange={(e) => setFormData({ ...formData, end_ts: e.target.value })}
-                className="font-industrial"
+                className="font-cb-sans"
                 required
               />
             </div>
@@ -216,7 +216,7 @@ export const CreateHoldDialog = ({ eventId, open, onOpenChange }: CreateHoldDial
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="setup_min" className="font-industrial uppercase text-xs tracking-wide">
+              <Label htmlFor="setup_min" className="font-cb-sans uppercase text-xs tracking-wide">
                 Setup (minutes)
               </Label>
               <Input
@@ -224,13 +224,13 @@ export const CreateHoldDialog = ({ eventId, open, onOpenChange }: CreateHoldDial
                 type="number"
                 value={formData.setup_min}
                 onChange={(e) => setFormData({ ...formData, setup_min: e.target.value })}
-                className="font-industrial"
+                className="font-cb-sans"
                 min="0"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="teardown_min" className="font-industrial uppercase text-xs tracking-wide">
+              <Label htmlFor="teardown_min" className="font-cb-sans uppercase text-xs tracking-wide">
                 Teardown (minutes)
               </Label>
               <Input
@@ -238,18 +238,18 @@ export const CreateHoldDialog = ({ eventId, open, onOpenChange }: CreateHoldDial
                 type="number"
                 value={formData.teardown_min}
                 onChange={(e) => setFormData({ ...formData, teardown_min: e.target.value })}
-                className="font-industrial"
+                className="font-cb-sans"
                 min="0"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="status" className="font-industrial uppercase text-xs tracking-wide">
+            <Label htmlFor="status" className="font-cb-sans uppercase text-xs tracking-wide">
               Hold Type
             </Label>
             <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
-              <SelectTrigger className="font-industrial">
+              <SelectTrigger className="font-cb-sans">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -264,14 +264,14 @@ export const CreateHoldDialog = ({ eventId, open, onOpenChange }: CreateHoldDial
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="flex-1 font-brutalist uppercase tracking-wide border-industrial"
+              className="flex-1 font-display uppercase tracking-wide border-industrial"
             >
               CANCEL
             </Button>
             <Button
               type="submit"
               disabled={loading || !formData.space_id || !formData.title || !formData.start_ts || !formData.end_ts}
-              className="flex-1 btn-primary font-brutalist uppercase tracking-wide"
+              className="flex-1 btn-primary font-display uppercase tracking-wide"
             >
               {loading ? 'CREATING...' : 'ADD BOOKING'}
             </Button>

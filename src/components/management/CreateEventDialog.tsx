@@ -126,8 +126,8 @@ export const CreateEventDialog = ({ open, onOpenChange, leadId }: CreateEventDia
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-brutalist uppercase tracking-wide">CREATE EVENT</DialogTitle>
-          <DialogDescription className="font-industrial">
+          <DialogTitle className="font-display uppercase tracking-wide">CREATE EVENT</DialogTitle>
+          <DialogDescription className="font-cb-sans">
             Create a new event to manage multiple space bookings
           </DialogDescription>
         </DialogHeader>
@@ -135,7 +135,7 @@ export const CreateEventDialog = ({ open, onOpenChange, leadId }: CreateEventDia
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="event_type" className="font-industrial uppercase text-xs tracking-wide">
+              <Label htmlFor="event_type" className="font-cb-sans uppercase text-xs tracking-wide">
                 Event Type
               </Label>
               <Input
@@ -143,12 +143,12 @@ export const CreateEventDialog = ({ open, onOpenChange, leadId }: CreateEventDia
                 value={formData.event_type}
                 onChange={(e) => setFormData({ ...formData, event_type: e.target.value })}
                 placeholder="e.g. Corporate Event, Wedding, Conference"
-                className="font-industrial"
+                className="font-cb-sans"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="headcount" className="font-industrial uppercase text-xs tracking-wide">
+              <Label htmlFor="headcount" className="font-cb-sans uppercase text-xs tracking-wide">
                 Headcount
               </Label>
               <Input
@@ -157,12 +157,12 @@ export const CreateEventDialog = ({ open, onOpenChange, leadId }: CreateEventDia
                 value={formData.headcount}
                 onChange={(e) => setFormData({ ...formData, headcount: e.target.value })}
                 placeholder="Expected number of guests"
-                className="font-industrial"
+                className="font-cb-sans"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="start_date" className="font-industrial uppercase text-xs tracking-wide">
+              <Label htmlFor="start_date" className="font-cb-sans uppercase text-xs tracking-wide">
                 Event Date
               </Label>
               <Input
@@ -170,12 +170,12 @@ export const CreateEventDialog = ({ open, onOpenChange, leadId }: CreateEventDia
                 type="date"
                 value={formData.start_date}
                 onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                className="font-industrial"
+                className="font-cb-sans"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="start_time" className="font-industrial uppercase text-xs tracking-wide">
+              <Label htmlFor="start_time" className="font-cb-sans uppercase text-xs tracking-wide">
                 Start Time
               </Label>
               <Input
@@ -183,12 +183,12 @@ export const CreateEventDialog = ({ open, onOpenChange, leadId }: CreateEventDia
                 type="time"
                 value={formData.start_time}
                 onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-                className="font-industrial"
+                className="font-cb-sans"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="budget" className="font-industrial uppercase text-xs tracking-wide">
+              <Label htmlFor="budget" className="font-cb-sans uppercase text-xs tracking-wide">
                 Budget
               </Label>
               <Input
@@ -196,12 +196,12 @@ export const CreateEventDialog = ({ open, onOpenChange, leadId }: CreateEventDia
                 value={formData.budget}
                 onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
                 placeholder="e.g. £2,000 - £5,000"
-                className="font-industrial"
+                className="font-cb-sans"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="client_name" className="font-industrial uppercase text-xs tracking-wide">
+              <Label htmlFor="client_name" className="font-cb-sans uppercase text-xs tracking-wide">
                 Client Name
               </Label>
               <Input
@@ -209,12 +209,12 @@ export const CreateEventDialog = ({ open, onOpenChange, leadId }: CreateEventDia
                 value={formData.client_name}
                 onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
                 placeholder="Client full name"
-                className="font-industrial"
+                className="font-cb-sans"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="client_email" className="font-industrial uppercase text-xs tracking-wide">
+              <Label htmlFor="client_email" className="font-cb-sans uppercase text-xs tracking-wide">
                 Client Email
               </Label>
               <Input
@@ -223,12 +223,12 @@ export const CreateEventDialog = ({ open, onOpenChange, leadId }: CreateEventDia
                 value={formData.client_email}
                 onChange={(e) => setFormData({ ...formData, client_email: e.target.value })}
                 placeholder="client@example.com"
-                className="font-industrial"
+                className="font-cb-sans"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="client_phone" className="font-industrial uppercase text-xs tracking-wide">
+              <Label htmlFor="client_phone" className="font-cb-sans uppercase text-xs tracking-wide">
                 Client Phone
               </Label>
               <Input
@@ -236,13 +236,13 @@ export const CreateEventDialog = ({ open, onOpenChange, leadId }: CreateEventDia
                 value={formData.client_phone}
                 onChange={(e) => setFormData({ ...formData, client_phone: e.target.value })}
                 placeholder="Client phone number"
-                className="font-industrial"
+                className="font-cb-sans"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes" className="font-industrial uppercase text-xs tracking-wide">
+            <Label htmlFor="notes" className="font-cb-sans uppercase text-xs tracking-wide">
               Notes
             </Label>
             <Textarea
@@ -250,7 +250,7 @@ export const CreateEventDialog = ({ open, onOpenChange, leadId }: CreateEventDia
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Additional event details..."
-              className="font-industrial min-h-[80px]"
+              className="font-cb-sans min-h-[80px]"
             />
           </div>
 
@@ -259,14 +259,14 @@ export const CreateEventDialog = ({ open, onOpenChange, leadId }: CreateEventDia
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="flex-1 font-brutalist uppercase tracking-wide border-industrial"
+              className="flex-1 font-display uppercase tracking-wide border-industrial"
             >
               CANCEL
             </Button>
             <Button
               type="submit"
               disabled={loading}
-              className="flex-1 btn-primary font-brutalist uppercase tracking-wide"
+              className="flex-1 btn-primary font-display uppercase tracking-wide"
             >
               {loading ? 'CREATING...' : 'CREATE EVENT'}
             </Button>

@@ -24,7 +24,7 @@ export const ProposalBuilderEnhanced: React.FC<ProposalBuilderEnhancedProps> = (
         <Card className="border-industrial bg-muted/30">
           <CardContent className="py-6 text-center">
             <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-            <h3 className="font-industrial font-bold mb-2">No BEO Generated Yet</h3>
+            <h3 className="font-cb-sans font-bold mb-2">No BEO Generated Yet</h3>
             <p className="text-sm text-muted-foreground">
               Generate a BEO first to automatically populate the proposal with event details.
             </p>
@@ -46,7 +46,7 @@ export const ProposalBuilderEnhanced: React.FC<ProposalBuilderEnhancedProps> = (
             <div className="flex items-center gap-3">
               <CheckCircle2 className="h-5 w-5 text-accent-pink" />
               <div>
-                <p className="font-industrial text-sm">
+                <p className="font-cb-sans text-sm">
                   <span className="font-bold">Proposal Version {currentProposal.version_no}</span>
                   {' '}- Last updated {format(new Date(currentProposal.generated_at), 'PPp')}
                 </p>
@@ -59,7 +59,7 @@ export const ProposalBuilderEnhanced: React.FC<ProposalBuilderEnhancedProps> = (
               </div>
             </div>
             {currentProposal.status === 'draft' && (
-              <Badge variant="outline" className="font-industrial">Auto-populated from BEO</Badge>
+              <Badge variant="outline" className="font-cb-sans">Auto-populated from BEO</Badge>
             )}
           </div>
         </CardContent>
@@ -79,27 +79,27 @@ export const ProposalBuilderEnhanced: React.FC<ProposalBuilderEnhancedProps> = (
         <TabsContent value="overview" className="space-y-4">
           <Card className="border-industrial">
             <CardHeader>
-              <CardTitle className="font-brutalist text-lg uppercase tracking-wide">Event Overview</CardTitle>
+              <CardTitle className="font-display text-lg uppercase tracking-wide">Event Overview</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-xs text-muted-foreground">Event Name</Label>
-                  <p className="font-industrial">{snapshot.eventOverview?.eventName || 'N/A'}</p>
+                  <p className="font-cb-sans">{snapshot.eventOverview?.eventName || 'N/A'}</p>
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground">Event Date</Label>
-                  <p className="font-industrial">
+                  <p className="font-cb-sans">
                     {snapshot.eventOverview?.eventDate ? format(new Date(snapshot.eventOverview.eventDate), 'PPP') : 'N/A'}
                   </p>
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground">Headcount</Label>
-                  <p className="font-industrial">{snapshot.eventOverview?.headcount || 'N/A'} guests</p>
+                  <p className="font-cb-sans">{snapshot.eventOverview?.headcount || 'N/A'} guests</p>
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground">Client</Label>
-                  <p className="font-industrial">{snapshot.eventOverview?.clientName || 'N/A'}</p>
+                  <p className="font-cb-sans">{snapshot.eventOverview?.clientName || 'N/A'}</p>
                 </div>
               </div>
             </CardContent>
@@ -110,7 +110,7 @@ export const ProposalBuilderEnhanced: React.FC<ProposalBuilderEnhancedProps> = (
         <TabsContent value="setup" className="space-y-4">
           <Card className="border-industrial">
             <CardHeader>
-              <CardTitle className="font-brutalist text-lg uppercase tracking-wide flex items-center gap-2">
+              <CardTitle className="font-display text-lg uppercase tracking-wide flex items-center gap-2">
                 <MapPin className="h-5 w-5" />
                 Room Setup & Layout
               </CardTitle>
@@ -118,7 +118,7 @@ export const ProposalBuilderEnhanced: React.FC<ProposalBuilderEnhancedProps> = (
             <CardContent className="space-y-4">
               {snapshot.setup?.spaces?.map((space: any, idx: number) => (
                 <div key={idx} className="border-l-2 border-accent-pink pl-4 py-2">
-                  <h4 className="font-industrial font-bold">{space.space_name}</h4>
+                  <h4 className="font-cb-sans font-bold">{space.space_name}</h4>
                   <p className="text-sm text-muted-foreground">Layout: {space.layout_type}</p>
                   {space.capacity && <p className="text-sm">Capacity: {space.capacity} people</p>}
                   {space.setup_time && <p className="text-sm text-muted-foreground">Setup: {space.setup_time}</p>}
@@ -135,13 +135,13 @@ export const ProposalBuilderEnhanced: React.FC<ProposalBuilderEnhancedProps> = (
           {snapshot.equipment && snapshot.equipment.length > 0 && (
             <Card className="border-industrial">
               <CardHeader>
-                <CardTitle className="font-brutalist text-lg uppercase tracking-wide">Equipment & Tech</CardTitle>
+                <CardTitle className="font-display text-lg uppercase tracking-wide">Equipment & Tech</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {snapshot.equipment.map((eq: any, idx: number) => (
                   <div key={idx} className="flex items-start gap-3 border-l-2 border-muted pl-4 py-2">
                     <div className="flex-1">
-                      <p className="font-industrial font-medium">{eq.item_name}</p>
+                      <p className="font-cb-sans font-medium">{eq.item_name}</p>
                       <p className="text-xs text-muted-foreground">{eq.category} x {eq.quantity}</p>
                       {eq.specifications && <p className="text-sm text-muted-foreground mt-1">{eq.specifications}</p>}
                     </div>
@@ -156,7 +156,7 @@ export const ProposalBuilderEnhanced: React.FC<ProposalBuilderEnhancedProps> = (
         <TabsContent value="menu" className="space-y-4">
           <Card className="border-industrial">
             <CardHeader>
-              <CardTitle className="font-brutalist text-lg uppercase tracking-wide flex items-center gap-2">
+              <CardTitle className="font-display text-lg uppercase tracking-wide flex items-center gap-2">
                 <Utensils className="h-5 w-5" />
                 Menu & Catering
               </CardTitle>
@@ -164,11 +164,11 @@ export const ProposalBuilderEnhanced: React.FC<ProposalBuilderEnhancedProps> = (
             <CardContent className="space-y-6">
               {snapshot.menu?.courses?.map((course: any, idx: number) => (
                 <div key={idx} className="space-y-2">
-                  <h4 className="font-industrial font-bold text-accent-pink uppercase tracking-wide">{course.course}</h4>
+                  <h4 className="font-cb-sans font-bold text-accent-pink uppercase tracking-wide">{course.course}</h4>
                   <div className="space-y-2 pl-4">
                     {course.items?.map((item: any, itemIdx: number) => (
                       <div key={itemIdx} className="border-l-2 border-muted pl-3">
-                        <p className="font-industrial font-medium">{item.item_name}</p>
+                        <p className="font-cb-sans font-medium">{item.item_name}</p>
                         {item.description && <p className="text-sm text-muted-foreground">{item.description}</p>}
                         {item.allergens && item.allergens.length > 0 && (
                           <p className="text-xs text-muted-foreground italic mt-1">Allergens: {item.allergens.join(', ')}</p>
@@ -189,7 +189,7 @@ export const ProposalBuilderEnhanced: React.FC<ProposalBuilderEnhancedProps> = (
         <TabsContent value="timeline" className="space-y-4">
           <Card className="border-industrial">
             <CardHeader>
-              <CardTitle className="font-brutalist text-lg uppercase tracking-wide flex items-center gap-2">
+              <CardTitle className="font-display text-lg uppercase tracking-wide flex items-center gap-2">
                 <Clock className="h-5 w-5" />
                 Event Timeline
               </CardTitle>
@@ -198,10 +198,10 @@ export const ProposalBuilderEnhanced: React.FC<ProposalBuilderEnhancedProps> = (
               {snapshot.timeline?.schedule?.map((item: any, idx: number) => (
                 <div key={idx} className="flex items-start gap-3 border-l-2 border-accent-pink pl-4 py-2">
                   <div className="flex-shrink-0 w-20">
-                    <p className="font-industrial font-bold text-sm">{format(new Date(item.scheduled_at), 'HH:mm')}</p>
+                    <p className="font-cb-sans font-bold text-sm">{format(new Date(item.scheduled_at), 'HH:mm')}</p>
                   </div>
                   <div className="flex-1">
-                    <p className="font-industrial font-medium">{item.time_label}</p>
+                    <p className="font-cb-sans font-medium">{item.time_label}</p>
                     {item.duration_minutes && <p className="text-xs text-muted-foreground">{item.duration_minutes} minutes</p>}
                     {item.notes && <p className="text-sm text-muted-foreground mt-1">{item.notes}</p>}
                   </div>

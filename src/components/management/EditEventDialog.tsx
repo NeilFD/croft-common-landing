@@ -92,8 +92,8 @@ export const EditEventDialog = ({ eventId, event, open, onOpenChange }: EditEven
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-brutalist uppercase tracking-wide">EDIT EVENT</DialogTitle>
-          <DialogDescription className="font-industrial">
+          <DialogTitle className="font-display uppercase tracking-wide">EDIT EVENT</DialogTitle>
+          <DialogDescription className="font-cb-sans">
             Update event details for {event?.code}
           </DialogDescription>
         </DialogHeader>
@@ -101,11 +101,11 @@ export const EditEventDialog = ({ eventId, event, open, onOpenChange }: EditEven
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="event_type" className="font-industrial uppercase text-xs tracking-wide">
+              <Label htmlFor="event_type" className="font-cb-sans uppercase text-xs tracking-wide">
                 Event Type
               </Label>
               <Select value={formData.event_type} onValueChange={(value) => setFormData({ ...formData, event_type: value })}>
-                <SelectTrigger className="font-industrial">
+                <SelectTrigger className="font-cb-sans">
                   <SelectValue placeholder="Select event type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -121,7 +121,7 @@ export const EditEventDialog = ({ eventId, event, open, onOpenChange }: EditEven
             </div>
 
             <div className="space-y-2">
-              <Label className="font-industrial uppercase text-xs tracking-wide">
+              <Label className="font-cb-sans uppercase text-xs tracking-wide">
                 Event Date
               </Label>
               <Popover>
@@ -129,7 +129,7 @@ export const EditEventDialog = ({ eventId, event, open, onOpenChange }: EditEven
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-industrial",
+                      "w-full justify-start text-left font-cb-sans",
                       !formData.primary_date && "text-muted-foreground"
                     )}
                   >
@@ -151,7 +151,7 @@ export const EditEventDialog = ({ eventId, event, open, onOpenChange }: EditEven
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="headcount" className="font-industrial uppercase text-xs tracking-wide">
+            <Label htmlFor="headcount" className="font-cb-sans uppercase text-xs tracking-wide">
               Expected Headcount
             </Label>
             <Input
@@ -160,13 +160,13 @@ export const EditEventDialog = ({ eventId, event, open, onOpenChange }: EditEven
               value={formData.headcount}
               onChange={(e) => setFormData({ ...formData, headcount: e.target.value })}
               placeholder="Number of attendees"
-              className="font-industrial"
+              className="font-cb-sans"
               min="1"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="organiser_name" className="font-industrial uppercase text-xs tracking-wide">
+            <Label htmlFor="organiser_name" className="font-cb-sans uppercase text-xs tracking-wide">
               Organiser Name
             </Label>
             <Input
@@ -175,13 +175,13 @@ export const EditEventDialog = ({ eventId, event, open, onOpenChange }: EditEven
               value={formData.organiser_name}
               onChange={(e) => setFormData({ ...formData, organiser_name: e.target.value })}
               placeholder="Event organiser's name"
-              className="font-industrial"
+              className="font-cb-sans"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="organiser_email" className="font-industrial uppercase text-xs tracking-wide">
+              <Label htmlFor="organiser_email" className="font-cb-sans uppercase text-xs tracking-wide">
                 Organiser Email
               </Label>
               <Input
@@ -190,12 +190,12 @@ export const EditEventDialog = ({ eventId, event, open, onOpenChange }: EditEven
                 value={formData.organiser_email}
                 onChange={(e) => setFormData({ ...formData, organiser_email: e.target.value })}
                 placeholder="organiser@example.com"
-                className="font-industrial"
+                className="font-cb-sans"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="organiser_phone" className="font-industrial uppercase text-xs tracking-wide">
+              <Label htmlFor="organiser_phone" className="font-cb-sans uppercase text-xs tracking-wide">
                 Organiser Phone
               </Label>
               <Input
@@ -204,13 +204,13 @@ export const EditEventDialog = ({ eventId, event, open, onOpenChange }: EditEven
                 value={formData.organiser_phone}
                 onChange={(e) => setFormData({ ...formData, organiser_phone: e.target.value })}
                 placeholder="+44 7XXX XXXXXX"
-                className="font-industrial"
+                className="font-cb-sans"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes" className="font-industrial uppercase text-xs tracking-wide">
+            <Label htmlFor="notes" className="font-cb-sans uppercase text-xs tracking-wide">
               Notes
             </Label>
             <Textarea
@@ -218,7 +218,7 @@ export const EditEventDialog = ({ eventId, event, open, onOpenChange }: EditEven
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Additional notes about the event"
-              className="font-industrial min-h-[100px]"
+              className="font-cb-sans min-h-[100px]"
             />
           </div>
 
@@ -227,14 +227,14 @@ export const EditEventDialog = ({ eventId, event, open, onOpenChange }: EditEven
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="flex-1 font-brutalist uppercase tracking-wide border-industrial"
+              className="flex-1 font-display uppercase tracking-wide border-industrial"
             >
               CANCEL
             </Button>
             <Button
               type="submit"
               disabled={loading}
-              className="flex-1 btn-primary font-brutalist uppercase tracking-wide"
+              className="flex-1 btn-primary font-display uppercase tracking-wide"
             >
               {loading ? 'UPDATING...' : 'UPDATE EVENT'}
             </Button>

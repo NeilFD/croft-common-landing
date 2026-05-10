@@ -398,7 +398,7 @@ export default function CommonKnowledgeView() {
               <div className="flex flex-col gap-3">
                 <div className="space-y-2">
                   <div className="flex items-start gap-2 md:gap-3 flex-wrap">
-                    <h1 className="text-xl sm:text-2xl md:text-3xl font-brutalist font-bold break-words flex-1 min-w-0">{doc.title}</h1>
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-display font-bold break-words flex-1 min-w-0">{doc.title}</h1>
                     {isPinned && (
                       <div className="flex items-center gap-1 px-2 py-1 bg-[hsl(var(--accent-pink))]/10 text-[hsl(var(--accent-pink))] text-xs font-bold uppercase rounded shrink-0">
                         <Pin className="h-3 w-3 fill-current" />
@@ -447,7 +447,7 @@ export default function CommonKnowledgeView() {
                 mimeType={file.mime}
               />
             ) : (
-              <div className="prose prose-sm max-w-none font-industrial bg-muted/20 p-6 rounded-lg">
+              <div className="prose prose-sm max-w-none font-cb-sans bg-muted/20 p-6 rounded-lg">
                 <p className="text-muted-foreground">
                   {version 
                     ? "This document has metadata but no file attached. Content preview is not available."

@@ -154,12 +154,12 @@ const EventDetail = () => {
     <ManagementLayout>
       <div className="space-y-4 md:space-y-6 p-3 md:p-6">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground font-industrial">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground font-cb-sans">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate('/management/events')}
-            className="font-industrial p-0 h-auto text-muted-foreground hover:text-primary"
+            className="font-cb-sans p-0 h-auto text-muted-foreground hover:text-primary"
           >
             Events
           </Button>
@@ -173,7 +173,7 @@ const EventDetail = () => {
             variant="outline"
             size="sm"
             onClick={() => navigate('/management/events')}
-            className="font-brutalist uppercase tracking-wide border-industrial"
+            className="font-display uppercase tracking-wide border-industrial"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             BACK
@@ -183,14 +183,14 @@ const EventDetail = () => {
         {/* Event Identity Section */}
         <div className="mb-4">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-2">
-            <h1 className="font-brutalist text-3xl md:text-4xl font-black uppercase tracking-wider">
+            <h1 className="font-display text-3xl md:text-4xl font-black uppercase tracking-wider">
               {event.event_type || 'Event'}
             </h1>
-            <Badge className={`font-industrial text-xs uppercase ${getStatusColor(event.status)} self-start`}>
+            <Badge className={`font-cb-sans text-xs uppercase ${getStatusColor(event.status)} self-start`}>
               {event.status}
             </Badge>
           </div>
-          <p className="font-industrial text-sm text-muted-foreground">
+          <p className="font-cb-sans text-sm text-muted-foreground">
             {event.code}
           </p>
         </div>
@@ -198,12 +198,12 @@ const EventDetail = () => {
         {/* Contact Details Section */}
         <div className="bg-muted/30 border border-border rounded-lg p-4 mb-6">
           {clientName && (
-            <p className="font-industrial text-xl md:text-2xl font-semibold mb-2">
+            <p className="font-cb-sans text-xl md:text-2xl font-semibold mb-2">
               {clientName}
             </p>
           )}
           {(clientEmail || clientPhone) && (
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 font-industrial text-sm mb-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 font-cb-sans text-sm mb-2">
               {clientEmail && (
                 <a href={`mailto:${clientEmail}`} className="text-primary hover:underline break-all">
                   {clientEmail}
@@ -219,7 +219,7 @@ const EventDetail = () => {
               )}
             </div>
           )}
-          <p className="text-xs text-muted-foreground font-industrial">
+          <p className="text-xs text-muted-foreground font-cb-sans">
             {event?.client_name || event?.client_email || event?.client_phone ? 
               'Event-specific contact details' : 
               linkedLead ? 'Contact details from linked lead' : 
@@ -235,7 +235,7 @@ const EventDetail = () => {
             onClick={() => setShowEditContactDetails(true)}
             variant="outline"
             size="sm"
-            className="font-brutalist uppercase tracking-wide border-industrial w-full"
+            className="font-display uppercase tracking-wide border-industrial w-full"
           >
             <UserCircle className="h-4 w-4 mr-2" />
             EDIT CONTACT
@@ -245,7 +245,7 @@ const EventDetail = () => {
             onClick={() => setShowEditEvent(true)}
             variant="outline"
             size="sm"
-            className="font-brutalist uppercase tracking-wide border-industrial w-full"
+            className="font-display uppercase tracking-wide border-industrial w-full"
           >
             <Edit className="h-4 w-4 mr-2" />
             EDIT EVENT
@@ -256,7 +256,7 @@ const EventDetail = () => {
               onClick={() => handleStatusUpdate('active')}
               variant="outline"
               size="sm"
-              className="font-brutalist uppercase tracking-wide border-industrial w-full"
+              className="font-display uppercase tracking-wide border-industrial w-full"
             >
               ACTIVATE
             </Button>
@@ -264,7 +264,7 @@ const EventDetail = () => {
             <Button
               onClick={() => setShowCreateHold(true)}
               size="sm"
-              className="btn-primary font-brutalist uppercase tracking-wide w-full"
+              className="btn-primary font-display uppercase tracking-wide w-full"
             >
               <Plus className="h-4 w-4 mr-2" />
               ADD SPACE BOOKING
@@ -280,10 +280,10 @@ const EventDetail = () => {
                 <div className="flex items-center gap-3">
                   <Calendar className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
                   <div>
-                    <p className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                    <p className="font-cb-sans text-xs uppercase tracking-wide text-muted-foreground">
                       Primary Date
                     </p>
-                    <p className="font-brutalist text-lg font-black">
+                    <p className="font-display text-lg font-black">
                       {format(new Date(event.primary_date), 'dd MMM yyyy')}
                     </p>
                   </div>
@@ -298,10 +298,10 @@ const EventDetail = () => {
                 <div className="flex items-center gap-3">
                   <Users className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
                   <div>
-                    <p className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                    <p className="font-cb-sans text-xs uppercase tracking-wide text-muted-foreground">
                       Headcount
                     </p>
-                    <p className="font-brutalist text-lg font-black">
+                    <p className="font-display text-lg font-black">
                       {event.headcount}
                     </p>
                   </div>
@@ -315,13 +315,13 @@ const EventDetail = () => {
               <div className="flex items-center gap-3">
                 <Building className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
                   <div>
-                    <p className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                    <p className="font-cb-sans text-xs uppercase tracking-wide text-muted-foreground">
                       Space Bookings
                     </p>
-                    <p className="font-brutalist text-lg font-black">
+                    <p className="font-display text-lg font-black">
                       {bookings?.length || 0}
                     </p>
-                    <p className="font-industrial text-xs text-muted-foreground mt-1">
+                    <p className="font-cb-sans text-xs text-muted-foreground mt-1">
                       {new Set((bookings ?? []).map((b: any) => b.space?.name)).size || 0} unique spaces
                     </p>
                   </div>
@@ -338,47 +338,47 @@ const EventDetail = () => {
         {/* Event Details Tabs */}
         <Tabs defaultValue="bookings" className="space-y-4">
           <TabsList className="grid w-full grid-cols-9 bg-[hsl(var(--muted))] border border-industrial">
-            <TabsTrigger value="bookings" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
+            <TabsTrigger value="bookings" className="font-display uppercase tracking-wide text-xs flex items-center justify-center gap-1">
               <Calendar className="h-3 w-3 md:hidden" />
               <span className="hidden md:inline">BOOKINGS</span>
               <span className="md:hidden">BOOK</span>
             </TabsTrigger>
-            <TabsTrigger value="overview" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
+            <TabsTrigger value="overview" className="font-display uppercase tracking-wide text-xs flex items-center justify-center gap-1">
               <Eye className="h-3 w-3 md:hidden" />
               <span className="hidden md:inline">OVERVIEW</span>
               <span className="md:hidden">VIEW</span>
             </TabsTrigger>
-            <TabsTrigger value="beo" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
+            <TabsTrigger value="beo" className="font-display uppercase tracking-wide text-xs flex items-center justify-center gap-1">
               <FileText className="h-3 w-3 md:hidden" />
               <span className="hidden md:inline">BEO</span>
               <span className="md:hidden">BEO</span>
             </TabsTrigger>
-            <TabsTrigger value="proposals" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
+            <TabsTrigger value="proposals" className="font-display uppercase tracking-wide text-xs flex items-center justify-center gap-1">
               <FileText className="h-3 w-3 md:hidden" />
               <span className="hidden md:inline">PROPOSALS</span>
               <span className="md:hidden">PROP</span>
             </TabsTrigger>
-            <TabsTrigger value="contracts" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
+            <TabsTrigger value="contracts" className="font-display uppercase tracking-wide text-xs flex items-center justify-center gap-1">
               <FileCheck className="h-3 w-3 md:hidden" />
               <span className="hidden md:inline">CONTRACTS</span>
               <span className="md:hidden">CONT</span>
             </TabsTrigger>
-            <TabsTrigger value="invoices" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
+            <TabsTrigger value="invoices" className="font-display uppercase tracking-wide text-xs flex items-center justify-center gap-1">
               <Receipt className="h-3 w-3 md:hidden" />
               <span className="hidden md:inline">INVOICES</span>
               <span className="md:hidden">INV</span>
             </TabsTrigger>
-            <TabsTrigger value="notes" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
+            <TabsTrigger value="notes" className="font-display uppercase tracking-wide text-xs flex items-center justify-center gap-1">
               <StickyNote className="h-3 w-3 md:hidden" />
               <span className="hidden md:inline">NOTES</span>
               <span className="md:hidden">NOTE</span>
             </TabsTrigger>
-            <TabsTrigger value="late-close" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
+            <TabsTrigger value="late-close" className="font-display uppercase tracking-wide text-xs flex items-center justify-center gap-1">
               <Clock className="h-3 w-3 md:hidden" />
               <span className="hidden md:inline">LATE CLOSE</span>
               <span className="md:hidden">LATE</span>
             </TabsTrigger>
-            <TabsTrigger value="client-view" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
+            <TabsTrigger value="client-view" className="font-display uppercase tracking-wide text-xs flex items-center justify-center gap-1">
               <Eye className="h-3 w-3 md:hidden" />
               <span className="hidden md:inline">CLIENT VIEW</span>
               <span className="md:hidden">CLIENT</span>
@@ -388,7 +388,7 @@ const EventDetail = () => {
           <TabsContent value="bookings">
             <div className="space-y-4">
               <div className="bg-muted p-4 rounded-lg border border-industrial">
-                <p className="font-industrial text-sm text-muted-foreground">
+                <p className="font-cb-sans text-sm text-muted-foreground">
                   Each space booking represents a reserved time slot in a specific venue space. 
                   You can book multiple time slots and different spaces for the same event.
                 </p>
@@ -403,25 +403,25 @@ const EventDetail = () => {
               {(clientName || clientEmail || clientPhone || event.budget) && (
                 <Card className="border-industrial">
                   <CardHeader>
-                    <CardTitle className="font-brutalist uppercase tracking-wide">CLIENT DETAILS</CardTitle>
+                    <CardTitle className="font-display uppercase tracking-wide">CLIENT DETAILS</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
                       {clientName && (
                         <div>
-                          <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                          <Label className="font-cb-sans text-xs uppercase tracking-wide text-muted-foreground">
                             Client Name
                           </Label>
-                          <p className="font-industrial">{clientName}</p>
+                          <p className="font-cb-sans">{clientName}</p>
                         </div>
                       )}
                       
                       {clientEmail && (
                         <div>
-                          <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                          <Label className="font-cb-sans text-xs uppercase tracking-wide text-muted-foreground">
                             Email Address
                           </Label>
-                          <p className="font-industrial">
+                          <p className="font-cb-sans">
                             <a href={`mailto:${clientEmail}`} className="text-primary hover:underline">
                               {clientEmail}
                             </a>
@@ -431,10 +431,10 @@ const EventDetail = () => {
                       
                       {clientPhone && (
                         <div>
-                          <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                          <Label className="font-cb-sans text-xs uppercase tracking-wide text-muted-foreground">
                             Phone Number
                           </Label>
-                          <p className="font-industrial">
+                          <p className="font-cb-sans">
                             <a href={`tel:${clientPhone}`} className="text-primary hover:underline">
                               {clientPhone}
                             </a>
@@ -444,10 +444,10 @@ const EventDetail = () => {
                       
                       {event.budget && (
                         <div>
-                          <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                          <Label className="font-cb-sans text-xs uppercase tracking-wide text-muted-foreground">
                             Budget
                           </Label>
-                          <p className="font-industrial">£{event.budget}</p>
+                          <p className="font-cb-sans">£{event.budget}</p>
                         </div>
                       )}
                     </div>
@@ -458,67 +458,67 @@ const EventDetail = () => {
               {/* Event Information */}
               <Card className="border-industrial">
                 <CardHeader>
-                  <CardTitle className="font-brutalist uppercase tracking-wide">EVENT INFORMATION</CardTitle>
+                  <CardTitle className="font-display uppercase tracking-wide">EVENT INFORMATION</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
                     <div>
-                      <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                      <Label className="font-cb-sans text-xs uppercase tracking-wide text-muted-foreground">
                         Event Code
                       </Label>
-                      <p className="font-brutalist text-lg">{event.code}</p>
+                      <p className="font-display text-lg">{event.code}</p>
                     </div>
                     
                     <div>
-                      <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                      <Label className="font-cb-sans text-xs uppercase tracking-wide text-muted-foreground">
                         Status
                       </Label>
-                      <Badge className={`font-industrial text-xs uppercase ${getStatusColor(event.status)} mt-1`}>
+                      <Badge className={`font-cb-sans text-xs uppercase ${getStatusColor(event.status)} mt-1`}>
                         {event.status}
                       </Badge>
                     </div>
 
                     {event.event_type && (
                       <div>
-                        <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                        <Label className="font-cb-sans text-xs uppercase tracking-wide text-muted-foreground">
                           Event Type
                         </Label>
-                        <p className="font-industrial">{event.event_type}</p>
+                        <p className="font-cb-sans">{event.event_type}</p>
                       </div>
                     )}
 
                     {event.headcount && (
                       <div>
-                        <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                        <Label className="font-cb-sans text-xs uppercase tracking-wide text-muted-foreground">
                           Expected Headcount
                         </Label>
-                        <p className="font-industrial">{event.headcount}</p>
+                        <p className="font-cb-sans">{event.headcount}</p>
                       </div>
                     )}
 
                     {event.primary_date && (
                       <div>
-                        <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                        <Label className="font-cb-sans text-xs uppercase tracking-wide text-muted-foreground">
                           Event Date
                         </Label>
-                        <p className="font-industrial">{format(new Date(event.primary_date), 'dd MMM yyyy')}</p>
+                        <p className="font-cb-sans">{format(new Date(event.primary_date), 'dd MMM yyyy')}</p>
                       </div>
                     )}
 
                     {/* No explicit start time stored for management events yet */}
 
                     <div>
-                      <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                      <Label className="font-cb-sans text-xs uppercase tracking-wide text-muted-foreground">
                         Created
                       </Label>
-                      <p className="font-industrial">{format(new Date(event.created_at), 'dd MMM yyyy HH:mm')}</p>
+                      <p className="font-cb-sans">{format(new Date(event.created_at), 'dd MMM yyyy HH:mm')}</p>
                     </div>
 
                     <div>
-                      <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                      <Label className="font-cb-sans text-xs uppercase tracking-wide text-muted-foreground">
                         Last Updated
                       </Label>
-                      <p className="font-industrial">{format(new Date(event.updated_at), 'dd MMM yyyy HH:mm')}</p>
+                      <p className="font-cb-sans">{format(new Date(event.updated_at), 'dd MMM yyyy HH:mm')}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -529,7 +529,7 @@ const EventDetail = () => {
           <TabsContent value="beo">
             <div className="space-y-6">
               <div className="bg-muted p-4 rounded-lg border border-industrial">
-                <p className="font-industrial text-sm text-muted-foreground">
+                <p className="font-cb-sans text-sm text-muted-foreground">
                   The Banquet Event Order (BEO) is a comprehensive document that outlines all operational details 
                   for your event including menu, staffing, schedule, room layouts, and equipment requirements.
                 </p>
@@ -537,10 +537,10 @@ const EventDetail = () => {
               
               <Tabs defaultValue="builder" className="space-y-4">
                 <TabsList className="grid w-full grid-cols-2 bg-[hsl(var(--muted))]">
-                  <TabsTrigger value="builder" className="font-brutalist uppercase tracking-wide text-xs">
+                  <TabsTrigger value="builder" className="font-display uppercase tracking-wide text-xs">
                     BEO Builder
                   </TabsTrigger>
-                  <TabsTrigger value="versions" className="font-brutalist uppercase tracking-wide text-xs">
+                  <TabsTrigger value="versions" className="font-display uppercase tracking-wide text-xs">
                     Generated Versions
                   </TabsTrigger>
                 </TabsList>

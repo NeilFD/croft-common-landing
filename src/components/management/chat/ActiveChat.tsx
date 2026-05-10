@@ -756,7 +756,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
           {messages.length === 0 && !loading ? (
             <div className="flex items-center justify-center h-full py-12">
               <div className="text-center">
-                <p className="text-muted-foreground font-industrial text-sm">
+                <p className="text-muted-foreground font-cb-sans text-sm">
                   No messages yet. Start the conversation!
                 </p>
               </div>
@@ -800,7 +800,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
                     <div className="bg-card border-l-4 border-[hsl(var(--accent-pink))] rounded-lg p-3 max-w-[70%] shadow-sm">
                       <div className="text-xs font-bold uppercase tracking-wide mb-1 text-[hsl(var(--accent-pink))]">Cleo</div>
                       <div className="flex items-center gap-2 text-muted-foreground">
-                        <span className="font-industrial text-sm">Cleo is thinking</span>
+                        <span className="font-cb-sans text-sm">Cleo is thinking</span>
                         <div className="flex gap-1">
                           <span className="animate-bounce text-sm" style={{ animationDelay: '0ms' }}>.</span>
                           <span className="animate-bounce text-sm" style={{ animationDelay: '150ms' }}>.</span>

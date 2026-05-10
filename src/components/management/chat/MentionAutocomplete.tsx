@@ -73,7 +73,7 @@ export const MentionAutocomplete = ({
                   }}
                   className="cursor-pointer"
                 >
-                  <span className="font-industrial">{suggestion.display}</span>
+                  <span className="font-cb-sans">{suggestion.display}</span>
                 </CommandItem>
               ))}
             </CommandGroup>

@@ -50,17 +50,17 @@ export const NewChatDialog = ({ open, onOpenChange, onChatCreated }: NewChatDial
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-background border border-border">
         <DialogHeader>
-          <DialogTitle className="font-brutalist text-xl font-black uppercase tracking-wide">
+          <DialogTitle className="font-display text-xl font-black uppercase tracking-wide">
             NEW GROUP CHAT
           </DialogTitle>
-          <DialogDescription className="font-industrial">
+          <DialogDescription className="font-cb-sans">
             Create a new group chat. You can invite members after creation.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div>
-            <Label htmlFor="chat-name" className="font-industrial">
+            <Label htmlFor="chat-name" className="font-cb-sans">
               Chat Name
             </Label>
             <Input
@@ -68,7 +68,7 @@ export const NewChatDialog = ({ open, onOpenChange, onChatCreated }: NewChatDial
               value={chatName}
               onChange={(e) => setChatName(e.target.value)}
               placeholder="e.g., Marketing Team"
-              className="font-industrial mt-1"
+              className="font-cb-sans mt-1"
               disabled={creating}
             />
           </div>
@@ -78,14 +78,14 @@ export const NewChatDialog = ({ open, onOpenChange, onChatCreated }: NewChatDial
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={creating}
-              className="font-brutalist uppercase"
+              className="font-display uppercase"
             >
               Cancel
             </Button>
             <Button
               onClick={handleCreate}
               disabled={creating || !chatName.trim()}
-              className="bg-[hsl(var(--accent-pink))] hover:bg-[hsl(var(--accent-pink))]/90 font-brutalist uppercase"
+              className="bg-[hsl(var(--accent-pink))] hover:bg-[hsl(var(--accent-pink))]/90 font-display uppercase"
             >
               {creating ? 'Creating...' : 'Create'}
             </Button>

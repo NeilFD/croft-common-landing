@@ -225,7 +225,7 @@ const SpaceForm = () => {
       <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
-            <Button variant="ghost" size="sm" asChild className="font-industrial">
+            <Button variant="ghost" size="sm" asChild className="font-cb-sans">
               <Link to="/management/spaces/venues" className="flex items-center space-x-2">
                 <ArrowLeft className="h-4 w-4" />
                 <span>Back</span>
@@ -233,10 +233,10 @@ const SpaceForm = () => {
             </Button>
             
             <div>
-              <h1 className="font-brutalist text-4xl font-black uppercase tracking-wider text-foreground">
+              <h1 className="font-display text-4xl font-black uppercase tracking-wider text-foreground">
                 {isEdit ? 'EDIT VENUE' : 'NEW VENUE'}
               </h1>
-              <p className="font-industrial text-muted-foreground">
+              <p className="font-cb-sans text-muted-foreground">
                 {isEdit ? 'Update venue details' : 'Add venue space'}
               </p>
             </div>
@@ -245,8 +245,8 @@ const SpaceForm = () => {
 
         <Card className="border-industrial">
           <CardHeader>
-            <CardTitle className="font-brutalist text-2xl font-black uppercase tracking-wide">VENUE DETAILS</CardTitle>
-            <CardDescription className="font-industrial">
+            <CardTitle className="font-display text-2xl font-black uppercase tracking-wide">VENUE DETAILS</CardTitle>
+            <CardDescription className="font-cb-sans">
               Configure space information and capacities
             </CardDescription>
           </CardHeader>
@@ -257,20 +257,20 @@ const SpaceForm = () => {
             })} className="space-y-6 md:space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-3">
-                  <Label htmlFor="name" className="font-industrial font-medium">Name *</Label>
+                  <Label htmlFor="name" className="font-cb-sans font-medium">Name *</Label>
                   <Input
                     id="name"
                     {...register('name')}
                     placeholder="e.g. Main Hall"
-                    className="font-industrial"
+                    className="font-cb-sans"
                   />
                   {errors.name && (
-                    <p className="text-sm text-destructive font-industrial">{errors.name.message}</p>
+                    <p className="text-sm text-destructive font-cb-sans">{errors.name.message}</p>
                   )}
                 </div>
 
                 <div className="space-y-3">
-                  <Label htmlFor="slug" className="font-industrial font-medium">Identifier *</Label>
+                  <Label htmlFor="slug" className="font-cb-sans font-medium">Identifier *</Label>
                   <Input
                     id="slug"
                     {...register('slug')}
@@ -278,32 +278,32 @@ const SpaceForm = () => {
                     className="font-mono text-sm"
                   />
                   {errors.slug && (
-                    <p className="text-sm text-destructive font-industrial">{errors.slug.message}</p>
+                    <p className="text-sm text-destructive font-cb-sans">{errors.slug.message}</p>
                   )}
                 </div>
               </div>
 
               <div className="space-y-3">
-                <Label htmlFor="description" className="font-industrial font-medium">Description</Label>
+                <Label htmlFor="description" className="font-cb-sans font-medium">Description</Label>
                 <Textarea
                   id="description"
                   {...register('description')}
                   placeholder="Space description..."
                   rows={3}
-                  className="font-industrial"
+                  className="font-cb-sans"
                 />
                 {errors.description && (
-                  <p className="text-sm text-destructive font-industrial">{errors.description.message}</p>
+                  <p className="text-sm text-destructive font-cb-sans">{errors.description.message}</p>
                 )}
               </div>
 
               {/* Capacity & Guests Section */}
               <div className="space-y-4 md:space-y-6 p-4 md:p-6 border-2 border-industrial rounded-lg bg-background/50">
-                <h3 className="font-brutalist text-lg md:text-xl font-bold uppercase tracking-wide">CAPACITY & GUESTS</h3>
+                <h3 className="font-display text-lg md:text-xl font-bold uppercase tracking-wide">CAPACITY & GUESTS</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-3">
-                    <Label htmlFor="min_guests" className="font-industrial font-medium">Minimum Guests</Label>
+                    <Label htmlFor="min_guests" className="font-cb-sans font-medium">Minimum Guests</Label>
                     <Input
                       id="min_guests"
                       type="number"
@@ -312,12 +312,12 @@ const SpaceForm = () => {
                         setValueAs: (v) => (v === "" || isNaN(v) ? undefined : Number(v))
                       })}
                       placeholder="e.g. 10"
-                      className="font-industrial"
+                      className="font-cb-sans"
                     />
                   </div>
 
                   <div className="space-y-3">
-                    <Label htmlFor="max_guests" className="font-industrial font-medium">Maximum Guests</Label>
+                    <Label htmlFor="max_guests" className="font-cb-sans font-medium">Maximum Guests</Label>
                     <Input
                       id="max_guests"
                       type="number"
@@ -326,15 +326,15 @@ const SpaceForm = () => {
                         setValueAs: (v) => (v === "" || isNaN(v) ? undefined : Number(v))
                       })}
                       placeholder="e.g. 200"
-                      className="font-industrial"
+                      className="font-cb-sans"
                     />
                     {errors.min_guests && (
-                      <p className="text-sm text-destructive font-industrial">{errors.min_guests.message}</p>
+                      <p className="text-sm text-destructive font-cb-sans">{errors.min_guests.message}</p>
                     )}
                   </div>
 
                   <div className="space-y-3">
-                    <Label htmlFor="capacity_seated" className="font-industrial font-medium">Seated Capacity *</Label>
+                    <Label htmlFor="capacity_seated" className="font-cb-sans font-medium">Seated Capacity *</Label>
                     <Input
                       id="capacity_seated"
                       type="number"
@@ -343,15 +343,15 @@ const SpaceForm = () => {
                         setValueAs: (v) => (v === "" || isNaN(v) ? 0 : Number(v))
                       })}
                       placeholder="0"
-                      className="font-industrial"
+                      className="font-cb-sans"
                     />
                     {errors.capacity_seated && (
-                      <p className="text-sm text-destructive font-industrial">{errors.capacity_seated.message}</p>
+                      <p className="text-sm text-destructive font-cb-sans">{errors.capacity_seated.message}</p>
                     )}
                   </div>
 
                   <div className="space-y-3">
-                    <Label htmlFor="capacity_standing" className="font-industrial font-medium">Standing Capacity *</Label>
+                    <Label htmlFor="capacity_standing" className="font-cb-sans font-medium">Standing Capacity *</Label>
                     <Input
                       id="capacity_standing"
                       type="number"
@@ -360,10 +360,10 @@ const SpaceForm = () => {
                         setValueAs: (v) => (v === "" || isNaN(v) ? 0 : Number(v))
                       })}
                       placeholder="0"
-                      className="font-industrial"
+                      className="font-cb-sans"
                     />
                     {errors.capacity_standing && (
-                      <p className="text-sm text-destructive font-industrial">{errors.capacity_standing.message}</p>
+                      <p className="text-sm text-destructive font-cb-sans">{errors.capacity_standing.message}</p>
                     )}
                   </div>
                 </div>
@@ -371,28 +371,28 @@ const SpaceForm = () => {
 
               {/* Atmosphere & Character Section */}
               <div className="space-y-4 md:space-y-6 p-4 md:p-6 border-2 border-industrial rounded-lg bg-background/50">
-                <h3 className="font-brutalist text-lg md:text-xl font-bold uppercase tracking-wide">ATMOSPHERE & CHARACTER</h3>
+                <h3 className="font-display text-lg md:text-xl font-bold uppercase tracking-wide">ATMOSPHERE & CHARACTER</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-3">
-                    <Label htmlFor="ambience" className="font-industrial font-medium">Ambience</Label>
+                    <Label htmlFor="ambience" className="font-cb-sans font-medium">Ambience</Label>
                     <Input
                       id="ambience"
                       {...register('ambience')}
                       placeholder="e.g. Elegant, Industrial, Cosy"
-                      className="font-industrial"
+                      className="font-cb-sans"
                     />
-                    <p className="text-xs text-muted-foreground font-industrial">
+                    <p className="text-xs text-muted-foreground font-cb-sans">
                       Describe the overall atmosphere and feel
                     </p>
                   </div>
 
                   <div className="space-y-3">
-                    <Label htmlFor="natural_light" className="font-industrial font-medium">Natural Light</Label>
+                    <Label htmlFor="natural_light" className="font-cb-sans font-medium">Natural Light</Label>
                     <select
                       id="natural_light"
                       {...register('natural_light')}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-industrial"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-cb-sans"
                     >
                       <option value="">Select...</option>
                       <option value="excellent">Excellent</option>
@@ -410,17 +410,17 @@ const SpaceForm = () => {
                     checked={watch('outdoor_access')}
                     onCheckedChange={(checked) => setValue('outdoor_access', checked)}
                   />
-                  <Label htmlFor="outdoor_access" className="font-industrial font-medium">Has Outdoor Access</Label>
+                  <Label htmlFor="outdoor_access" className="font-cb-sans font-medium">Has Outdoor Access</Label>
                 </div>
               </div>
 
               {/* Technical Capabilities Section */}
               <div className="space-y-4 md:space-y-6 p-4 md:p-6 border-2 border-industrial rounded-lg bg-background/50">
-                <h3 className="font-brutalist text-lg md:text-xl font-bold uppercase tracking-wide">TECHNICAL CAPABILITIES</h3>
+                <h3 className="font-display text-lg md:text-xl font-bold uppercase tracking-wide">TECHNICAL CAPABILITIES</h3>
                 
                 <div className="space-y-4 md:space-y-6">
                   <div className="space-y-3">
-                    <Label htmlFor="av_capabilities" className="font-industrial font-medium">AV Capabilities</Label>
+                    <Label htmlFor="av_capabilities" className="font-cb-sans font-medium">AV Capabilities</Label>
                     <MultiSelect
                       options={[
                         { label: 'Projector', value: 'projector' },
@@ -433,16 +433,16 @@ const SpaceForm = () => {
                       selected={Array.isArray(watch('av_capabilities')) ? watch('av_capabilities') : []}
                       onChange={(values) => setValue('av_capabilities', values, { shouldValidate: true })}
                       placeholder="Select AV equipment..."
-                      className="font-industrial"
+                      className="font-cb-sans"
                     />
                   </div>
 
                   <div className="space-y-3">
-                    <Label htmlFor="layout_flexibility" className="font-industrial font-medium">Layout Flexibility</Label>
+                    <Label htmlFor="layout_flexibility" className="font-cb-sans font-medium">Layout Flexibility</Label>
                     <select
                       id="layout_flexibility"
                       {...register('layout_flexibility')}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-industrial"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-cb-sans"
                     >
                       <option value="">Select...</option>
                       <option value="highly_flexible">Highly Flexible</option>
@@ -455,11 +455,11 @@ const SpaceForm = () => {
 
               {/* Catering & Events Section */}
               <div className="space-y-4 md:space-y-6 p-4 md:p-6 border-2 border-industrial rounded-lg bg-background/50">
-                <h3 className="font-brutalist text-lg md:text-xl font-bold uppercase tracking-wide">CATERING & EVENTS</h3>
+                <h3 className="font-display text-lg md:text-xl font-bold uppercase tracking-wide">CATERING & EVENTS</h3>
                 
                 <div className="space-y-4 md:space-y-6">
                   <div className="space-y-3">
-                    <Label htmlFor="catering_style" className="font-industrial font-medium">Catering Style</Label>
+                    <Label htmlFor="catering_style" className="font-cb-sans font-medium">Catering Style</Label>
                     <MultiSelect
                       options={[
                         { label: 'Buffet', value: 'buffet' },
@@ -472,12 +472,12 @@ const SpaceForm = () => {
                       selected={Array.isArray(watch('catering_style')) ? watch('catering_style') : []}
                       onChange={(values) => setValue('catering_style', values, { shouldValidate: true })}
                       placeholder="Select catering styles..."
-                      className="font-industrial"
+                      className="font-cb-sans"
                     />
                   </div>
 
                   <div className="space-y-3">
-                    <Label htmlFor="ideal_event_types" className="font-industrial font-medium">Ideal Event Types</Label>
+                    <Label htmlFor="ideal_event_types" className="font-cb-sans font-medium">Ideal Event Types</Label>
                     <MultiSelect
                       options={[
                         { label: 'Corporate Event', value: 'corporate' },
@@ -492,7 +492,7 @@ const SpaceForm = () => {
                       selected={Array.isArray(watch('ideal_event_types')) ? watch('ideal_event_types') : []}
                       onChange={(values) => setValue('ideal_event_types', values, { shouldValidate: true })}
                       placeholder="Select event types..."
-                      className="font-industrial"
+                      className="font-cb-sans"
                     />
                   </div>
                 </div>
@@ -500,11 +500,11 @@ const SpaceForm = () => {
 
               {/* Features & Accessibility Section */}
               <div className="space-y-4 md:space-y-6 p-4 md:p-6 border-2 border-industrial rounded-lg bg-background/50">
-                <h3 className="font-brutalist text-lg md:text-xl font-bold uppercase tracking-wide">FEATURES & ACCESSIBILITY</h3>
+                <h3 className="font-display text-lg md:text-xl font-bold uppercase tracking-wide">FEATURES & ACCESSIBILITY</h3>
                 
                 <div className="space-y-4 md:space-y-6">
                   <div className="space-y-3">
-                    <Label htmlFor="unique_features" className="font-industrial font-medium">Unique Features</Label>
+                    <Label htmlFor="unique_features" className="font-cb-sans font-medium">Unique Features</Label>
                     <MultiSelect
                       options={[
                         { label: 'Fireplace', value: 'fireplace' },
@@ -519,12 +519,12 @@ const SpaceForm = () => {
                       selected={Array.isArray(watch('unique_features')) ? watch('unique_features') : []}
                       onChange={(values) => setValue('unique_features', values, { shouldValidate: true })}
                       placeholder="Select unique features..."
-                      className="font-industrial"
+                      className="font-cb-sans"
                     />
                   </div>
 
                   <div className="space-y-3">
-                    <Label htmlFor="accessibility_features" className="font-industrial font-medium">Accessibility Features</Label>
+                    <Label htmlFor="accessibility_features" className="font-cb-sans font-medium">Accessibility Features</Label>
                     <MultiSelect
                       options={[
                         { label: 'Wheelchair Access', value: 'wheelchair_access' },
@@ -537,7 +537,7 @@ const SpaceForm = () => {
                       selected={Array.isArray(watch('accessibility_features')) ? watch('accessibility_features') : []}
                       onChange={(values) => setValue('accessibility_features', values, { shouldValidate: true })}
                       placeholder="Select accessibility features..."
-                      className="font-industrial"
+                      className="font-cb-sans"
                     />
                   </div>
                 </div>
@@ -545,25 +545,25 @@ const SpaceForm = () => {
 
               {/* Pricing & Settings Section */}
               <div className="space-y-4 md:space-y-6 p-4 md:p-6 border-2 border-industrial rounded-lg bg-background/50">
-                <h3 className="font-brutalist text-lg md:text-xl font-bold uppercase tracking-wide">PRICING & SETTINGS</h3>
+                <h3 className="font-display text-lg md:text-xl font-bold uppercase tracking-wide">PRICING & SETTINGS</h3>
                 
                 <div className="space-y-4 md:space-y-6">
                   <div className="space-y-3">
-                    <Label htmlFor="pricing_tier" className="font-industrial font-medium">Pricing Tier</Label>
+                    <Label htmlFor="pricing_tier" className="font-cb-sans font-medium">Pricing Tier</Label>
                     <MultiSelect
                       options={PRICING_TIER_OPTIONS}
                       selected={(Array.isArray(watch('pricing_tier')) ? watch('pricing_tier') : []).filter(isAllowedPricingTier)}
                       onChange={(values) => setValue('pricing_tier', values.filter(isAllowedPricingTier), { shouldValidate: true, shouldDirty: true })}
                       placeholder="Select pricing tiers..."
-                      className="font-industrial"
+                      className="font-cb-sans"
                     />
                     {errors.pricing_tier && (
-                      <p className="text-sm text-destructive font-industrial">{errors.pricing_tier.message}</p>
+                      <p className="text-sm text-destructive font-cb-sans">{errors.pricing_tier.message}</p>
                     )}
                   </div>
 
                   <div className="space-y-3">
-                    <Label htmlFor="display_order" className="font-industrial font-medium">Display Order</Label>
+                    <Label htmlFor="display_order" className="font-cb-sans font-medium">Display Order</Label>
                     <Input
                       id="display_order"
                       type="number"
@@ -572,18 +572,18 @@ const SpaceForm = () => {
                         setValueAs: (v) => (v === "" || isNaN(v) ? 0 : Number(v))
                       })}
                       placeholder="0"
-                      className="font-industrial"
+                      className="font-cb-sans"
                     />
                     {errors.display_order && (
-                      <p className="text-sm text-destructive font-industrial">{errors.display_order.message}</p>
+                      <p className="text-sm text-destructive font-cb-sans">{errors.display_order.message}</p>
                     )}
-                    <p className="text-xs text-muted-foreground font-industrial">
+                    <p className="text-xs text-muted-foreground font-cb-sans">
                       Lower numbers appear first
                     </p>
                   </div>
 
                   <div className="space-y-3">
-                    <Label htmlFor="combinable_with" className="font-industrial font-medium">Space Joins</Label>
+                    <Label htmlFor="combinable_with" className="font-cb-sans font-medium">Space Joins</Label>
                     <MultiSelect
                       options={allSpaces?.filter(s => s.id !== id).map(s => ({
                         label: s.name,
@@ -592,9 +592,9 @@ const SpaceForm = () => {
                       selected={Array.isArray(watch('combinable_with')) ? watch('combinable_with') : []}
                       onChange={(values) => setValue('combinable_with', values)}
                       placeholder="Space Joins"
-                      className="font-industrial"
+                      className="font-cb-sans"
                     />
-                    <p className="text-xs text-muted-foreground font-industrial">
+                    <p className="text-xs text-muted-foreground font-cb-sans">
                       Select other spaces that can be joined together for larger events
                     </p>
                   </div>
@@ -605,7 +605,7 @@ const SpaceForm = () => {
                       checked={watch('is_active')}
                       onCheckedChange={(checked) => setValue('is_active', checked)}
                     />
-                    <Label htmlFor="is_active" className="font-industrial font-medium">Active (available for bookings)</Label>
+                    <Label htmlFor="is_active" className="font-cb-sans font-medium">Active (available for bookings)</Label>
                   </div>
                 </div>
               </div>
@@ -614,13 +614,13 @@ const SpaceForm = () => {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="btn-primary font-brutalist uppercase tracking-wide flex items-center justify-center space-x-2 w-full sm:w-auto"
+                  className="btn-primary font-display uppercase tracking-wide flex items-center justify-center space-x-2 w-full sm:w-auto"
                 >
                   <Save className="h-4 w-4" />
                   <span>{isSubmitting ? 'SAVING...' : isEdit ? 'UPDATE' : 'CREATE'}</span>
                 </Button>
                 
-                <Button variant="outline" asChild className="font-brutalist uppercase tracking-wide w-full sm:w-auto">
+                <Button variant="outline" asChild className="font-display uppercase tracking-wide w-full sm:w-auto">
                   <Link to="/management/spaces/venues">CANCEL</Link>
                 </Button>
               </div>

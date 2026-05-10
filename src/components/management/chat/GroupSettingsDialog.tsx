@@ -218,13 +218,13 @@ export const GroupSettingsDialog = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="font-brutalist">Group Settings</DialogTitle>
+          <DialogTitle className="font-display">Group Settings</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Rename Section */}
           <div>
-            <Label htmlFor="chat-name" className="font-industrial text-sm">
+            <Label htmlFor="chat-name" className="font-cb-sans text-sm">
               Chat Name
             </Label>
             <div className="flex gap-2 mt-2">
@@ -233,7 +233,7 @@ export const GroupSettingsDialog = ({
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 disabled={!isAdmin || loading}
-                className="font-industrial"
+                className="font-cb-sans"
               />
               <Button
                 onClick={handleRename}
@@ -247,7 +247,7 @@ export const GroupSettingsDialog = ({
 
           {/* Members Section */}
           <div>
-            <Label className="font-industrial text-sm">Members ({members.length})</Label>
+            <Label className="font-cb-sans text-sm">Members ({members.length})</Label>
             <ScrollArea className="h-[200px] mt-2 border rounded-md p-2">
               <div className="space-y-2">
                 {members.map((member) => (
@@ -262,7 +262,7 @@ export const GroupSettingsDialog = ({
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-industrial text-sm">{member.user_name}</p>
+                        <p className="font-cb-sans text-sm">{member.user_name}</p>
                         <p className="text-xs text-muted-foreground">
                           {member.user_role} {member.is_admin && '• Admin'}
                         </p>
@@ -287,7 +287,7 @@ export const GroupSettingsDialog = ({
           {/* Add Member Section (Admin Only) */}
           {isAdmin && allUsers.length > 0 && (
             <div>
-              <Label className="font-industrial text-sm">Add Member</Label>
+              <Label className="font-cb-sans text-sm">Add Member</Label>
               <div className="flex gap-2 mt-2">
                 <select
                   value={selectedUserId}

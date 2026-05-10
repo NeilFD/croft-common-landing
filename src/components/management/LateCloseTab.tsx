@@ -77,7 +77,7 @@ export const LateCloseTab = ({ event }: LateCloseTabProps) => {
       <CardHeader>
         <div className="flex items-center gap-3">
           <Clock className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
-          <CardTitle className="font-brutalist uppercase tracking-wide">LATE CLOSE REQUEST</CardTitle>
+          <CardTitle className="font-display uppercase tracking-wide">LATE CLOSE REQUEST</CardTitle>
         </div>
       </CardHeader>
       
@@ -85,18 +85,18 @@ export const LateCloseTab = ({ event }: LateCloseTabProps) => {
         {event.late_close_requested ? (
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <Badge className="bg-[hsl(var(--accent-blue))] text-white font-industrial text-xs uppercase">
+              <Badge className="bg-[hsl(var(--accent-blue))] text-white font-cb-sans text-xs uppercase">
                 REQUEST PENDING
               </Badge>
               <AlertTriangle className="h-4 w-4 text-[hsl(var(--accent-blue))]" />
             </div>
             
             <div className="space-y-2">
-              <Label className="font-industrial uppercase text-xs tracking-wide text-muted-foreground">
+              <Label className="font-cb-sans uppercase text-xs tracking-wide text-muted-foreground">
                 Reason for Late Close Request
               </Label>
               <div className="p-3 bg-[hsl(var(--muted))] rounded border">
-                <p className="font-industrial text-sm">
+                <p className="font-cb-sans text-sm">
                   {event.late_close_reason || 'No reason provided'}
                 </p>
               </div>
@@ -105,7 +105,7 @@ export const LateCloseTab = ({ event }: LateCloseTabProps) => {
             {event.late_close_approved_by ? (
               <div className="flex items-center gap-2 p-3 bg-[hsl(var(--accent-green))/10] border border-[hsl(var(--accent-green))] rounded">
                 <Check className="h-4 w-4 text-[hsl(var(--accent-green))]" />
-                <span className="font-industrial text-sm text-[hsl(var(--accent-green))]">
+                <span className="font-cb-sans text-sm text-[hsl(var(--accent-green))]">
                   Late close request has been approved
                 </span>
               </div>
@@ -114,7 +114,7 @@ export const LateCloseTab = ({ event }: LateCloseTabProps) => {
                 <Button
                   onClick={handleApproveLateClose}
                   disabled={loading}
-                  className="btn-primary font-brutalist uppercase tracking-wide"
+                  className="btn-primary font-display uppercase tracking-wide"
                 >
                   {loading ? 'APPROVING...' : 'APPROVE LATE CLOSE'}
                 </Button>
@@ -125,7 +125,7 @@ export const LateCloseTab = ({ event }: LateCloseTabProps) => {
           canEditBookings() && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="late-close-reason" className="font-industrial uppercase text-xs tracking-wide">
+                <Label htmlFor="late-close-reason" className="font-cb-sans uppercase text-xs tracking-wide">
                   Reason for Late Close Request
                 </Label>
                 <Textarea
@@ -133,20 +133,20 @@ export const LateCloseTab = ({ event }: LateCloseTabProps) => {
                   value={requestReason}
                   onChange={(e) => setRequestReason(e.target.value)}
                   placeholder="Explain why this event needs to operate beyond normal trading hours..."
-                  className="font-industrial min-h-[100px]"
+                  className="font-cb-sans min-h-[100px]"
                 />
               </div>
 
               <Button
                 onClick={handleRequestLateClose}
                 disabled={loading || !requestReason.trim()}
-                className="btn-primary font-brutalist uppercase tracking-wide"
+                className="btn-primary font-display uppercase tracking-wide"
               >
                 {loading ? 'SUBMITTING...' : 'REQUEST LATE CLOSE'}
               </Button>
 
               <div className="p-4 bg-[hsl(var(--muted))] rounded border">
-                <p className="font-industrial text-sm text-muted-foreground">
+                <p className="font-cb-sans text-sm text-muted-foreground">
                   <strong>Note:</strong> Late close requests allow events to operate beyond normal trading hours. 
                   All requests require admin approval before taking effect.
                 </p>

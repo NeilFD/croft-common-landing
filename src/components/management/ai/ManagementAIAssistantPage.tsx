@@ -48,7 +48,7 @@ export const ManagementAIAssistantPage = () => {
     <div className="container mx-auto p-6 max-w-7xl">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-brutalist font-black uppercase tracking-wider mb-2">
+          <h1 className="text-3xl font-display font-black uppercase tracking-wider mb-2">
             AI Assistant
           </h1>
           <p className="text-muted-foreground">

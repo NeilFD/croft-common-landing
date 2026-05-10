@@ -49,14 +49,14 @@ export const EventNotesTab = ({ eventId, notes }: EventNotesTabProps) => {
     <Card className="border-industrial">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="font-brutalist uppercase tracking-wide">EVENT NOTES</CardTitle>
+          <CardTitle className="font-display uppercase tracking-wide">EVENT NOTES</CardTitle>
           
           {!isEditing ? (
             <Button
               variant="outline"
               size="sm"
               onClick={() => setIsEditing(true)}
-              className="font-brutalist uppercase tracking-wide border-industrial"
+              className="font-display uppercase tracking-wide border-industrial"
             >
               <Edit className="h-4 w-4 mr-2" />
               EDIT
@@ -67,7 +67,7 @@ export const EventNotesTab = ({ eventId, notes }: EventNotesTabProps) => {
                 variant="outline"
                 size="sm"
                 onClick={handleCancel}
-                className="font-brutalist uppercase tracking-wide border-industrial"
+                className="font-display uppercase tracking-wide border-industrial"
               >
                 <X className="h-4 w-4 mr-2" />
                 CANCEL
@@ -76,7 +76,7 @@ export const EventNotesTab = ({ eventId, notes }: EventNotesTabProps) => {
                 size="sm"
                 onClick={handleSave}
                 disabled={loading}
-                className="btn-primary font-brutalist uppercase tracking-wide"
+                className="btn-primary font-display uppercase tracking-wide"
               >
                 <Save className="h-4 w-4 mr-2" />
                 {loading ? 'SAVING...' : 'SAVE'}
@@ -92,14 +92,14 @@ export const EventNotesTab = ({ eventId, notes }: EventNotesTabProps) => {
             value={editedNotes}
             onChange={(e) => setEditedNotes(e.target.value)}
             placeholder="Add notes about this event..."
-            className="font-industrial min-h-[200px]"
+            className="font-cb-sans min-h-[200px]"
           />
         ) : (
           <div className="min-h-[200px]">
             {notes ? (
-              <p className="font-industrial whitespace-pre-wrap">{notes}</p>
+              <p className="font-cb-sans whitespace-pre-wrap">{notes}</p>
             ) : (
-              <p className="font-industrial text-muted-foreground italic">
+              <p className="font-cb-sans text-muted-foreground italic">
                 No notes added yet. Click edit to add notes about this event.
               </p>
             )}

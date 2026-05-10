@@ -250,7 +250,7 @@ export default function CommonKnowledgeUpload() {
   return (
     <ManagementLayout>
       <div className="max-w-3xl space-y-6 p-3 md:p-6">
-        <h1 className="text-brutalist text-2xl md:text-4xl font-black uppercase tracking-wider">UPLOAD DOCUMENT</h1>
+        <h1 className="font-display uppercase tracking-tight text-2xl md:text-4xl font-black uppercase tracking-wider">UPLOAD DOCUMENT</h1>
         
         <Button
           variant="ghost"

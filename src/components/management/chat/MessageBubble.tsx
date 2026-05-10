@@ -445,7 +445,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
     <div className={cn("flex", isOwn ? "justify-end" : "justify-start")}>
       <div className={cn("max-w-[75%] md:max-w-[70%]", isOwn && "order-2")}>
         {!isOwn && (
-          <div className="mb-1 text-xs font-industrial text-muted-foreground">
+          <div className="mb-1 text-xs font-cb-sans text-muted-foreground">
             <span className="font-bold">{message.sender_name}</span>
             {message.sender_role && (
               <span className="ml-1 capitalize">({message.sender_role})</span>
@@ -494,7 +494,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
           {/* Show thinking indicator for Cleo when message is empty AND actively thinking */}
           {!text && isCleo && isCleoThinking ? (
             <div className="flex items-center gap-2">
-              <span className="font-industrial text-sm">Cleo is thinking</span>
+              <span className="font-cb-sans text-sm">Cleo is thinking</span>
               <div className="flex gap-1">
                 <span className="animate-bounce text-sm" style={{ animationDelay: '0ms' }}>.</span>
                 <span className="animate-bounce text-sm" style={{ animationDelay: '150ms' }}>.</span>
@@ -503,7 +503,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
             </div>
           ) : text && text !== '[Image]' ? (
             isCleo ? (
-              <div className="text-sm font-industrial prose prose-sm max-w-none prose-headings:font-brutalist prose-strong:text-foreground prose-em:text-foreground prose-p:my-3 prose-ul:my-2 prose-li:my-1 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+              <div className="text-sm font-cb-sans prose prose-sm max-w-none prose-headings:font-display prose-strong:text-foreground prose-em:text-foreground prose-p:my-3 prose-ul:my-2 prose-li:my-1 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
@@ -572,7 +572,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                 )}
               </div>
             ) : (
-              <div className="font-industrial text-sm whitespace-pre-wrap">
+              <div className="font-cb-sans text-sm whitespace-pre-wrap">
                 {renderTextWithMentions(text)}
               </div>
             )

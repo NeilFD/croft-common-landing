@@ -32,7 +32,7 @@ export const ChatsList = ({ chats, selectedChatId, onSelectChat, loading, onChat
     <div className="h-full border border-border rounded-lg bg-background flex flex-col">
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="font-brutalist text-lg font-black uppercase tracking-wide">CHATS</h2>
+          <h2 className="font-display text-lg font-black uppercase tracking-wide">CHATS</h2>
           <Button 
             size="icon" 
             variant="ghost" 
@@ -55,7 +55,7 @@ export const ChatsList = ({ chats, selectedChatId, onSelectChat, loading, onChat
           {chats.length === 0 ? (
             <div className="text-center py-8">
               <MessageCircle className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground font-industrial">No chats yet</p>
+              <p className="text-sm text-muted-foreground font-cb-sans">No chats yet</p>
             </div>
           ) : (
             chats.map((chat) => (
@@ -68,7 +68,7 @@ export const ChatsList = ({ chats, selectedChatId, onSelectChat, loading, onChat
                 )}
               >
                 <div className="flex items-center gap-2">
-                  <h3 className="font-brutalist text-sm font-bold uppercase truncate flex-1">
+                  <h3 className="font-display text-sm font-bold uppercase truncate flex-1">
                     {chat.name || 'Direct Message'}
                   </h3>
                   {chat.unread_count > 0 && (

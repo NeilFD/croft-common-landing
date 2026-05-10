@@ -200,21 +200,21 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
     <div className="space-y-6">
       <Card className="border-4 border-black shadow-brutal">
         <CardHeader className="bg-black text-white">
-          <CardTitle className="font-brutalist text-xl uppercase tracking-wider flex items-center justify-between">
+          <CardTitle className="font-display text-xl uppercase tracking-wider flex items-center justify-between">
             <div className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
               INVOICE MANAGER
             </div>
             <Dialog open={showCreateInvoice} onOpenChange={setShowCreateInvoice}>
               <DialogTrigger asChild>
-                <Button variant="secondary" className="font-industrial">
+                <Button variant="secondary" className="font-cb-sans">
                   <Plus className="h-4 w-4 mr-2" />
                   CREATE INVOICE
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle className="font-brutalist uppercase tracking-wider">
+                  <DialogTitle className="font-display uppercase tracking-wider">
                     Create New Invoice
                   </DialogTitle>
                 </DialogHeader>
@@ -250,14 +250,14 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
                     <Button 
                       onClick={handleCreateInvoice}
                       disabled={createInvoice.isPending}
-                      className="font-industrial uppercase tracking-wider flex-1"
+                      className="font-cb-sans uppercase tracking-wider flex-1"
                     >
                       {createInvoice.isPending ? 'CREATING...' : 'CREATE'}
                     </Button>
                     <Button 
                       variant="outline"
                       onClick={() => setShowCreateInvoice(false)}
-                      className="font-industrial uppercase tracking-wider"
+                      className="font-cb-sans uppercase tracking-wider"
                     >
                       CANCEL
                     </Button>
@@ -279,13 +279,13 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="font-industrial">NUMBER</TableHead>
-                    <TableHead className="font-industrial">STATUS</TableHead>
-                    <TableHead className="font-industrial">DUE DATE</TableHead>
-                    <TableHead className="font-industrial">TOTAL</TableHead>
-                    <TableHead className="font-industrial">PAID</TableHead>
-                    <TableHead className="font-industrial">BALANCE</TableHead>
-                    <TableHead className="font-industrial">ACTIONS</TableHead>
+                    <TableHead className="font-cb-sans">NUMBER</TableHead>
+                    <TableHead className="font-cb-sans">STATUS</TableHead>
+                    <TableHead className="font-cb-sans">DUE DATE</TableHead>
+                    <TableHead className="font-cb-sans">TOTAL</TableHead>
+                    <TableHead className="font-cb-sans">PAID</TableHead>
+                    <TableHead className="font-cb-sans">BALANCE</TableHead>
+                    <TableHead className="font-cb-sans">ACTIONS</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -370,7 +370,7 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
       <Dialog open={!!viewInvoiceId} onOpenChange={() => setViewInvoiceId(null)}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="font-brutalist uppercase tracking-wider">
+            <DialogTitle className="font-display uppercase tracking-wider">
               Invoice Details
             </DialogTitle>
           </DialogHeader>
@@ -430,7 +430,7 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
       <Dialog open={!!editInvoiceId} onOpenChange={() => setEditInvoiceId(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-brutalist uppercase tracking-wider">
+            <DialogTitle className="font-display uppercase tracking-wider">
               Edit Invoice
             </DialogTitle>
           </DialogHeader>
@@ -466,14 +466,14 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
               <Button 
                 onClick={handleEditInvoice}
                 disabled={updateInvoice.isPending}
-                className="font-industrial uppercase tracking-wider flex-1"
+                className="font-cb-sans uppercase tracking-wider flex-1"
               >
                 {updateInvoice.isPending ? 'UPDATING...' : 'UPDATE'}
               </Button>
               <Button 
                 variant="outline"
                 onClick={() => setEditInvoiceId(null)}
-                className="font-industrial uppercase tracking-wider"
+                className="font-cb-sans uppercase tracking-wider"
               >
                 CANCEL
               </Button>
@@ -497,7 +497,7 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
       {invoices && invoices.length > 0 && (
         <Card className="border-4 border-black shadow-brutal">
           <CardHeader className="bg-black text-white">
-            <CardTitle className="font-brutalist text-xl uppercase tracking-wider">
+            <CardTitle className="font-display text-xl uppercase tracking-wider">
               INVOICE SUMMARY
             </CardTitle>
           </CardHeader>

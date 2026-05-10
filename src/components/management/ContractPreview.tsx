@@ -311,7 +311,7 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
       // Main section headers with ═══
       if (line.includes('═══')) {
         return (
-          <h2 key={index} className="font-brutalist text-lg font-black text-center py-4 text-primary uppercase tracking-wider border-b border-primary/20">
+          <h2 key={index} className="font-display text-lg font-black text-center py-4 text-primary uppercase tracking-wider border-b border-primary/20">
             {line.replace(/═/g, '').trim()}
           </h2>
         );
@@ -319,7 +319,7 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
       // Subsection headers with ───
       else if (line.includes('───')) {
         return (
-          <h3 key={index} className="font-brutalist text-base font-bold py-3 text-primary/90 uppercase tracking-wide border-b border-primary/10">
+          <h3 key={index} className="font-display text-base font-bold py-3 text-primary/90 uppercase tracking-wide border-b border-primary/10">
             {line.replace(/─/g, '').trim()}
           </h3>
         );
@@ -327,7 +327,7 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
       // Field labels (ending with colon like "CLIENT NAME:")
       else if (trimmedLine.match(/^[A-Z\s]+:$/)) {
         return (
-          <p key={index} className="font-brutalist font-semibold py-1 text-foreground">
+          <p key={index} className="font-display font-semibold py-1 text-foreground">
             {trimmedLine}
           </p>
         );
@@ -335,7 +335,7 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
       // Main section numbers (like "1. DEFINITIONS", "2. PAYMENT TERMS")
       else if (trimmedLine.match(/^\d+\.\s+[A-Z\s&]+$/)) {
         return (
-          <h4 key={index} className="font-brutalist text-base font-bold py-3 text-foreground uppercase tracking-wide">
+          <h4 key={index} className="font-display text-base font-bold py-3 text-foreground uppercase tracking-wide">
             {trimmedLine}
           </h4>
         );
@@ -346,13 +346,13 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
         if (parts.length >= 3) {
           return (
             <p key={index} className="py-2">
-              <span className="font-brutalist font-semibold text-foreground">{parts[1]} </span>
-              <span className="font-industrial leading-relaxed text-foreground/90">{parts[2]}</span>
+              <span className="font-display font-semibold text-foreground">{parts[1]} </span>
+              <span className="font-cb-sans leading-relaxed text-foreground/90">{parts[2]}</span>
             </p>
           );
         }
         return (
-          <p key={index} className="font-industrial leading-relaxed text-foreground/90 py-1">
+          <p key={index} className="font-cb-sans leading-relaxed text-foreground/90 py-1">
             {trimmedLine}
           </p>
         );
@@ -364,7 +364,7 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
       // Regular body text
       else {
         return (
-          <p key={index} className="font-industrial leading-relaxed text-foreground/90 py-1">
+          <p key={index} className="font-cb-sans leading-relaxed text-foreground/90 py-1">
             {trimmedLine}
           </p>
         );
@@ -513,8 +513,8 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
                           }}
                         />
                       </div>
-                      <h1 className="font-brutalist text-3xl font-black tracking-wider mb-2">CROFT COMMON</h1>
-                      <p className="font-brutalist text-lg opacity-90 tracking-wide uppercase">EVENT SERVICES CONTRACT</p>
+                      <h1 className="font-display text-3xl font-black tracking-wider mb-2">CROFT COMMON</h1>
+                      <p className="font-display text-lg opacity-90 tracking-wide uppercase">EVENT SERVICES CONTRACT</p>
                     </div>
 
                     {/* Contract Content */}
@@ -600,14 +600,14 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
 
               {/* Signature Status Display */}
               <div className="p-6 border-t border-muted bg-muted/10">
-                <h3 className="font-brutalist text-lg font-black uppercase tracking-wider mb-4 text-center">
+                <h3 className="font-display text-lg font-black uppercase tracking-wider mb-4 text-center">
                   SIGNATURE STATUS
                 </h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Croft Common Signature */}
                   <div className="border border-muted rounded-lg p-4">
-                    <h4 className="font-brutalist text-sm font-black uppercase tracking-wider mb-3">
+                    <h4 className="font-display text-sm font-black uppercase tracking-wider mb-3">
                       CROFT COMMON SIGNATURE
                     </h4>
                     {contractData?.staff_signature_data && typeof contractData.staff_signature_data === 'object' && contractData.staff_signature_data !== null && 'signature' in contractData.staff_signature_data ? (
@@ -630,7 +630,7 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
                       </div>
                     ) : (
                       <div className="h-20 border-2 border-dashed border-muted rounded flex items-center justify-center bg-muted/20">
-                        <span className="text-sm text-muted-foreground font-industrial">
+                        <span className="text-sm text-muted-foreground font-cb-sans">
                           Awaiting signature
                         </span>
                       </div>
@@ -639,7 +639,7 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
 
                   {/* Client Signature */}
                   <div className="border border-muted rounded-lg p-4">
-                    <h4 className="font-brutalist text-sm font-black uppercase tracking-wider mb-3">
+                    <h4 className="font-display text-sm font-black uppercase tracking-wider mb-3">
                       CLIENT SIGNATURE
                     </h4>
                     {contractData?.client_signature_data && typeof contractData.client_signature_data === 'object' && contractData.client_signature_data !== null && 'signature' in contractData.client_signature_data ? (
@@ -662,7 +662,7 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
                       </div>
                     ) : (
                       <div className="h-20 border-2 border-dashed border-muted rounded flex items-center justify-center bg-muted/20">
-                        <span className="text-sm text-muted-foreground font-industrial">
+                        <span className="text-sm text-muted-foreground font-cb-sans">
                           {contractData?.staff_signature_data ? 'Ready for client signature' : 'Awaiting staff signature first'}
                         </span>
                       </div>

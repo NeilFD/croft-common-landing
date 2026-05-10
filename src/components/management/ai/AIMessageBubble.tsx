@@ -94,7 +94,7 @@ export const AIMessageBubble = ({ role, content, timestamp }: AIMessageBubblePro
                 : 'bg-background'
             )}
           >
-            <div className="text-sm font-industrial prose prose-sm max-w-none prose-headings:font-brutalist prose-strong:text-foreground prose-em:text-foreground prose-p:my-2 prose-ul:my-2 prose-li:my-1 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+            <div className="text-sm font-cb-sans prose prose-sm max-w-none prose-headings:font-display prose-strong:text-foreground prose-em:text-foreground prose-p:my-2 prose-ul:my-2 prose-li:my-1 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
               <ReactMarkdown
                 components={{
                   p: ({ children }) => <p className="whitespace-pre-wrap leading-relaxed">{children}</p>,

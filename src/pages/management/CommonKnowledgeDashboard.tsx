@@ -230,7 +230,7 @@ export default function CommonKnowledgeDashboard() {
         {/* Sidebar with folder tree - hidden on mobile, shown in sheet/drawer on mobile */}
         <div className="hidden md:flex md:w-64 border-r flex-col shrink-0">
           <div className="flex items-center justify-between mb-4 pt-6 px-4">
-            <h2 className="font-brutalist font-bold">FOLDERS</h2>
+            <h2 className="font-display font-bold">FOLDERS</h2>
             <Button
               size="sm"
               variant="ghost"
@@ -256,7 +256,7 @@ export default function CommonKnowledgeDashboard() {
         {/* Main content */}
         <div className="flex-1 overflow-y-auto min-w-0">
           <div className="space-y-4 md:space-y-6 p-3 md:p-6">
-            <h1 className="text-brutalist text-xl sm:text-2xl md:text-4xl font-black uppercase tracking-wider break-words">COMMON KNOWLEDGE</h1>
+            <h1 className="font-display uppercase tracking-tight text-xl sm:text-2xl md:text-4xl font-black uppercase tracking-wider break-words">COMMON KNOWLEDGE</h1>
             
             {/* Header with search and new doc button */}
             <div className="flex flex-col gap-3 sm:gap-4">
@@ -293,7 +293,7 @@ export default function CommonKnowledgeDashboard() {
                     <FileText className="h-4 w-4 md:h-5 md:w-5 text-[hsl(var(--accent-pink))]" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xl md:text-2xl font-brutalist font-bold">{stats.total}</p>
+                    <p className="text-xl md:text-2xl font-display font-bold">{stats.total}</p>
                     <p className="text-xs md:text-sm text-muted-foreground truncate">Total Docs</p>
                   </div>
                 </div>
@@ -304,7 +304,7 @@ export default function CommonKnowledgeDashboard() {
                     <Star className="h-4 w-4 md:h-5 md:w-5 text-[hsl(var(--accent-pink))]" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xl md:text-2xl font-brutalist font-bold">{stats.approved}</p>
+                    <p className="text-xl md:text-2xl font-display font-bold">{stats.approved}</p>
                     <p className="text-xs md:text-sm text-muted-foreground truncate">Approved</p>
                   </div>
                 </div>
@@ -315,7 +315,7 @@ export default function CommonKnowledgeDashboard() {
                     <Clock className="h-4 w-4 md:h-5 md:w-5 text-[hsl(var(--accent-pink))]" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xl md:text-2xl font-brutalist font-bold">{stats.in_review}</p>
+                    <p className="text-xl md:text-2xl font-display font-bold">{stats.in_review}</p>
                     <p className="text-xs md:text-sm text-muted-foreground truncate">In Review</p>
                   </div>
                 </div>
@@ -326,7 +326,7 @@ export default function CommonKnowledgeDashboard() {
                     <Pin className="h-4 w-4 md:h-5 md:w-5 text-[hsl(var(--accent-pink))]" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xl md:text-2xl font-brutalist font-bold">{stats.pinned}</p>
+                    <p className="text-xl md:text-2xl font-display font-bold">{stats.pinned}</p>
                     <p className="text-xs md:text-sm text-muted-foreground truncate">Pinned</p>
                   </div>
                 </div>
@@ -337,7 +337,7 @@ export default function CommonKnowledgeDashboard() {
             {selectedFolderId && (
                   <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg md:text-xl font-brutalist font-bold break-words">
+                  <h2 className="text-lg md:text-xl font-display font-bold break-words">
                     {collections.find(c => c.id === selectedFolderId)?.name || "Documents"}
                   </h2>
                 </div>
@@ -353,7 +353,7 @@ export default function CommonKnowledgeDashboard() {
                         <BookOpen className="h-8 w-8 text-muted-foreground" />
                       </div>
                       <div>
-                        <h3 className="font-brutalist font-bold mb-2">No documents in this folder</h3>
+                        <h3 className="font-display font-bold mb-2">No documents in this folder</h3>
                         <p className="text-muted-foreground mb-4">
                           Add documents to this folder to organize your content
                         </p>
@@ -377,7 +377,7 @@ export default function CommonKnowledgeDashboard() {
                                 <File className="h-4 w-4 md:h-5 md:w-5 text-[hsl(var(--accent-pink))]" />
                               </div>
                               <div className="min-w-0 flex-1">
-                                <h3 className="font-brutalist font-bold text-xs md:text-sm line-clamp-2 break-words">{doc.title}</h3>
+                                <h3 className="font-display font-bold text-xs md:text-sm line-clamp-2 break-words">{doc.title}</h3>
                                 <p className="text-xs text-muted-foreground mt-1">
                                   {TYPE_LABELS[doc.type]}
                                 </p>
@@ -406,7 +406,7 @@ export default function CommonKnowledgeDashboard() {
                 {/* Recent activity */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg md:text-xl font-brutalist font-bold break-words">Recent Activity</h2>
+                    <h2 className="text-lg md:text-xl font-display font-bold break-words">Recent Activity</h2>
                   </div>
                   
                   {loading ? (
@@ -420,7 +420,7 @@ export default function CommonKnowledgeDashboard() {
                           <BookOpen className="h-8 w-8 text-muted-foreground" />
                         </div>
                         <div>
-                          <h3 className="font-brutalist font-bold mb-2">No documents yet</h3>
+                          <h3 className="font-display font-bold mb-2">No documents yet</h3>
                           <p className="text-muted-foreground mb-4">
                             Create your first document to start building your knowledge base
                           </p>
@@ -444,7 +444,7 @@ export default function CommonKnowledgeDashboard() {
                                   <File className="h-4 w-4 md:h-5 md:w-5 text-[hsl(var(--accent-pink))]" />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                  <h3 className="font-brutalist font-bold text-xs md:text-sm line-clamp-2 break-words">{doc.title}</h3>
+                                  <h3 className="font-display font-bold text-xs md:text-sm line-clamp-2 break-words">{doc.title}</h3>
                                   <p className="text-xs text-muted-foreground mt-1">
                                     {TYPE_LABELS[doc.type]}
                                   </p>
@@ -469,7 +469,7 @@ export default function CommonKnowledgeDashboard() {
                 {/* Pinned documents */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-brutalist font-bold">Pinned Documents</h2>
+                    <h2 className="text-xl font-display font-bold">Pinned Documents</h2>
                   </div>
                   
                   {pinnedDocuments.length === 0 ? (
@@ -497,7 +497,7 @@ export default function CommonKnowledgeDashboard() {
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="font-brutalist font-bold text-sm line-clamp-2 break-words flex-1">{doc.title}</h3>
+                                    <h3 className="font-display font-bold text-sm line-clamp-2 break-words flex-1">{doc.title}</h3>
                                     <Pin className="h-3 w-3 text-[hsl(var(--accent-pink))] fill-current shrink-0" />
                                   </div>
                                   <p className="text-xs text-muted-foreground mt-1">

@@ -46,8 +46,8 @@ const SpacesDashboard = () => {
       <div className="space-y-6 md:space-y-8 p-3 md:p-6">
         {/* Header */}
         <div>
-          <h1 className="text-brutalist text-3xl md:text-5xl font-black uppercase tracking-wider text-foreground">SPACES</h1>
-          <p className="font-industrial text-muted-foreground text-sm md:text-base">
+          <h1 className="font-display uppercase tracking-tight text-3xl md:text-5xl font-black uppercase tracking-wider text-foreground">SPACES</h1>
+          <p className="font-cb-sans text-muted-foreground text-sm md:text-base">
             Event management system
           </p>
         </div>
@@ -59,7 +59,7 @@ const SpacesDashboard = () => {
               onClick={() => setShowWorkflowDetails(!showWorkflowDetails)}
               className="w-full flex items-center justify-between group"
             >
-              <CardTitle className="font-brutalist uppercase tracking-wide text-base md:text-lg flex items-center gap-2">
+              <CardTitle className="font-display uppercase tracking-wide text-base md:text-lg flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-accent-pink" />
                 SPACES MANAGEMENT SYSTEM
               </CardTitle>
@@ -73,21 +73,21 @@ const SpacesDashboard = () => {
           {showWorkflowDetails && (
             <CardContent className="p-4 md:p-6 pt-0">
               <div className="space-y-3">
-                <p className="font-industrial text-sm md:text-base text-foreground">
+                <p className="font-cb-sans text-sm md:text-base text-foreground">
                   Streamlined event and booking coordination across four integrated modules:
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs md:text-sm">
                   <div className="space-y-1">
-                    <p><span className="font-brutalist text-accent-pink">• LEADS:</span> Manage sales enquiries and convert simple bookings directly to the calendar</p>
-                    <p><span className="font-brutalist text-accent-pink">• EVENTS:</span> Coordinate complex multi-space events with unified planning and oversight</p>
+                    <p><span className="font-display text-accent-pink">• LEADS:</span> Manage sales enquiries and convert simple bookings directly to the calendar</p>
+                    <p><span className="font-display text-accent-pink">• EVENTS:</span> Coordinate complex multi-space events with unified planning and oversight</p>
                   </div>
                   <div className="space-y-1">
-                    <p><span className="font-brutalist text-accent-pink">• CALENDAR:</span> Schedule specific space bookings, manage holds, and view availability</p>
-                    <p><span className="font-brutalist text-accent-pink">• VENUES:</span> Configure spaces, availability, and capacity management</p>
+                    <p><span className="font-display text-accent-pink">• CALENDAR:</span> Schedule specific space bookings, manage holds, and view availability</p>
+                    <p><span className="font-display text-accent-pink">• VENUES:</span> Configure spaces, availability, and capacity management</p>
                   </div>
                 </div>
                 <div className="mt-4 p-3 border-l-4 border-accent-pink">
-                  <p className="font-brutalist text-xs md:text-sm">
+                  <p className="font-display text-xs md:text-sm">
                     <strong>WORKFLOW:</strong> Simple bookings go Lead→Booking. Complex events use Lead→Event→Multiple Bookings.
                   </p>
                 </div>
@@ -98,7 +98,7 @@ const SpacesDashboard = () => {
 
         {/* Active Modules */}
         <div>
-          <h2 className="font-brutalist text-xl md:text-2xl font-black uppercase tracking-wide text-foreground mb-3 md:mb-4">MODULES</h2>
+          <h2 className="font-display text-xl md:text-2xl font-black uppercase tracking-wide text-foreground mb-3 md:mb-4">MODULES</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {modules.map((module) => (
               <Card key={module.title} className="border-industrial hover:shadow-brutal transition-all">
@@ -106,15 +106,15 @@ const SpacesDashboard = () => {
                   <div className="flex items-start space-x-3">
                     <module.icon className="h-6 w-6 md:h-8 md:w-8 text-[hsl(var(--accent-pink))] flex-shrink-0 mt-1" />
                     <div className="min-w-0 flex-1">
-                      <CardTitle className="font-brutalist text-lg md:text-xl font-black uppercase tracking-wide leading-tight">{module.title}</CardTitle>
-                      <p className="font-industrial text-xs md:text-sm text-muted-foreground mt-1">{module.description}</p>
+                      <CardTitle className="font-display text-lg md:text-xl font-black uppercase tracking-wide leading-tight">{module.title}</CardTitle>
+                      <p className="font-cb-sans text-xs md:text-sm text-muted-foreground mt-1">{module.description}</p>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent className="p-4 md:p-6 pt-0">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <span className="font-industrial text-xs md:text-sm text-muted-foreground">{module.stats}</span>
-                    <Button asChild className="btn-primary font-brutalist uppercase tracking-wide h-9 md:h-10 px-4 md:px-6">
+                    <span className="font-cb-sans text-xs md:text-sm text-muted-foreground">{module.stats}</span>
+                    <Button asChild className="btn-primary font-display uppercase tracking-wide h-9 md:h-10 px-4 md:px-6">
                       <Link to={module.href}>
                         OPEN
                       </Link>
@@ -129,13 +129,13 @@ const SpacesDashboard = () => {
         {/* Quick Overview */}
         <Card className="border-industrial">
           <CardHeader className="p-4 md:p-6">
-            <CardTitle className="font-brutalist uppercase tracking-wide text-base md:text-lg">ACCESS LEVEL</CardTitle>
+            <CardTitle className="font-display uppercase tracking-wide text-base md:text-lg">ACCESS LEVEL</CardTitle>
           </CardHeader>
           <CardContent className="p-4 md:p-6 pt-0">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-brutalist font-black uppercase text-foreground text-sm md:text-base">{managementUser?.role}</p>
-                <p className="font-industrial text-xs md:text-sm text-muted-foreground">
+                <p className="font-display font-black uppercase text-foreground text-sm md:text-base">{managementUser?.role}</p>
+                <p className="font-cb-sans text-xs md:text-sm text-muted-foreground">
                   System access granted
                 </p>
               </div>
