@@ -3353,6 +3353,138 @@ export type Database = {
         }
         Relationships: []
       }
+      seo_audits: {
+        Row: {
+          accessibility_score: number | null
+          best_practices_score: number | null
+          cls: number | null
+          error: string | null
+          id: string
+          inp_ms: number | null
+          internal_checks: Json | null
+          internal_score: number | null
+          lcp_ms: number | null
+          overall_grade: string | null
+          overall_score: number | null
+          perf_score: number | null
+          route: string
+          run_at: string
+          seo_score: number | null
+          source: string
+        }
+        Insert: {
+          accessibility_score?: number | null
+          best_practices_score?: number | null
+          cls?: number | null
+          error?: string | null
+          id?: string
+          inp_ms?: number | null
+          internal_checks?: Json | null
+          internal_score?: number | null
+          lcp_ms?: number | null
+          overall_grade?: string | null
+          overall_score?: number | null
+          perf_score?: number | null
+          route: string
+          run_at?: string
+          seo_score?: number | null
+          source?: string
+        }
+        Update: {
+          accessibility_score?: number | null
+          best_practices_score?: number | null
+          cls?: number | null
+          error?: string | null
+          id?: string
+          inp_ms?: number | null
+          internal_checks?: Json | null
+          internal_score?: number | null
+          lcp_ms?: number | null
+          overall_grade?: string | null
+          overall_score?: number | null
+          perf_score?: number | null
+          route?: string
+          run_at?: string
+          seo_score?: number | null
+          source?: string
+        }
+        Relationships: []
+      }
+      seo_pages: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          jsonld: Json | null
+          keywords: string[] | null
+          label: string | null
+          noindex: boolean
+          og_image: string | null
+          route: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          jsonld?: Json | null
+          keywords?: string[] | null
+          label?: string | null
+          noindex?: boolean
+          og_image?: string | null
+          route: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          jsonld?: Json | null
+          keywords?: string[] | null
+          label?: string | null
+          noindex?: boolean
+          og_image?: string | null
+          route?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      seo_settings: {
+        Row: {
+          default_description: string | null
+          default_og_image: string | null
+          default_title_suffix: string | null
+          id: number
+          organization_jsonld: Json | null
+          pagespeed_api_key_present: boolean | null
+          site_name: string
+          updated_at: string
+        }
+        Insert: {
+          default_description?: string | null
+          default_og_image?: string | null
+          default_title_suffix?: string | null
+          id?: number
+          organization_jsonld?: Json | null
+          pagespeed_api_key_present?: boolean | null
+          site_name?: string
+          updated_at?: string
+        }
+        Update: {
+          default_description?: string | null
+          default_og_image?: string | null
+          default_title_suffix?: string | null
+          id?: number
+          organization_jsonld?: Json | null
+          pagespeed_api_key_present?: boolean | null
+          site_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       space_hours: {
         Row: {
           close_time: string | null
