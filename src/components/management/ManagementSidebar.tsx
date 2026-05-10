@@ -282,6 +282,25 @@ export const ManagementSidebar = () => {
                       </Tooltip>
                     </SidebarMenuItem>
                   )}
+                  {canAccessCMS() && (
+                    <SidebarMenuItem>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <SidebarMenuButton
+                            asChild
+                            className={getNavClass(isActive('/management/seo', false))}
+                          >
+                            <NavLink to="/management/seo">
+                              <TrendingUp className="h-5 w-5" />
+                            </NavLink>
+                          </SidebarMenuButton>
+                        </TooltipTrigger>
+                        <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                          <p className="font-cb-sans">SEO</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </SidebarMenuItem>
+                  )}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
@@ -451,7 +470,26 @@ export const ManagementSidebar = () => {
             </SidebarGroup>
           )}
 
-          {/* Admin Section */}
+          {/* SEO Section */}
+          {showText && canAccessCMS() && (
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      className={getNavClass(isActive('/management/seo', false))}
+                    >
+                      <NavLink to="/management/seo" className="font-cb-sans">
+                        <TrendingUp className="mr-2 h-5 w-5 text-[hsl(var(--accent-pink))]" />
+                        <span className="font-display uppercase tracking-wide">SEO</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
           {showText && canAccessAdmin() && (
             <SidebarGroup>
               <Collapsible 
