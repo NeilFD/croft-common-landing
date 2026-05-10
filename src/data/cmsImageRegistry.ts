@@ -66,7 +66,7 @@ export const cmsImageRegistry: AssetSlot[] = [
       { src: townLook1, alt: "Mirrorball burlesque dancers at Town", caption: "The burlesque years" },
       { src: townLook2, alt: "Pineapple prawn curry at Hom Thai", caption: "Hom Thai" },
       { src: townLook3, alt: "Red velvet bedroom with copper bath", caption: "Bedrooms with baths" },
-      { src: townLook4, alt: "Black and gold rococo bedroom", caption: "Black on black on black" },
+      { src: townLook4, alt: "Negroni and red wine by the open fire at Town", caption: "Fireside, after eleven" },
     ],
   },
 
