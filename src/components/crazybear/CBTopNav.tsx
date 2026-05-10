@@ -31,6 +31,7 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
           />
         </Link>
         <nav className="flex items-center gap-7 md:gap-10">
+          <Link to="/about" className={linkCls}>About</Link>
           <Link to="/house-rules" className={linkCls}>House Rules</Link>
           <Link to="/town" className={`hidden sm:inline ${linkCls}`}>Town</Link>
           <Link to="/country" className={`hidden sm:inline ${linkCls}`}>Country</Link>
