@@ -43,6 +43,18 @@ const gradeColor = (g?: string | null) => {
 
 const auditPause = (ms: number) => new Promise(resolve => window.setTimeout(resolve, ms));
 
+async function invokeAudit(route: string) {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData?.session?.access_token;
+  if (!token) {
+    throw new Error('Your session expired. Please sign in again.');
+  }
+  return supabase.functions.invoke('seo-audit', {
+    body: { route },
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
 export default function SeoDashboard() {
   const { toast } = useToast();
   const qc = useQueryClient();
