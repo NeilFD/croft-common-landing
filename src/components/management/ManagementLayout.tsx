@@ -5,7 +5,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ManagementSidebar } from './ManagementSidebar';
 import CrazyBearLogo from '@/components/CrazyBearLogo';
 import { ManagementAIProvider } from '@/contexts/ManagementAIContext';
-import { ManagementAIChatWidget } from './ai/ManagementAIChatWidget';
+
 import { SafeAreaTopCap } from '@/components/SafeAreaTopCap';
 import AppVersionFooter from '@/components/AppVersionFooter';
 import { BRAND_NAME } from '@/data/brand';
@@ -77,9 +77,6 @@ export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
               </footer>
             </main>
           </div>
-
-          {/* AI Chat Widget */}
-          <ManagementAIChatWidget />
         </div>
       </SidebarProvider>
     </ManagementAIProvider>
