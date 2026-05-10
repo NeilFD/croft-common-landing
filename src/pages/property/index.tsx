@@ -27,7 +27,6 @@ interface MenuRouteProps {
   description: string;
   cuisine: string[];
   faqKey?: string;
-  /** CMS namespace for editable hero text, e.g. "town/food/black-bear" */
   cmsPage?: string;
 }
 
@@ -56,6 +55,7 @@ export const CountryHome = () => (
     seoDescription="Crazy Bear Country. 16th century inn in Stadhampton, Oxfordshire. Rooms, restaurants, a pub that refuses to behave."
     faqKey="/country"
     schemaKind="hotel"
+    cmsPage="country"
   />
 );
 export const CountryPub = () =>
@@ -69,6 +69,7 @@ export const CountryPub = () =>
       description="Real ale, proper food, fires lit. The pub at Crazy Bear Country, Stadhampton."
       cuisine={["British", "Pub"]}
       faqKey="/country/pub"
+      cmsPage="country/pub"
     />
   );
 export const CountryPubFood = () =>
@@ -82,6 +83,7 @@ export const CountryPubFood = () =>
       description="Pub food, properly done. Lunch and dinner every day."
       cuisine={["British", "Pub"]}
       faqKey="/country/pub"
+      cmsPage="country/pub/food"
     />
   );
 export const CountryPubDrink = () =>
@@ -93,6 +95,7 @@ export const CountryPubDrink = () =>
       body="Real ale. Proper wine. Cocktails that bite back."
       seoDescription="Real ale, proper wine, cocktails that bite back. The bar at Crazy Bear Country."
       schemaKind="bar"
+      cmsPage="country/pub/drink"
     />
   );
 export const CountryPubHospitality = () => (
@@ -101,6 +104,7 @@ export const CountryPubHospitality = () => (
     eyebrow="The Pub"
     body="Fires lit. Doors open. Stay as long as you like."
     seoDescription="Fires lit. Doors open. Country pub hospitality at Crazy Bear, Stadhampton."
+    cmsPage="country/pub/hospitality"
   />
 );
 export const CountryRooms = () =>
@@ -112,6 +116,7 @@ export const CountryRooms = () =>
       seoDescription="Bedrooms at Crazy Bear Country. Theatrical, indulgent, never the same twice."
       faqKey="/country/rooms"
       schemaKind="hotel"
+      cmsPage="country/rooms"
     />
   );
 export const CountryRoomTypes = () =>
@@ -123,6 +128,7 @@ export const CountryRoomTypes = () =>
       body="Pick your character. Sleep accordingly."
       seoDescription="Room types at Crazy Bear Country. Pick your character. Sleep accordingly."
       faqKey="/country/rooms"
+      cmsPage="country/rooms/types"
     />
   );
 export const CountryRoomGallery = () =>
@@ -134,6 +140,7 @@ export const CountryRoomGallery = () =>
       body="A look behind the bedroom doors."
       seoDescription="Bedroom gallery at Crazy Bear Country, Stadhampton. Theatrical, indulgent, never the same twice. A look behind the doors."
       extraJsonLd={[imageGallerySchema(countryGallery, `${CB_SITE}/country/rooms/gallery`)]}
+      cmsPage="country/rooms/gallery"
     >
       <CBGallery items={countryGallery} eyebrow="Country" title="Behind the doors." />
     </PropertyPage>
@@ -146,6 +153,7 @@ export const CountryParties = () =>
       body="Loud, long, late."
       seoDescription="Parties at Crazy Bear Country. Loud, long, late. Group bookings and exclusive use."
       faqKey="/country/parties"
+      cmsPage="country/parties"
     />
   );
 export const CountryEvents = () => (
@@ -154,6 +162,7 @@ export const CountryEvents = () => (
     body="Private rooms. Whole house. Whatever you need."
     seoDescription="Events at Crazy Bear Country. Private rooms, marquee, exclusive use."
     faqKey="/country/events"
+    cmsPage="country/events"
   />
 );
 export const CountryWeddings = () => (
@@ -163,6 +172,7 @@ export const CountryWeddings = () => (
     body="Vows, dinner, dancing. Done properly."
     seoDescription="Weddings at Crazy Bear Country. Vows, dinner, dancing. Licensed for ceremonies."
     faqKey="/country/events/weddings"
+    cmsPage="country/events/weddings"
   />
 );
 export const CountryBirthdays = () => (
@@ -172,6 +182,7 @@ export const CountryBirthdays = () => (
     body="Another year. Worth marking."
     seoDescription="Birthday parties at Crazy Bear Country. From long tables to whole house hire."
     faqKey="/country/events/birthdays"
+    cmsPage="country/events/birthdays"
   />
 );
 export const CountryBusiness = () => (
@@ -181,6 +192,7 @@ export const CountryBusiness = () => (
     body="Meetings that don't feel like meetings."
     seoDescription="Business meetings and away days at Crazy Bear Country. Private rooms, dinner, rooms."
     faqKey="/country/events/business"
+    cmsPage="country/events/business"
   />
 );
 
@@ -193,6 +205,7 @@ export const TownHome = () => (
     seoDescription="Crazy Bear Town. Beaconsfield townhouse. Three restaurants, cocktails, signature rooms, hidden pool."
     faqKey="/town"
     schemaKind="hotel"
+    cmsPage="town"
   />
 );
 export const TownFood = () =>
@@ -203,6 +216,7 @@ export const TownFood = () =>
       body="Two kitchens. One appetite."
       seoDescription="Food at Crazy Bear Town. The Black Bear, the B&B and Hom Thai."
       faqKey="/town/food"
+      cmsPage="town/food"
     />
   );
 export const TownBlackBear = () =>
@@ -230,6 +244,7 @@ export const TownBnB = () =>
       description="All day kitchen. Breakfast, brunch and into the night, at Crazy Bear Town."
       cuisine={["British", "Brunch"]}
       faqKey="/town/food"
+      cmsPage="town/food/bnb"
     />
   );
 export const TownHomThai = () =>
@@ -243,6 +258,7 @@ export const TownHomThai = () =>
       schemaKind="restaurant"
       cuisine={["Thai", "Asian"]}
       faqKey="/town/food"
+      cmsPage="town/food/hom-thai"
     />
   );
 export const TownDrink = () =>
@@ -254,6 +270,7 @@ export const TownDrink = () =>
       seoDescription="Bars at Crazy Bear Town. Mirrored rooms, low light, sharp pours."
       schemaKind="bar"
       faqKey="/town/drink"
+      cmsPage="town/drink"
     />
   );
 export const TownCocktails = () =>
@@ -266,6 +283,7 @@ export const TownCocktails = () =>
       seoDescription="Cocktail bar at Crazy Bear Town. Stirred with intent. Served without apology."
       schemaKind="bar"
       faqKey="/town/drink/cocktails"
+      cmsPage="town/drink/cocktails"
     />
   );
 export const TownRooms = () =>
@@ -277,6 +295,7 @@ export const TownRooms = () =>
       seoDescription="Rooms at Crazy Bear Town. Velvet, mirror, marble. Each one its own world."
       schemaKind="hotel"
       faqKey="/town/rooms"
+      cmsPage="town/rooms"
     />
   );
 export const TownRoomTypes = () =>
@@ -288,6 +307,7 @@ export const TownRoomTypes = () =>
       body="Each one its own world. None of them shy."
       seoDescription="Room types at Crazy Bear Town. Each one its own world."
       faqKey="/town/rooms"
+      cmsPage="town/rooms/types"
     />
   );
 export const TownRoomGallery = () =>
@@ -299,6 +319,7 @@ export const TownRoomGallery = () =>
       body="Step inside."
       seoDescription="Bedroom gallery at Crazy Bear Town, Beaconsfield. Velvet, mirror, marble. Each bedroom its own world. Step inside."
       extraJsonLd={[imageGallerySchema(townGallery, `${CB_SITE}/town/rooms/gallery`)]}
+      cmsPage="town/rooms/gallery"
     >
       <CBGallery items={townGallery} eyebrow="Town" title="Step inside." />
     </PropertyPage>
@@ -311,5 +332,6 @@ export const TownPool = () =>
       body="Hidden. Heated. Yours for the afternoon."
       seoDescription="The hidden pool at Crazy Bear Town. Heated, daytime, hotel guests only."
       faqKey="/town/pool"
+      cmsPage="town/pool"
     />
   );
