@@ -84,7 +84,7 @@ It still is.`,
     { heading: "The burlesque years.", body: "Saturday nights. Mirrorball heads. Heels louder than the music.", meta: {} },
     { heading: "Hom Thai.", body: "Lanterns. Gold leaf. Proper heat upstairs. Quietly one of the best.", meta: {} },
     { heading: "Bedrooms with baths.", body: "Crushed velvet, copper tubs, a tassel for everything. Black on black on red.", meta: {} },
-    { heading: "Black on black on black.", body: "Buttoned walls. Gilded beds. Silver, gold and copper leaf catching every candle.", meta: {} },
+    { heading: "Fireside, after eleven.", body: "Negronis by the embers. Brass taps. The room dimmed to a glow.", meta: {} },
   ],
   timelineSeed: [
     {
