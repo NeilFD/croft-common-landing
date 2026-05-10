@@ -287,6 +287,13 @@ async function auditOne(
     error: psError,
   };
 
+  // If PageSpeed rate-limited us (429) even after retries, do NOT save a
+  // failed audit row — that would clobber a previously valid score with a
+  // fake "Lighthouse failed" result. Surface it to the caller instead.
+  if (psError && /\b429\b/.test(psError)) {
+    return { ...audit, _skipped: true } as any;
+  }
+
   const { error } = await supabase.from("seo_audits").insert(audit);
   if (error) throw error;
   return audit;
