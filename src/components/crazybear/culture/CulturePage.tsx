@@ -81,10 +81,10 @@ It still is.`,
   ctaSecondaryHref: "/town/food",
   hero: townHero,
   collageSeed: [
-    { heading: "Silver leaf", body: "The bar walls. Hand-applied. Catches every candle.", meta: {} },
-    { heading: "The koi", body: "Behind the urinals. Conversation starters since 2002.", meta: {} },
-    { heading: "Hom Thai", body: "Lanterns, gold leaf, proper heat upstairs.", meta: {} },
-    { heading: "The pool", body: "Out the back. Optional swimwear. Not optional shower.", meta: {} },
+    { heading: "The burlesque years.", body: "Saturday nights. Mirrorball heads. Heels louder than the music.", meta: {} },
+    { heading: "Hom Thai.", body: "Lanterns. Gold leaf. Proper heat upstairs. Quietly one of the best.", meta: {} },
+    { heading: "Bedrooms with baths.", body: "Crushed velvet, copper tubs, a tassel for everything. Black on black on red.", meta: {} },
+    { heading: "Black on black on black.", body: "Buttoned walls. Gilded beds. Lanterns dimmed to consequences.", meta: {} },
   ],
   timelineSeed: [
     {
