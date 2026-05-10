@@ -186,6 +186,47 @@ Two hotels. One spirit. Pubs and rooms and Thai kitchens and treehouses and burl
           />
         </section>
 
+        {/* Visual collage — Town + Country */}
+        <section className="border-t border-foreground/10 bg-background">
+          <div className="mx-auto max-w-7xl px-6 py-16 md:py-24">
+            <p className="font-cb-mono text-[10px] tracking-[0.45em] uppercase opacity-60">Two hotels. One spirit.</p>
+            <h2 className="mt-3 font-display text-3xl md:text-5xl uppercase tracking-tight text-foreground">
+              The look.
+            </h2>
+
+            <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+              {[
+                { src: townLook1, alt: "Burlesque night at Town" },
+                { src: countryLook1, alt: "Reception by Routemaster at Country" },
+                { src: townLook2, alt: "Hom Thai at Town" },
+                { src: countryLook2, alt: "Copper bath bedroom at Country" },
+                { src: townLook3, alt: "Red room at Town" },
+                { src: countryLook3, alt: "Long Thai lunch at Country" },
+                { src: townLook4, alt: "Rococo interior at Town" },
+                { src: countryLook4, alt: "Firepit terrace at Country" },
+              ].map((img, i) => (
+                <div
+                  key={i}
+                  className={`relative overflow-hidden bg-black ${
+                    i === 0 || i === 5 ? "row-span-2 aspect-[3/4]" : "aspect-square"
+                  }`}
+                >
+                  <img
+                    src={img.src}
+                    alt={img.alt}
+                    loading="lazy"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <p className="mt-8 font-cb-mono text-[10px] tracking-[0.45em] uppercase opacity-60">
+              Town &mdash; Beaconsfield &nbsp;/&nbsp; Country &mdash; Stadhampton
+            </p>
+          </div>
+        </section>
+
         {/* Timeline */}
         <Timeline editable={isEditMode} />
 
