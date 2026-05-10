@@ -38,24 +38,6 @@ export type Database = {
         }
         Relationships: []
       }
-      allowed_domains: {
-        Row: {
-          created_at: string
-          domain: string
-          id: string
-        }
-        Insert: {
-          created_at?: string
-          domain: string
-          id?: string
-        }
-        Update: {
-          created_at?: string
-          domain?: string
-          id?: string
-        }
-        Relationships: []
-      }
       attachments: {
         Row: {
           created_at: string | null
@@ -3925,7 +3907,6 @@ export type Database = {
         }[]
       }
       is_admin: { Args: { uid: string }; Returns: boolean }
-      is_email_domain_allowed: { Args: { email: string }; Returns: boolean }
       is_gold: { Args: { check_user_id: string }; Returns: boolean }
       move_to_dlq: {
         Args: {

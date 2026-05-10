@@ -23,6 +23,29 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Require authentication — only signed-in members may probe gold access codes
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ ok: false, error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const authClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const { data: userData, error: authErr } = await authClient.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    );
+    if (authErr || !userData?.user) {
+      return new Response(JSON.stringify({ ok: false, error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const body = await req.json().catch(() => ({}));
     const raw = typeof body?.code === "string" ? body.code : "";
     const code = raw.trim().toUpperCase();
