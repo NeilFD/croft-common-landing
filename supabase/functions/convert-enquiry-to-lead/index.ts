@@ -120,6 +120,41 @@ ${additionalComments ? `Additional comments:\n${additionalComments}` : ''}
       // Don't fail — the cb_enquiries record is the source of truth
     }
 
+    // 2b. Create a provisional all-day booking on the calendar (best-effort)
+    let bookingId: string | null = null;
+    if (lead?.id && eventDateIso && enquiryData.recommendedSpaceId) {
+      try {
+        const startTs = `${eventDateIso}T00:00:00Z`;
+        const endTs = `${eventDateIso}T23:59:59Z`;
+        const title = `[PROVISIONAL] ${contactName} — ${enquiryData.eventType || 'Event'}`;
+        const { data: booking, error: bookingError } = await supabase
+          .from('bookings')
+          .insert({
+            space_id: enquiryData.recommendedSpaceId,
+            lead_id: lead.id,
+            title,
+            start_ts: startTs,
+            end_ts: endTs,
+            status: 'provisional',
+            name: contactName,
+            email: contactEmail,
+            phone: contactPhone,
+            date: eventDateIso,
+            guests: enquiryData.guestCount || null,
+            notes: leadDescription,
+          })
+          .select('id')
+          .single();
+        if (bookingError) {
+          console.error('bookings insert error (non-fatal):', bookingError);
+        } else {
+          bookingId = booking?.id || null;
+        }
+      } catch (e) {
+        console.error('Provisional booking failed (non-fatal):', e);
+      }
+    }
+
     // 3. Send confirmation emails (don't fail if this errors)
     try {
       const emailResponse = await supabase.functions.invoke('send-enquiry-confirmation', {
