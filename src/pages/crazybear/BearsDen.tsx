@@ -1,4 +1,5 @@
-import { Helmet } from 'react-helmet-async';
+import { CBSeo } from "@/components/seo/CBSeo";
+import { goldProductSchema, organizationSchema } from "@/components/seo/CBStructuredData";
 import { Link } from 'react-router-dom';
 import bearMark from '@/assets/crazy-bear-mark.png';
 import CBTopNav from '@/components/crazybear/CBTopNav';
