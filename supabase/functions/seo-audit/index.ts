@@ -169,6 +169,8 @@ async function internalScan(
   return { score, checks, ogImageOk, pageOk };
 }
 
+const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
 async function pagespeed(url: string, apiKey: string | null) {
   const params = new URLSearchParams({
     url,
@@ -179,11 +181,29 @@ async function pagespeed(url: string, apiKey: string | null) {
   }
   if (apiKey) params.set("key", apiKey);
   const endpoint = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?${params.toString()}`;
-  const r = await fetch(endpoint);
-  if (!r.ok) {
-    throw new Error(`PageSpeed ${r.status}`);
+
+  // Retry with exponential backoff for 429 / 5xx so transient rate limits
+  // don't get persisted as fake "Lighthouse failed" results.
+  const maxAttempts = 4;
+  let lastStatus = 0;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const r = await fetch(endpoint);
+    if (r.ok) {
+      const j = await r.json();
+      return parsePagespeed(j);
+    }
+    lastStatus = r.status;
+    const retryable = r.status === 429 || r.status >= 500;
+    if (!retryable || attempt === maxAttempts) {
+      throw new Error(`PageSpeed ${r.status}`);
+    }
+    // Backoff: 4s, 8s, 16s
+    await sleep(4000 * Math.pow(2, attempt - 1));
   }
-  const j = await r.json();
+  throw new Error(`PageSpeed ${lastStatus}`);
+}
+
+function parsePagespeed(j: any) {
   const cats = j.lighthouseResult?.categories ?? {};
   const audits = j.lighthouseResult?.audits ?? {};
   return {
@@ -267,6 +287,13 @@ async function auditOne(
     error: psError,
   };
 
+  // If PageSpeed rate-limited us (429) even after retries, do NOT save a
+  // failed audit row — that would clobber a previously valid score with a
+  // fake "Lighthouse failed" result. Surface it to the caller instead.
+  if (psError && /\b429\b/.test(psError)) {
+    return { ...audit, _skipped: true } as any;
+  }
+
   const { error } = await supabase.from("seo_audits").insert(audit);
   if (error) throw error;
   return audit;
@@ -340,18 +367,32 @@ Deno.serve(async (req) => {
 
     const results: any[] = [];
     const errors: any[] = [];
+    const skipped: any[] = [];
 
-    // Process sequentially to avoid hammering PageSpeed
-    for (const r of routes) {
+    // Throttle: process strictly one-at-a-time with a delay between routes.
+    // PageSpeed Insights enforces a per-second / burst limit; firing 30+
+    // requests back-to-back trips 429 and the whole queue gets recorded as
+    // "Lighthouse failed". A short pause between routes keeps us comfortably
+    // under the limit.
+    const THROTTLE_MS = all ? 2000 : 0;
+    for (let i = 0; i < routes.length; i++) {
+      const r = routes[i];
       try {
-        const a = await auditOne(admin, r, defaults, apiKey, source);
-        results.push({ route: r, overall: a.overall_score, grade: a.overall_grade, error: a.error });
+        const a: any = await auditOne(admin, r, defaults, apiKey, source);
+        if (a?._skipped) {
+          skipped.push({ route: r, reason: "PageSpeed rate limited (429)" });
+        } else {
+          results.push({ route: r, overall: a.overall_score, grade: a.overall_grade, error: a.error });
+        }
       } catch (e) {
         errors.push({ route: r, error: (e as Error).message });
       }
+      if (THROTTLE_MS && i < routes.length - 1) {
+        await sleep(THROTTLE_MS);
+      }
     }
 
-    return new Response(JSON.stringify({ ok: true, results, errors }), {
+    return new Response(JSON.stringify({ ok: true, results, errors, skipped }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

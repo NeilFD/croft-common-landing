@@ -126,9 +126,13 @@ export default function SeoDashboard() {
     onSuccess: (data: any) => {
       qc.invalidateQueries({ queryKey: ['seo-latest-audits'] });
       const failed = data?.results?.filter((r: any) => r.error).length ?? data?.errors?.length ?? 0;
+      const skipped = data?.skipped?.length ?? 0;
+      const parts = [`${data?.results?.length ?? 0} pages tested`];
+      if (failed) parts.push(`${failed} Lighthouse failures`);
+      if (skipped) parts.push(`${skipped} rate-limited (kept previous score)`);
       toast({
         title: 'Site audit complete',
-        description: `${data?.results?.length ?? 0} pages tested${failed ? `, ${failed} Lighthouse failures` : ''}.`,
+        description: parts.join(', ') + '.',
       });
     },
     onError: (e: any) => toast({ title: 'Audit failed', description: e.message, variant: 'destructive' }),
