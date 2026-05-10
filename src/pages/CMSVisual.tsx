@@ -15,21 +15,15 @@ const CMSVisual = () => {
   const location = useLocation();
   const [isPublishing, setIsPublishing] = useState(false);
   
-  // Extract the full path after /cms/visual/
-  const fullPath = location.pathname.replace('/cms/visual/', '').replace(/^\/+/, '');
-  const currentPage = fullPath || page || 'home';
-  
+  // Extract the full path after /management/cms/visual/ (or legacy /cms/visual/)
+  const fullPath = location.pathname
+    .replace('/management/cms/visual/', '')
+    .replace('/cms/visual/', '')
+    .replace(/^\/+/, '');
+  const currentPage = fullPath || page || 'country';
+
   // Normalize page name for consistent mapping
-  let normalizedPage = currentPage.toLowerCase().replace(/^\//, '');
-  
-  // Map URL segments to actual page names used in components
-  const pageNameMap: Record<string, string> = {
-    'croftcommondatetime': 'croft-common-datetime',
-    'commonroom': 'common-room'
-  };
-  
-  // Apply mapping if it exists
-  normalizedPage = pageNameMap[normalizedPage] || normalizedPage;
+  const normalizedPage = currentPage.toLowerCase().replace(/^\//, '');
   
   
   const { draftCount, publishDrafts, refreshDraftCount } = useDraftContent(normalizedPage);
@@ -67,9 +61,7 @@ const CMSVisual = () => {
   };
 
   const handleViewLive = () => {
-    const liveUrl = `/${currentPage === 'home' ? '' : currentPage}`;
-    console.log('👁️ CMSVisual: Opening live URL:', liveUrl);
-    // Same-origin preview, use _self instead of _blank
+    const liveUrl = `/${currentPage}`;
     window.open(liveUrl, '_self');
   };
 
