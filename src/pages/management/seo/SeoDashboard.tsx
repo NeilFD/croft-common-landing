@@ -46,6 +46,8 @@ export default function SeoDashboard() {
   const qc = useQueryClient();
   const [auditing, setAuditing] = useState<string | null>(null);
   const [auditingAll, setAuditingAll] = useState(false);
+  const [runStartedAt, setRunStartedAt] = useState<string | null>(null);
+  const [progressDone, setProgressDone] = useState(0);
 
   const { data: pages = [], isLoading: pagesLoading } = useQuery({
     queryKey: ['seo-pages'],
