@@ -59,13 +59,6 @@ const managementModules = [
     exactMatch: true
   },
   {
-    name: 'Chat',
-    path: '/management/chat',
-    icon: MessageCircle,
-    exactMatch: false,
-    badge: 'NEW'
-  },
-  {
     name: 'AI Assistant',
     path: '/management/ai-assistant',
     icon: Bot,
@@ -224,23 +217,6 @@ export const ManagementSidebar = () => {
                       <TooltipTrigger asChild>
                         <SidebarMenuButton
                           asChild
-                          className={getNavClass(isActive('/management/common-knowledge', false))}
-                        >
-                          <NavLink to="/management/common-knowledge">
-                            <BookOpen className="h-5 w-5" />
-                          </NavLink>
-                        </SidebarMenuButton>
-                      </TooltipTrigger>
-                      <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                        <p className="font-industrial">Common Knowledge</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <SidebarMenuButton
-                          asChild
                           className={getNavClass(isActive('/management/spaces', true))}
                         >
                           <NavLink to="/management/spaces">
@@ -284,23 +260,6 @@ export const ManagementSidebar = () => {
                       </TooltipTrigger>
                       <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
                         <p className="font-industrial">Admin</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <SidebarMenuButton
-                          asChild
-                          className={getNavClass(isActive('/management/research', false))}
-                        >
-                          <NavLink to="/management/research">
-                            <FlaskConical className="h-5 w-5" />
-                          </NavLink>
-                        </SidebarMenuButton>
-                      </TooltipTrigger>
-                      <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                        <p className="font-industrial">Research</p>
                       </TooltipContent>
                     </Tooltip>
                   </SidebarMenuItem>
