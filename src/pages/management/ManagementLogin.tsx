@@ -415,7 +415,7 @@ const ManagementLogin = () => {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: isCrazyBearHost ? "https://www.crazybear.dev/set-password" : "https://www.croftcommontest.com/management/login"
+        redirectTo: "https://www.crazybear.dev/set-password"
       });
 
       if (error) {
