@@ -343,7 +343,8 @@ const PlaylistSection = ({
   page, fallbackUrl, heading, kicker, editable, site,
 }: { page: string; fallbackUrl: string; heading: string; kicker: string; editable: boolean; site: Site }) => {
   const { content } = useCMSContent(page, "playlist", "url", editable);
-  const url = content || fallbackUrl;
+  const raw = (content?.content_data as any) ?? null;
+  const url = (typeof raw === "string" ? raw : raw?.text ?? raw?.value) || fallbackUrl;
   return (
     <section className="border-t border-foreground/10">
       <div className="mx-auto max-w-4xl px-6 py-16 md:py-24">
