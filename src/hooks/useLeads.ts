@@ -92,10 +92,7 @@ export const useLeads = (filters?: {
     queryFn: async (): Promise<LeadWithSpace[]> => {
       let query = (supabase as any)
         .from('leads')
-        .select(`
-          *,
-          space:spaces(id, name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       // Apply filters
@@ -130,7 +127,27 @@ export const useLeads = (filters?: {
       const { data, error } = await query;
 
       if (error) throw error;
-      return (data || []) as LeadWithSpace[];
+
+      const leads = (data || []) as LeadWithSpace[];
+      const spaceIds = Array.from(new Set(leads.map((lead) => lead.preferred_space).filter(Boolean)));
+
+      if (spaceIds.length === 0) {
+        return leads;
+      }
+
+      const { data: spaces, error: spacesError } = await (supabase as any)
+        .from('spaces')
+        .select('id, name')
+        .in('id', spaceIds);
+
+      if (spacesError) throw spacesError;
+
+      const spaceById = new Map((spaces || []).map((space: { id: string; name: string }) => [space.id, space]));
+
+      return leads.map((lead) => ({
+        ...lead,
+        space: lead.preferred_space ? spaceById.get(lead.preferred_space) : undefined,
+      })) as LeadWithSpace[];
     },
   });
 };
@@ -142,18 +159,29 @@ export const useLead = (leadId: string) => {
     queryFn: async (): Promise<LeadWithSpace | null> => {
       const { data, error } = await (supabase as any)
         .from('leads')
-        .select(`
-          *,
-          space:spaces(id, name)
-        `)
+        .select('*')
         .eq('id', leadId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         throw error;
       }
 
-      return data as LeadWithSpace | null;
+      if (!data) return null;
+
+      if (!data.preferred_space) {
+        return data as LeadWithSpace;
+      }
+
+      const { data: space, error: spaceError } = await (supabase as any)
+        .from('spaces')
+        .select('id, name')
+        .eq('id', data.preferred_space)
+        .maybeSingle();
+
+      if (spaceError) throw spaceError;
+
+      return { ...data, space: space || undefined } as LeadWithSpace;
     },
     enabled: !!leadId,
   });

@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
       throw new Error(enquiryError.message || 'Failed to create enquiry');
     }
 
-    // 2. Create lead in CRM (using actual leads schema)
+    // 2. Create lead in CRM using the canonical lead creation function
     const leadDescription = `
 AI Event Enquiry - ${enquiryData.eventType || 'Event'}
 
@@ -99,21 +99,27 @@ AI reasoning: ${enquiryData.aiReasoning || 'TBD'}
 ${additionalComments ? `Additional comments:\n${additionalComments}` : ''}
     `.trim();
 
-    const { data: lead, error: leadError } = await supabase
-      .from('leads')
-      .insert({
+    const { data: leadId, error: leadError } = await supabase.rpc('create_lead', {
+      payload: {
         name: contactName,
         email: contactEmail,
         phone: contactPhone,
         event_type: enquiryData.eventType || null,
-        event_date: eventDateIso,
-        guests: enquiryData.guestCount || null,
-        budget: parseBudget(enquiryData.budget),
-        notes: leadDescription,
-        status: 'new',
-      })
-      .select()
-      .single();
+        preferred_space: enquiryData.recommendedSpaceId || null,
+        preferred_date: eventDateIso,
+        date_flexible: !eventDateIso,
+        headcount: enquiryData.guestCount || null,
+        budget_low: parseBudget(enquiryData.budget),
+        budget_high: parseBudget(enquiryData.budget),
+        message: leadDescription,
+        source: 'ask_the_bear',
+        details: enquiryDetails,
+        event_enquiry_id: enquiryRecord.id,
+        privacy_accepted: true,
+        consent_marketing: false,
+      },
+      client_ip: req.headers.get('x-forwarded-for') || 'event-enquiry-chat',
+    });
 
     if (leadError) {
       console.error('leads insert error:', leadError);
@@ -122,7 +128,7 @@ ${additionalComments ? `Additional comments:\n${additionalComments}` : ''}
 
     // 2b. Create a provisional all-day booking on the calendar (best-effort)
     let bookingId: string | null = null;
-    if (lead?.id && eventDateIso && enquiryData.recommendedSpaceId) {
+    if (leadId && eventDateIso && enquiryData.recommendedSpaceId) {
       try {
         const startTs = `${eventDateIso}T00:00:00Z`;
         const endTs = `${eventDateIso}T23:59:59Z`;
@@ -131,7 +137,7 @@ ${additionalComments ? `Additional comments:\n${additionalComments}` : ''}
           .from('bookings')
           .insert({
             space_id: enquiryData.recommendedSpaceId,
-            lead_id: lead.id,
+            lead_id: leadId,
             title,
             start_ts: startTs,
             end_ts: endTs,
@@ -172,7 +178,7 @@ ${additionalComments ? `Additional comments:\n${additionalComments}` : ''}
     return new Response(JSON.stringify({
       success: true,
       enquiryId: enquiryRecord.id,
-      leadId: lead?.id || null,
+      leadId: leadId || null,
       bookingId,
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
