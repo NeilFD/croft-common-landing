@@ -1878,27 +1878,39 @@ export type Database = {
       lead_activity: {
         Row: {
           activity_type: string
+          author_id: string | null
+          body: string | null
           created_at: string | null
           created_by: string | null
           id: string
           lead_id: string
+          meta: Json
           notes: string | null
+          type: string
         }
         Insert: {
           activity_type: string
+          author_id?: string | null
+          body?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
           lead_id: string
+          meta?: Json
           notes?: string | null
+          type: string
         }
         Update: {
           activity_type?: string
+          author_id?: string | null
+          body?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
           lead_id?: string
+          meta?: Json
           notes?: string | null
+          type?: string
         }
         Relationships: [
           {
@@ -1914,52 +1926,118 @@ export type Database = {
         Row: {
           assigned_to: string | null
           budget: number | null
+          budget_high: number | null
+          budget_low: number | null
           company: string | null
+          consent_marketing: boolean
           created_at: string | null
+          date_flexible: boolean
+          details: Json
           email: string
           event_date: string | null
+          event_enquiry_id: string | null
           event_type: string | null
+          first_name: string
           guests: number | null
+          headcount: number | null
           id: string
+          last_name: string
+          message: string | null
           name: string
           notes: string | null
+          owner_id: string | null
           phone: string | null
-          status: string | null
+          preferred_date: string | null
+          preferred_space: string | null
+          privacy_accepted: boolean
+          search_tsv: unknown
+          source: string | null
+          status: string
           updated_at: string | null
+          utm: Json
         }
         Insert: {
           assigned_to?: string | null
           budget?: number | null
+          budget_high?: number | null
+          budget_low?: number | null
           company?: string | null
+          consent_marketing?: boolean
           created_at?: string | null
+          date_flexible?: boolean
+          details?: Json
           email: string
           event_date?: string | null
+          event_enquiry_id?: string | null
           event_type?: string | null
+          first_name: string
           guests?: number | null
+          headcount?: number | null
           id?: string
+          last_name: string
+          message?: string | null
           name: string
           notes?: string | null
+          owner_id?: string | null
           phone?: string | null
-          status?: string | null
+          preferred_date?: string | null
+          preferred_space?: string | null
+          privacy_accepted?: boolean
+          search_tsv?: unknown
+          source?: string | null
+          status?: string
           updated_at?: string | null
+          utm?: Json
         }
         Update: {
           assigned_to?: string | null
           budget?: number | null
+          budget_high?: number | null
+          budget_low?: number | null
           company?: string | null
+          consent_marketing?: boolean
           created_at?: string | null
+          date_flexible?: boolean
+          details?: Json
           email?: string
           event_date?: string | null
+          event_enquiry_id?: string | null
           event_type?: string | null
+          first_name?: string
           guests?: number | null
+          headcount?: number | null
           id?: string
+          last_name?: string
+          message?: string | null
           name?: string
           notes?: string | null
+          owner_id?: string | null
           phone?: string | null
-          status?: string | null
+          preferred_date?: string | null
+          preferred_space?: string | null
+          privacy_accepted?: boolean
+          search_tsv?: unknown
+          source?: string | null
+          status?: string
           updated_at?: string | null
+          utm?: Json
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "leads_event_enquiry_id_fkey"
+            columns: ["event_enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "cb_enquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_preferred_space_fkey"
+            columns: ["preferred_space"]
+            isOneToOne: false
+            referencedRelation: "spaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ledger_passwords: {
         Row: {
@@ -4080,6 +4158,10 @@ export type Database = {
       }
     }
     Functions: {
+      add_lead_note: {
+        Args: { lead_id_param: string; note_body: string }
+        Returns: string
+      }
       check_secret_kitchen_access_status: {
         Args: { user_email: string }
         Returns: {
@@ -4101,6 +4183,10 @@ export type Database = {
           ticket_numbers: number[]
           wallet_token: string
         }[]
+      }
+      create_lead: {
+        Args: { client_ip?: string; payload: Json }
+        Returns: string
       }
       delete_email: {
         Args: { message_id: number; queue_name: string }
@@ -4173,6 +4259,7 @@ export type Database = {
         }
         Returns: number
       }
+      normalise_lead_payload: { Args: { payload: Json }; Returns: Json }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
@@ -4180,6 +4267,14 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      reassign_lead: {
+        Args: { lead_id_param: string; new_owner_id: string }
+        Returns: undefined
+      }
+      update_lead: {
+        Args: { lead_id_param: string; patch: Json }
+        Returns: undefined
       }
     }
     Enums: {
