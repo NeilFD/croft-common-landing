@@ -92,6 +92,26 @@ export const useDraftContent = (page: string) => {
           .eq('is_draft', true);
       }
 
+      // Publish FAQ drafts: delete published rows for this page, then flip drafts to published.
+      const { data: draftFaqs } = await (supabase as any)
+        .from('cms_faq_content')
+        .select('id')
+        .eq('page', page)
+        .eq('is_draft', true);
+      if (draftFaqs && draftFaqs.length > 0) {
+        await (supabase as any)
+          .from('cms_faq_content')
+          .delete()
+          .eq('page', page)
+          .eq('published', true)
+          .eq('is_draft', false);
+        await (supabase as any)
+          .from('cms_faq_content')
+          .update({ published: true, is_draft: false })
+          .eq('page', page)
+          .eq('is_draft', true);
+      }
+
       console.log('🎯 useDraftContent: Publish successful for page:', page);
       await fetchDraftCount();
       return { success: true };
