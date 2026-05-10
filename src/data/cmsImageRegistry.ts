@@ -10,6 +10,10 @@ import townLook1 from "@/assets/cb-town-culture-look-1-burlesque.jpg";
 import townLook2 from "@/assets/cb-town-culture-look-2-homthai.jpg";
 import townLook3 from "@/assets/cb-town-culture-look-3-redroom.jpg";
 import townLook4 from "@/assets/cb-town-culture-look-4-rococo.jpg";
+import countryLook1 from "@/assets/cb-country-culture-look-1-routemaster.jpg";
+import countryLook2 from "@/assets/cb-country-culture-look-2-bedroom.jpg";
+import countryLook3 from "@/assets/cb-country-culture-look-3-feast.jpg";
+import countryLook4 from "@/assets/cb-country-culture-look-4-terrace.jpg";
 
 export type AssetKind = "hero" | "carousel" | "gallery";
 
@@ -72,6 +76,18 @@ export const cmsImageRegistry: AssetSlot[] = [
 
   // ----- COUNTRY -----
   { page: "country", slot: "hero-carousel", kind: "carousel", label: "Country home carousel", defaults: carouselFromMap("/country") },
+  {
+    page: "country-culture",
+    slot: "collage",
+    kind: "gallery",
+    label: "Country Culture — The Look",
+    defaults: [
+      { src: countryLook1, alt: "Red Routemaster bus reception with neon sign at The Crazy Bear Stadhampton", caption: "Reception by Routemaster" },
+      { src: countryLook2, alt: "Country bedroom with copper roll-top bath, gold tufted headboard and red velvet", caption: "Bedrooms with copper" },
+      { src: countryLook3, alt: "Thai seafood feast spread on black table with carved fruit", caption: "The long Thai lunch" },
+      { src: countryLook4, alt: "Outdoor terrace at night with firepit, fairy-lit palms and laid tables", caption: "Firepit, after dark" },
+    ],
+  },
   { page: "country/pub", slot: "hero", kind: "hero", label: "Country Pub hero", defaults: heroFromMap("/country/pub") },
   { page: "country/pub/food", slot: "hero", kind: "hero", label: "Country Pub Food hero", defaults: heroFromMap("/country/pub/food") },
   { page: "country/pub/drink", slot: "hero", kind: "hero", label: "Country Pub Drink hero", defaults: heroFromMap("/country/pub/drink") },

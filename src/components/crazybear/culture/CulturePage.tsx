@@ -147,7 +147,7 @@ The dining room got a cow. The bedrooms got mirrored ceilings, velvet walls, and
 
 The pub still pours. The kitchen still takes itself seriously. Nothing else does.`,
   collageHeading: "The look.",
-  collageKicker: "Antlers, mirrors, candlelight",
+  collageKicker: "Red bus. Copper bath. Open fire.",
   playlistHeading: "The soundtrack.",
   playlistKicker: "Britpop, folk, long Sundays",
   playlistFallback: "https://open.spotify.com/playlist/4KCZQ5fOj3UauK3pTWDZo7",
@@ -163,10 +163,10 @@ The pub still pours. The kitchen still takes itself seriously. Nothing else does
   ctaSecondaryHref: "/country/pub/food",
   hero: countryHero,
   collageSeed: [
-    { heading: "The turf floor", body: "Real grass. Real opening night. Allegedly real sheep.", meta: {} },
-    { heading: "The cow", body: "Taxidermy. Dining room. Watching you eat.", meta: {} },
-    { heading: "Treehouse suites", body: "Roll-top bath above the canopy. Mirrored ceilings. Velvet walls. Breakfast by hand.", meta: {} },
-    { heading: "The garden", body: "Slow lunches. Longer afternoons. Fires lit by four.", meta: {} },
+    { heading: "Reception by Routemaster.", body: "Check in via the old red bus. Neon sign. Ivy round the door. The arrival sets the tone.", meta: {} },
+    { heading: "Bedrooms with copper.", body: "Roll-top copper baths. Gold tufted walls. Red velvet. Rooms that don't ask permission.", meta: {} },
+    { heading: "The long Thai lunch.", body: "Lobster, prawns, curry, carved fruit. Thai kitchen taking itself seriously. Sunday slips into evening.", meta: {} },
+    { heading: "Firepit, after dark.", body: "Logs stacked. Fire lit. Lanterns in the palms. Dinner outside until the embers go down.", meta: {} },
   ],
   timelineSeed: [
     {
