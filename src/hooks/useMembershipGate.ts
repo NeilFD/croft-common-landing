@@ -107,7 +107,7 @@ export function useMembershipGate(): UseMembershipGate {
             setLinkOpen(false);
             setBioOpen(false);
             markBioLongSuccess();
-            toast.success('Croft Common Membership access granted via secure Face ID/Passkey');
+            toast.success('The Den access granted via secure Face ID/Passkey');
             return;
           } else {
             setLinkOpen(true);
