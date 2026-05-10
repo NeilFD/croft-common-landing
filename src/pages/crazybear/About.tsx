@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { CBSeo } from "@/components/seo/CBSeo";
+import { aboutPageSchema, organizationSchema } from "@/components/seo/CBStructuredData";
 import { useState } from "react";
 import { Plus, Trash2, GripVertical } from "lucide-react";
 import CBTopNav from "@/components/crazybear/CBTopNav";
