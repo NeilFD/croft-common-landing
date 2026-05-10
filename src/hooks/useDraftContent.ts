@@ -32,8 +32,19 @@ export const useDraftContent = (page: string) => {
         console.warn('Failed to fetch image draft count:', imgError);
       }
 
-      const totalDrafts = (pageCount || 0) + (imgCount || 0);
-      console.log('🎯 useDraftContent: Found', pageCount, 'text drafts and', imgCount, 'image drafts for page:', page);
+      // Count FAQ drafts for the same page
+      const { count: faqCount, error: faqError } = await (supabase as any)
+        .from('cms_faq_content')
+        .select('*', { count: 'exact', head: true })
+        .eq('page', page)
+        .eq('is_draft', true);
+
+      if (faqError) {
+        console.warn('Failed to fetch FAQ draft count:', faqError);
+      }
+
+      const totalDrafts = (pageCount || 0) + (imgCount || 0) + (faqCount || 0);
+      console.log('🎯 useDraftContent: Found', pageCount, 'text /', imgCount, 'image /', faqCount, 'faq drafts for page:', page);
       setDraftCount(totalDrafts);
     } catch (err) {
       console.warn('Error fetching draft count:', err);
