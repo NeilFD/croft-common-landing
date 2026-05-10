@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useManagementAuth } from '@/hooks/useManagementAuth';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ManagementSidebar } from './ManagementSidebar';
-import CroftLogo from '@/components/CroftLogo';
+import CrazyBearLogo from '@/components/CrazyBearLogo';
 import { ManagementAIProvider } from '@/contexts/ManagementAIContext';
 import { ManagementAIChatWidget } from './ai/ManagementAIChatWidget';
 import { SafeAreaTopCap } from '@/components/SafeAreaTopCap';
@@ -54,7 +54,7 @@ export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
               <SidebarTrigger className="mr-2 md:mr-4 h-8 w-8 md:h-10 md:w-10" />
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center space-x-2 md:space-x-3">
-                  <CroftLogo size="sm" className="shrink-0 h-8 w-8 md:h-10 md:w-10" />
+                  <CrazyBearLogo size="sm" className="shrink-0 h-8 w-8 md:h-10 md:w-10" />
                   <h1 className="font-display text-sm md:text-xl font-black uppercase tracking-wider text-foreground">
                     {BRAND_NAME.toUpperCase()}
                   </h1>

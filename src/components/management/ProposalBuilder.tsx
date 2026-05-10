@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Trash2, Plus, GripVertical, Eye, Share2, Mail, MessageCircle, Loader2, Clock, MapPin, Utensils, CheckCircle2 } from 'lucide-react';
-import CroftLogo from '@/components/CroftLogo';
+import CrazyBearLogo from '@/components/CrazyBearLogo';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -570,7 +570,7 @@ hello@thehive-hospitality.com`;
                   <div className="border-b-4 border-black pb-6 mb-6">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-4">
-                        <CroftLogo size="lg" className="h-12 w-12" />
+                        <CrazyBearLogo size="lg" className="h-12 w-12" />
                         <div>
                           <h1 className="text-3xl font-display uppercase tracking-wider">CROFT COMMON</h1>
                           <p className="text-lg font-cb-sans uppercase tracking-wide text-muted-foreground">Private Events & Corporate Hire</p>

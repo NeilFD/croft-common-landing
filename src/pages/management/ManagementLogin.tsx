@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
-import CroftLogo from '@/components/CroftLogo';
+import CrazyBearLogo from '@/components/CrazyBearLogo';
 import { BRAND_NAME } from '@/data/brand';
 
 // Synchronous detector to block redirects before effects run
@@ -467,7 +467,7 @@ const ManagementLogin = () => {
   return (
     <div className="min-h-screen bg-transparent px-4">
       <div className="absolute top-6 left-6">
-        <CroftLogo size="lg" />
+        <CrazyBearLogo size="lg" />
       </div>
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-full max-w-md">
