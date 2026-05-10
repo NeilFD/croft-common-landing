@@ -1,80 +1,85 @@
-## Goal
 
-Make the FAQs that already render at the bottom of every CMS-wired page (`/town`, `/country`, `/town/rooms`, BnB, Hom Thai, Cocktails, etc.) fully editable from the visual editor, exactly like body copy:
+# About page — "Born in 1993, yet to grow up."
 
-- Pink-dot edit indicator on each question and answer
-- Inline edit > save as draft > Publish
-- Add a new FAQ at the bottom of any list
-- Remove an existing FAQ
-- Reorder by drag-and-drop (consistent with the carousel reordering we just shipped)
-- A matching "FAQs" panel in the CMS sidebar for bulk management per page
+A new long-form storytelling page for the Crazy Bear, reachable from the top nav on every page. Built in the existing high-contrast B&W editorial style, every block editable through the pink-dot CMS so copy can keep evolving as more stories surface.
 
-The current state: FAQs come from a static file (`src/data/cbFaqs.ts`) and render via `CBFAQ`. A `cms_faq_content` table exists but is empty and not wired to the live site. We'll close that loop.
+## Where it lives
 
-## How it will work for the user
+- New route: `/about`, rendered by a new `src/pages/crazybear/About.tsx`
+- Wired into `src/App.tsx` alongside the other top-level Crazy Bear routes (`/house-rules`, `/bears-den`)
+- Top nav: add an `About` link to `CBTopNav` between `House Rules` and `Town`, in the same `font-cb-mono` style. Same link added to `CBFooter` under "Discover" so it's reachable from every page footer too.
 
-1. Open any page in the visual editor.
-2. Scroll to the FAQ section. Every question and every answer shows a pink dot exactly like the hero copy. Click to edit, blur to save as draft.
-3. Below the last FAQ in CMS mode, an "Add question" button appends a new draft FAQ.
-4. Each FAQ in CMS mode shows a small drag handle and a delete (bin) button.
-5. Hit the global Publish button (top right). Text drafts, image drafts and FAQ drafts all publish together.
-6. Live site continues to read published rows only; if a page has no rows it falls back to the bundled `cbFaqs.ts` defaults so nothing ever goes blank.
+## Page structure
 
-## Technical plan
+1. **Hero manifesto**
+   - Full-bleed black hero, single archive photograph (Stadhampton exterior or a vintage interior shot — placeholder image to start, swappable via CMS asset slot)
+   - Eyebrow: `Est. 1993 / Stadhampton + Beaconsfield`
+   - Headline (Archivo Black, oversized): `Born in 1993. Yet to grow up.`
+   - Sub: a short two-line manifesto (e.g. "Two hotels. One spirit. A thirty-year run of bad behaviour, good food and the occasional fish in the cistern.")
+   - Slow scroll cue at the bottom
 
-### 1. Database (migration)
+2. **Origin paragraph (long-read intro)**
+   - Narrow column, Space Grotesk, generous leading
+   - 150–220 word narrative opener — how Jeremy Mogford bought a wonky country pub in Stadhampton in '93, why the bears, why the chaos. Editable as one CMS rich-text block.
 
-Extend `cms_faq_content` to mirror the draft model used by `cms_images`:
+3. **Timeline: "A short history of bad ideas that worked"**
+   - Vertical timeline, year markers down the left, story cards on the right
+   - Each card = year + headline + 2–4 sentence anecdote + optional caption/source line
+   - Seeded entries (each a separate editable CMS block so you can rewrite, reorder, add, remove):
+     - **1993 — A pub, a punt, a turf floor.** The Stadhampton local reopens with real grass laid across the bar floor. Sheep optional.
+     - **Late 90s — The cow in the dining room.** Taxidermy, mirrors, chandeliers in places chandeliers don't belong.
+     - **2002 — Town arrives.** The Beaconsfield coaching inn is taken on and rebuilt as a townhouse hotel, all glass loos and silver-leaf walls.
+     - **The cisterns.** Live koi swimming behind the gents' urinals. Still there. Still a talking point.
+     - **The Thai room.** Hom Thai opens upstairs in Town — gold leaf, lanterns, proper heat.
+     - **The burlesque years.** Saturday nights you don't put in the brochure.
+     - **The treehouse suites.** Bedrooms in the trees at Country. Roll-top baths above the canopy.
+     - **Today.** Two hotels. Same spirit. Slightly better behaved. Only slightly.
+   - Each block has a small `Source` line for press cuttings/links, also CMS-editable.
 
-- Add `is_draft boolean default false`
-- Add `updated_at timestamptz default now()` with the existing `update_updated_at_column` trigger
-- Add admin RLS for INSERT / UPDATE / DELETE (currently only public SELECT exists). Reuse `is_admin(auth.uid())` like the other CMS tables.
-- Index on `(page, published, is_draft, sort_order)`
+4. **Quote wall**
+   - Three to five short pull quotes from press over the years (Times, Telegraph, Guardian, Tatler — sources to be confirmed during build via web search and pasted in as editable CMS text)
+   - Big serif treatment, one per row on mobile, three-up on desktop
+   - Each quote = headline text + attribution line, both editable
 
-No data seeding. The static `cbFaqs.ts` stays as the fallback so unedited pages keep working.
+5. **Closing CTA**
+   - Two big edge-to-edge buttons mirroring the Landing chooser: `Town` and `Country`
+   - Footer (CBFooter) follows
 
-### 2. New hook: `useCMSFaqs(page, { mode })`
+## CMS / editability
 
-- `mode = "live"` (default): returns published rows only; if none, returns the entries from `cbFaqs[page]` so the live site is never empty.
-- `mode = "cms"`: returns `drafts ∪ published` merged the same way as `useCMSAssets` (drafts win), plus an `isDraft` flag per item so the editor can style differently.
-- Exposes mutation helpers: `addFaq`, `updateFaq(id, patch)`, `removeFaq(id)`, `reorder(orderedIds)`, `discardDrafts()`, `publish()`.
-- Publish behaviour matches images: delete published rows for the page, flip drafts to `published=true, is_draft=false`.
+- Reuse the existing `CMSText` pattern (as on `PropertyPage`) under namespace `about`, sections `hero`, `intro`, `timeline`, `quotes`, `cta`
+- Hero image uses `useCMSAssets("about", "hero")` so it's swappable from the pink-dot editor
+- Timeline + quotes use the same FAQ-style add/remove pattern just shipped (`useCMSFaqs`) — generalised to `useCMSList` (or a new `useCMSTimeline` / `useCMSQuotes` hook with the same pink-dot add/remove/reorder UX). One row per anecdote, fields: year, headline, body, source.
+- All edits live in the existing CMS tables — no new schema needed beyond a small list/sequence table if we don't already have a generic one (will check `useCMSFaqs` table during build and reuse if shape fits; otherwise add `cms_list_items` keyed by `(page, section)` with `position`, `heading`, `body`, `meta jsonb`).
 
-### 3. Refactor `CBFAQ`
+## Story sourcing during build
 
-- Accept either the existing `faqs` prop (for non-CMS callers / fallback) or a `cmsPage` prop.
-- When `cmsPage` is set, internally call `useCMSFaqs(cmsPage)` and ignore the `faqs` prop.
-- Wrap each question and answer in `CMSText` with stable keys: `faq.<id>.question` and `faq.<id>.answer`. (Saved through the same `cms_content` channel? No — better: save the question/answer fields directly on the `cms_faq_content` row to keep one source of truth. `CMSText` becomes a thin inline-edit primitive that takes `value` + `onSave` so it can target either store.)
-- In CMS mode only, render: drag handle on the left of each `AccordionItem`, a delete button on the right, and an "Add question" button below the accordion.
-- Drag-and-drop uses the same native HTML5 pattern as the AssetsManager.
+- Use `websearch--web_search` (and `firecrawl` if needed) to pull real cuttings about: turf floor at Stadhampton, koi in the Beaconsfield cisterns, treehouse suites, Hom Thai opening, burlesque/late-night era, Jeremy Mogford profiles
+- Paste verified quotes + source URLs straight into the CMS seed values so the page ships with real material; you then refine via pink-dot
 
-### 4. Wire into existing pages
+## SEO
 
-- `src/components/property/PropertyPage.tsx` and `src/pages/property/index.tsx`: where they currently do `<CBFAQ faqs={faqEntry.faqs} title={faqEntry.title} />`, switch to `<CBFAQ cmsPage={cmsPage} fallbackFaqs={faqEntry.faqs} title={faqEntry.title} />` so the live site falls back to bundled defaults until a page has its own rows.
-- Same swap on the standalone pages that render `CBFAQ` directly: `Index.tsx`, `Beer.tsx`, `Cafe.tsx`, `Kitchens.tsx`, `Hall.tsx`, `Cocktails.tsx`.
+- `<title>About | The Crazy Bear`
+- Meta description ≤158 chars, e.g. "Born in 1993. Two hotels, one spirit. The story of The Crazy Bear at Stadhampton and Beaconsfield — turf floors, fish cisterns and thirty years of mischief."
+- Single H1 ("Born in 1993. Yet to grow up."), semantic `section`/`article` per timeline entry
+- JSON-LD: reuse `organizationSchema()` and `breadcrumbSchema('/about')` from `CBStructuredData`
 
-### 5. Publish flow integration
+## Visual / typography
 
-- `useDraftContent` (the hook backing the global Publish button) already tracks text and image drafts. Add a third channel: query `cms_faq_content` for rows where `is_draft = true`, group by page, and on Publish run the same flip-and-delete as images. Surface FAQ drafts in the same "X drafts pending" badge.
+- Tokens only: `bg-background`, `text-foreground`, `border-border`
+- Headings `font-display` (Archivo Black), body `font-cb-sans` (Space Grotesk), eyebrows `font-cb-mono`
+- High-contrast B&W, single accent: thin pink-dot rule under each timeline year marker (`hsl(var(--accent-pink))`) — purely decorative, in keeping with the CMS aesthetic
+- No AI-generated imagery; placeholder slot for archive photos until real ones are uploaded
 
-### 6. Sidebar "FAQs" panel
+## Files touched
 
-- Replace the unused `FAQManager.tsx` content with a new panel that uses `useCMSFaqs(page, { mode: "cms" })`.
-- Page selector (same component as the Assets panel), then a list of FAQs with inline edit, drag-to-reorder, delete, add, discard drafts, publish.
+- new: `src/pages/crazybear/About.tsx`
+- new (if needed): `src/hooks/useCMSList.ts` + small migration for `cms_list_items` (only if existing FAQ table can't be reused)
+- edit: `src/App.tsx` (route)
+- edit: `src/components/crazybear/CBTopNav.tsx` (add link)
+- edit: `src/components/crazybear/CBFooter.tsx` (add link)
 
-### 7. Out of scope
+## Out of scope (for this pass)
 
-- No changes to `CBStructuredData` JSON-LD beyond reading from the same merged FAQ list on the server-rendered/initial paint path.
-- No AI generation.
-- No new icons outside the set already used in the editor.
-
-## File touch list
-
-- `supabase/migrations/<new>.sql` — schema + RLS
-- `src/hooks/useCMSFaqs.ts` — new
-- `src/components/seo/CBFAQ.tsx` — add `cmsPage` mode, drag/add/delete UI
-- `src/components/cms/CMSText.tsx` — small extension so it can save to an arbitrary store (or a new `CMSInlineText` sibling, decided during implementation)
-- `src/hooks/useDraftContent.ts` — count + publish FAQ drafts
-- `src/components/cms/FAQManager.tsx` — rebuild on top of `useCMSFaqs`
-- `src/components/cms/CMSDashboard.tsx` — surface the FAQs panel in the sidebar
-- `src/components/property/PropertyPage.tsx`, `src/pages/property/index.tsx`, `src/pages/{Index,Beer,Cafe,Kitchens,Hall,Cocktails}.tsx` — pass `cmsPage` + `fallbackFaqs` to `CBFAQ`
+- Real photography upload (placeholder slots only — you can drop images in via CMS after)
+- Press cuttings as actual scanned imagery (text quotes + source links only for now)
