@@ -194,28 +194,26 @@ Two hotels. One spirit. Pubs and rooms and Thai kitchens and treehouses and burl
               The look.
             </h2>
 
-            <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+            <div className="mt-12 columns-2 md:columns-3 lg:columns-4 gap-3 md:gap-4 [column-fill:_balance]">
               {[
                 { src: townLook1, alt: "Burlesque night at Town" },
                 { src: countryLook1, alt: "Reception by Routemaster at Country" },
-                { src: townLook2, alt: "Hom Thai at Town" },
-                { src: countryLook2, alt: "Copper bath bedroom at Country" },
                 { src: townLook3, alt: "Red room at Town" },
-                { src: countryLook3, alt: "Long Thai lunch at Country" },
-                { src: townLook4, alt: "Rococo interior at Town" },
+                { src: countryLook2, alt: "Copper bath bedroom at Country" },
+                { src: townLook2, alt: "Hom Thai at Town" },
                 { src: countryLook4, alt: "Firepit terrace at Country" },
+                { src: townLook4, alt: "Rococo interior at Town" },
+                { src: countryLook3, alt: "Long Thai lunch at Country" },
               ].map((img, i) => (
                 <div
                   key={i}
-                  className={`relative overflow-hidden bg-black ${
-                    i === 0 || i === 5 ? "row-span-2 aspect-[3/4]" : "aspect-square"
-                  }`}
+                  className="mb-3 md:mb-4 break-inside-avoid overflow-hidden bg-black"
                 >
                   <img
                     src={img.src}
                     alt={img.alt}
                     loading="lazy"
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                    className="block w-full h-auto object-cover transition-transform duration-700 hover:scale-[1.03]"
                   />
                 </div>
               ))}
