@@ -2,16 +2,16 @@ import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 // RecoveryGuard
-// - Detects Supabase recovery/auth tokens synchronously via effect on route changes
-// - Persists a `sessionStorage.recovery` flag
-// - Forces navigation to /management/login while recovery is active
+// - Detects Bears Den member password recovery tokens (NOT management).
+// - Only routes to /set-password when the recovery flow lands on a non-management path.
+// - Management login handles its own recovery flow internally and must not be
+//   hijacked to /set-password.
 export const RecoveryGuard = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
     try {
-      const host = window.location.hostname;
       const params = new URLSearchParams(window.location.search);
       const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
 
@@ -23,18 +23,19 @@ export const RecoveryGuard = () => {
         params.get('access_token') || hashParams.get('access_token') ||
         params.get('refresh_token') || hashParams.get('refresh_token')
       );
- 
-      // Domain canonicalisation handled in index.html bootstrap script
- 
+
       if (hasRecoveryTokens) {
         sessionStorage.setItem('recovery', '1');
       }
 
       const recoveryActive = sessionStorage.getItem('recovery') === '1';
-      const recoveryPath = host.includes('crazybear.dev') ? '/set-password' : '/management/login';
+      const path = location.pathname;
 
-      if (recoveryActive && location.pathname !== recoveryPath) {
-        const redirectUrl = recoveryPath +
+      // Never redirect away from management routes — they own their own recovery UI.
+      if (path.startsWith('/management')) return;
+
+      if (recoveryActive && path !== '/set-password') {
+        const redirectUrl = '/set-password' +
                            window.location.search +
                            window.location.hash;
         window.location.replace(redirectUrl);
@@ -42,9 +43,7 @@ export const RecoveryGuard = () => {
     } catch (e) {
       // no-op
     }
-    // Re-run whenever route changes to keep guard active
   }, [location.pathname, location.search, location.hash, navigate]);
 
   return null;
 };
-
