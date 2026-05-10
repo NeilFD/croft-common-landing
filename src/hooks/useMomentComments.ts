@@ -140,7 +140,7 @@ export const useMomentComments = (momentId: string | null) => {
           .select('comment_id, user_id, emoji')
           .in('comment_id', ids),
         (supabase as any)
-          .from('profiles')
+          .from('profiles_public')
           .select('user_id, first_name, last_name')
           .in('user_id', userIds),
       ]);

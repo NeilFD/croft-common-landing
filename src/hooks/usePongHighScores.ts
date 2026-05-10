@@ -45,7 +45,7 @@ export const usePongHighScores = () => {
         // Authenticated user - get profile name
         userId = user.id;
         const { data: profile, error: profileError } = await (supabase as any)
-          .from('profiles')
+          .from('profiles_public')
           .select('first_name, last_name')
           .eq('user_id', user.id)
           .single();

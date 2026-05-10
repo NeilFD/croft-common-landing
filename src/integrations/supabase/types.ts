@@ -3811,7 +3811,27 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      profiles_public: {
+        Row: {
+          avatar_url: string | null
+          first_name: string | null
+          last_name: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          first_name?: string | null
+          last_name?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          first_name?: string | null
+          last_name?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       check_secret_kitchen_access_status: {
@@ -3871,6 +3891,16 @@ export type Database = {
               total_quantity: number
             }[]
           }
+      get_profiles_public: {
+        Args: { uids: string[] }
+        Returns: {
+          avatar_url: string
+          first_name: string
+          last_name: string
+          user_id: string
+        }[]
+      }
+      is_admin: { Args: { uid: string }; Returns: boolean }
       is_email_domain_allowed: { Args: { email: string }; Returns: boolean }
       is_gold: { Args: { check_user_id: string }; Returns: boolean }
       move_to_dlq: {

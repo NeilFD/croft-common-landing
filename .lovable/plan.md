@@ -1,63 +1,90 @@
 ## Goal
 
-Let trusted people try the Gold flow end-to-end without spending real money. Stay in Stripe sandbox for now (test card `4242 4242 4242 4242` works, no real charges). Hide the "Go Gold" button behind a secret access code so the public can't accidentally use it.
+Lock down the 5 critical Supabase findings without breaking any existing feature. All current behaviour (moments showing names, CMS pages loading, space management, mailchimp sync, admin tables) keeps working.
 
-## How it works
+## Approach
 
-On the profile page, in the Gold modal (non-Gold state):
+The codebase already uses two implicit "admin" signals:
+1. Email domain in `public.allowed_domains` (used by `member-analytics`, `advanced-analytics`, etc. to gate admin tools).
+2. Service role key (used by every edge function that mutates CMS, subscribers, properties, etc.).
 
-1. The "Go Gold" button is **hidden by default**. The modal shows the price, the perks, and a single input: **"Access code"**.
-2. User types the code (e.g. `BEARTEST`) and submits.
-3. A backend function checks the code against a server-side list. If valid, it returns `ok` and stores a flag in the browser (`sessionStorage`) so the unlock survives modal close/reopen for that session.
-4. Once unlocked, the modal reveals the **Go Gold** button and the optional referral code field. Checkout proceeds as today (sandbox, £69, but pay with `4242` so no money moves).
-5. Wrong code shows an inline error. No retry limit needed for v1.
+I'll formalise (1) with a `SECURITY DEFINER` function `public.is_admin(uid)` and use it in RLS. Service-role calls bypass RLS so all edge functions keep working untouched.
 
-The code is never shipped in the JS bundle. It lives server-side only.
+For `profiles`, the app needs other members' first/last names (moments feed, comments, pong leaderboard). I'll keep that working via a sanitised view that excludes phone, birthday, email.
 
-## Where codes are stored
+---
 
-A small new table `gold_access_codes` (code, label, active, created_at). You can add/disable codes via the database without deploying code. Seed it with one code to start, e.g. `BEARTEST`.
+## 1. `profiles` — stop public PII exposure
 
-## Cross-device note
+- New view `public.profiles_public` with `security_invoker=on` exposing only `user_id, first_name, last_name, avatar_url`.
+- Replace SELECT policy on `profiles` so only the owner (or an admin) can read the full row.
+- Update three client hooks to query `profiles_public` instead of `profiles` for cross-user lookups:
+  - `src/hooks/useMemberMoments.ts` (lines 86-89, plus the `profiles!inner(...)` join at 117-124 — refetch likers via separate `profiles_public` query and stitch in JS, same pattern as the comments hook).
+  - `src/hooks/useMomentComments.ts` (line 142-145).
+  - `src/hooks/usePongHighScores.ts` (line 47-51).
+  - `src/admin/components/DeliveriesTable.tsx` (line 63-66) — admin tool, but switching to the view keeps it consistent and still returns the names it needs.
+- `useFullProfile.ts` keeps using `profiles` directly — it only ever reads/writes `auth.uid()`'s own row, which the new policy still allows.
 
-The earlier issue (Gold on desktop, black card on phone) is the sandbox-vs-live split. As long as you stay in sandbox on every device — preview URL on desktop, preview URL on phone — Gold will show on both. The published site (`crazybear.dev`) and the iOS app may be pinned to live; if you want Gold to appear there too without going live, the access code needs to work in both environments. We'll keep checkout in sandbox regardless of which build the user is on, so any tester sees the same flow everywhere.  
-  
-I want sandbox on every device!!
+## 2. `member_profiles_extended` and `moment_likes` — restrict public read
 
-## Technical details
+- Change SELECT policy on both from `{public}` to `{authenticated}` (`USING (true)` on authenticated role). The app only ever reads them from signed-in member screens.
 
-**New table** (`gold_access_codes`):
+## 3. `subscribers` — stop authenticated mass export
 
-- `code` (text, primary key, uppercase)
-- `label` (text, e.g. "Internal team")
-- `active` (boolean, default true)
-- `created_at`
-- RLS: no public access. Only the edge function (service role) reads it.
+- Drop the "viewable by authenticated users" policy.
+- Add: owner can SELECT their own row by email match (`auth.email() = email`).
+- Add: admins (via `is_admin()`) can SELECT all rows — keeps `DeliveriesTable` admin UI working.
+- All edge functions use service role, unaffected.
 
-**New edge function** `validate-gold-access-code`:
+## 4. `allowed_domains` — enable RLS
 
-- POST `{ code: string }`
-- Looks up `code` (uppercased, trimmed) where `active = true`. Returns `{ ok: true }` or `{ ok: false }`.
-- `verify_jwt = false`. Rate-limit not needed for v1, but logs each attempt.
+- `ALTER TABLE ... ENABLE ROW LEVEL SECURITY;`
+- Add a SELECT policy for admins only (most reads are done by service-role edge functions which bypass RLS, and by the `SECURITY DEFINER` function `is_email_domain_allowed` which also bypasses).
+- No public/anon access at all.
 
-**Edit `src/components/membership/GoldSection.tsx**`:
+## 5. CMS / venue / property / spaces / bedrooms — admin-only writes
 
-- Add `accessUnlocked` state, initialised from `sessionStorage.getItem('gold_access_unlocked') === '1'`.
-- In the non-Gold modal:
-  - If not unlocked: show price + perks + access code input + "Unlock" button. Hide "Go Gold".
-  - If unlocked: show price + perks + referral code field + "Go Gold" (current behaviour).
-- On Unlock click: invoke `validate-gold-access-code`. On `ok`, set state and `sessionStorage`.
-- No change to Stripe checkout call itself — it stays sandbox/£69.
+For each of `cms_content, cms_global_content, cms_images, fb_venues, spaces, properties, bedrooms`:
+- Keep the existing public/anon SELECT policy (the site is public-facing).
+- Replace the broad `ALL to authenticated USING (true)` policy with three policies (INSERT / UPDATE / DELETE) that all check `public.is_admin(auth.uid())`.
+- Result: only signed-in users with an `@allowed_domains` email can mutate CMS/venue data. All current admin/CMS UIs are accessed by exactly those users today.
 
-**Force checkout to sandbox regardless of build env** (so the unlock works for testers on the live published site / iOS app too):
+## 6. Helper function
 
-- `src/components/membership/GoldSection.tsx` passes `environment: 'sandbox'` explicitly to the `create-checkout` invoke when access is unlocked, instead of using `getStripeEnvironment()`.
-- Same for `useGoldStatus` — when `sessionStorage` flag is set, query subscriptions filtered by `environment = 'sandbox'` so the gold card actually appears after the test purchase.
+```sql
+create or replace function public.is_admin(uid uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from auth.users u
+    join public.allowed_domains d
+      on split_part(u.email, '@', 2) = d.domain
+    where u.id = uid
+  )
+$$;
+```
 
-**Seed**: insert one starting code (`BEARTEST`) into `gold_access_codes`.
+This mirrors the email-domain check already used by admin edge functions.
 
-## Out of scope
+---
 
-- Coupons / promo codes inside Stripe (not needed — sandbox is already free).
-- Going live on Stripe.
-- Admin UI for managing codes (do it via DB for now).
+## What changes for users
+
+- **Members**: no visible change. Names still appear on moments, comments, leaderboard. Their own profile screen still works.
+- **Admins / staff (allowed-domain emails)**: no change. CMS editing, space management, deliveries table, subscriber views all continue to work.
+- **Anonymous visitors**: still see public CMS pages, venue listings, properties; can no longer scrape phone numbers / birthdays / subscriber lists / member like history.
+
+## Files touched
+
+- New migration (one file) implementing all SQL above.
+- `src/hooks/useMemberMoments.ts`
+- `src/hooks/useMomentComments.ts`
+- `src/hooks/usePongHighScores.ts`
+- `src/admin/components/DeliveriesTable.tsx`
+
+No edge functions need changes (they use service role).

@@ -59,9 +59,9 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
       const userIds = [...new Set(subscriptionData?.filter(sub => sub.user_id).map(sub => sub.user_id) || [])];
       console.log("User IDs:", userIds);
 
-      // Get profiles separately
+      // Get profiles separately (sanitised view, no PII)
       const { data: profilesData, error: profileError } = await (supabase as any)
-        .from("profiles")
+        .from("profiles_public")
         .select("user_id, first_name, last_name")
         .in("user_id", userIds);
 
