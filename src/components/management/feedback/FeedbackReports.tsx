@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import DOMPurify from 'dompurify';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -95,7 +96,7 @@ export function FeedbackReports({ data, dateRange }: FeedbackReportsProps) {
                 </div>
 
                 <div className="prose prose-sm max-w-none">
-                  <div dangerouslySetInnerHTML={{ __html: reportData.content }} />
+                  <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(reportData.content || '') }} />
                 </div>
               </div>
             )}
