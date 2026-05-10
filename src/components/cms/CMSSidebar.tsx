@@ -16,15 +16,15 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { 
-  Home, 
-  Coffee, 
-  Wine, 
-  Beer, 
-  ChefHat, 
-  Calendar, 
-  Users, 
+import {
+  Home,
+  Trees,
   Building2,
+  Bed,
+  Wine,
+  UtensilsCrossed,
+  PartyPopper,
+  Waves,
   FileText,
   Image,
   Palette,
@@ -32,162 +32,86 @@ import {
   Settings,
   ChevronDown,
   Globe,
-  MessageSquare,
   Eye,
-  Mail,
-  Ticket,
-  HelpCircle
+  Mail
 } from 'lucide-react';
 
-const pageStructure = [
-  {
-    name: 'Overview',
-    path: '/cms',
-    icon: Home,
-    sections: []
-  },
-  {
-    name: 'Home (Index)',
-    path: '/cms/visual/home',
-    icon: Home,
-    sections: [
-      { name: 'FAQ', path: '/cms/faq/home' }
-    ]
-  },
-  {
-    name: 'Cafe',
-    path: '/cms/visual/cafe',
-    icon: Coffee,
-    sections: [
-      { name: 'Menu', path: '/cms/visual/cafe/menu' },
-      { name: 'FAQ', path: '/cms/faq/cafe' }
-    ]
-  },
-  {
-    name: 'Cocktails',
-    path: '/cms/visual/cocktails',
-    icon: Wine,
-    sections: [
-      { name: 'Menu', path: '/cms/visual/cocktails/menu' },
-      { name: 'FAQ', path: '/cms/faq/cocktails' }
-    ]
-  },
-  {
-    name: 'Beer',
-    path: '/cms/visual/beer',
-    icon: Beer,
-    sections: [
-      { name: 'Menu', path: '/cms/visual/beer/menu' },
-      { name: 'FAQ', path: '/cms/faq/beer' }
-    ]
-  },
-  {
-    name: 'Kitchens',
-    path: '/cms/visual/kitchens',
-    icon: ChefHat,
-    sections: [
-      { name: 'Menu', path: '/cms/visual/kitchens/menu' },
-      { name: 'FAQ', path: '/cms/faq/kitchens' }
-    ]
-  },
-  {
-    name: 'Hall',
-    path: '/cms/visual/hall',
-    icon: Calendar,
-    sections: [
-      { name: 'Menu', path: '/cms/visual/hall/menu' },
-      { name: 'FAQ', path: '/cms/faq/hall' }
-    ]
-  },
-  {
-    name: 'Community',
-    path: '/cms/visual/community',
-    icon: Users,
-    sections: [
-      { name: 'Menu', path: '/cms/visual/community/menu' },
-      { name: 'FAQ', path: '/cms/faq/community' }
-    ]
-  },
-  {
-    name: 'Common Room',
-    path: '/cms/visual/common-room',
-    icon: Building2,
-    sections: [
-      { name: 'Main', path: '/cms/visual/common-room/main' },
-      { name: 'FAQ', path: '/cms/faq/common-room' }
-    ]
-  },
-  {
-    name: 'Calendar',
-    path: '/cms/visual/calendar',
-    icon: Calendar,
-    sections: [
-      { name: 'FAQ', path: '/cms/faq/calendar' }
-    ]
-  },
-  {
-    name: 'Book',
-    path: '/cms/visual/book',
-    icon: FileText,
-    sections: [
-      { name: 'FAQ', path: '/cms/faq/book' }
-    ]
-  },
-  {
-    name: 'Notifications',
-    path: '/cms/visual/notifications',
-    icon: MessageSquare,
-    sections: [
-      { name: 'FAQ', path: '/cms/faq/notifications' }
-    ]
-  },
-  {
-    name: 'Croft Common DateTime',
-    path: '/cms/visual/croftcommondatetime',
-    icon: Calendar,
-    sections: [
-      { name: 'FAQ', path: '/cms/faq/croftcommondatetime' }
-    ]
-  }
+type Section = { name: string; path: string };
+type Page = { name: string; path: string; icon: any; sections: Section[] };
+
+const CMS_BASE = '/management/cms';
+const VISUAL = `${CMS_BASE}/visual`;
+
+const countryPages: Page[] = [
+  { name: 'Country Home', path: `${VISUAL}/country`, icon: Trees, sections: [] },
+  { name: 'Country Pub', path: `${VISUAL}/country/pub`, icon: UtensilsCrossed, sections: [
+    { name: 'Pub Food', path: `${VISUAL}/country/pub/food` },
+    { name: 'Pub Drink', path: `${VISUAL}/country/pub/drink` },
+    { name: 'Hospitality', path: `${VISUAL}/country/pub/hospitality` },
+  ]},
+  { name: 'Country Rooms', path: `${VISUAL}/country/rooms`, icon: Bed, sections: [
+    { name: 'Room Types', path: `${VISUAL}/country/rooms/types` },
+    { name: 'Gallery', path: `${VISUAL}/country/rooms/gallery` },
+  ]},
+  { name: 'Country Parties', path: `${VISUAL}/country/parties`, icon: PartyPopper, sections: [] },
+  { name: 'Country Events', path: `${VISUAL}/country/events`, icon: PartyPopper, sections: [
+    { name: 'Weddings', path: `${VISUAL}/country/events/weddings` },
+    { name: 'Birthdays', path: `${VISUAL}/country/events/birthdays` },
+    { name: 'Business', path: `${VISUAL}/country/events/business` },
+  ]},
+];
+
+const townPages: Page[] = [
+  { name: 'Town Home', path: `${VISUAL}/town`, icon: Building2, sections: [] },
+  { name: 'Town Food', path: `${VISUAL}/town/food`, icon: UtensilsCrossed, sections: [
+    { name: 'The Black Bear', path: `${VISUAL}/town/food/black-bear` },
+    { name: 'The B&B', path: `${VISUAL}/town/food/bnb` },
+    { name: 'Hom Thai', path: `${VISUAL}/town/food/hom-thai` },
+  ]},
+  { name: 'Town Drink', path: `${VISUAL}/town/drink`, icon: Wine, sections: [
+    { name: 'Cocktails', path: `${VISUAL}/town/drink/cocktails` },
+  ]},
+  { name: 'Town Rooms', path: `${VISUAL}/town/rooms`, icon: Bed, sections: [
+    { name: 'Room Types', path: `${VISUAL}/town/rooms/types` },
+    { name: 'Gallery', path: `${VISUAL}/town/rooms/gallery` },
+  ]},
+  { name: 'Town Pool', path: `${VISUAL}/town/pool`, icon: Waves, sections: [] },
 ];
 
 const globalSections = [
-  { name: 'Footer Content', path: '/cms/visual/global/footer', icon: FileText },
-  { name: 'Navigation', path: '/cms/visual/global/navigation', icon: Globe },
-  { name: 'Subscription Form', path: '/cms/visual/global/subscription', icon: MessageSquare },
-  { name: 'Modal Content', path: '/cms/global/modals', icon: Eye }
+  { name: 'Footer', path: `${VISUAL}/global/footer`, icon: FileText },
+  { name: 'Navigation', path: `${VISUAL}/global/navigation`, icon: Globe },
+  { name: 'Modal Content', path: `${CMS_BASE}/global/modals`, icon: Eye },
 ];
 
 const emailTemplateStructure = [
-  { name: 'Welcome Email', path: '/cms/email-templates/welcome', icon: Mail },
-  { name: 'Cinema Tickets', path: '/cms/email-templates/cinema', icon: Ticket },
-  { name: 'Event Management', path: '/cms/email-templates/event', icon: Calendar },
+  { name: 'Welcome Email', path: `${CMS_BASE}/email-templates/welcome`, icon: Mail },
+  { name: 'Event Management', path: `${CMS_BASE}/email-templates/event`, icon: Mail },
 ];
 
 const managementSections = [
-  { name: 'Images', path: '/cms/images', icon: Image },
-  { name: 'Brand Assets', path: '/cms/brand', icon: Palette },
-  { name: 'Import/Export', path: '/cms/import', icon: Download }
+  { name: 'Images', path: `${CMS_BASE}/images`, icon: Image },
+  { name: 'Brand Assets', path: `${CMS_BASE}/brand`, icon: Palette },
+  { name: 'Import/Export', path: `${CMS_BASE}/import`, icon: Download }
 ];
 
 export const CMSSidebar = () => {
-  const { state, open } = useSidebar();
+  const { state } = useSidebar();
   const isMobile = useIsMobile();
   const location = useLocation();
   const currentPath = location.pathname;
 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    pages: true,
+    overview: true,
+    country: true,
+    town: true,
     global: false,
     emails: false,
     management: false
   });
 
   const toggleSection = (section: string) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
   const isActive = (path: string) => currentPath === path;
@@ -196,102 +120,104 @@ export const CMSSidebar = () => {
   const getNavClass = (isActiveItem: boolean) =>
     isActiveItem ? "bg-accent text-accent-foreground font-medium" : "hover:bg-accent/50";
 
-  // Show text when not collapsed OR when on mobile (mobile should always show text when open)
   const showText = state !== "collapsed" || isMobile;
 
-  return (
-    <Sidebar 
-      className="border-r bg-background"
-      collapsible="icon"
-    >
-      <SidebarContent className="pt-16 bg-background">
-        {/* Pages Section */}
-        <SidebarGroup>
-          <Collapsible 
-            open={expandedSections.pages} 
-            onOpenChange={() => toggleSection('pages')}
-          >
-            <CollapsibleTrigger asChild>
-              <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
-                <span className="flex items-center">
-                  <FileText className="mr-2 h-4 w-4" />
-                  {showText && "Pages"}
-                </span>
-                {showText && <ChevronDown className="h-4 w-4" />}
-              </SidebarGroupLabel>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {pageStructure.map((page) => (
-                    <SidebarMenuItem key={page.path}>
-                      {page.sections.length > 0 ? (
-                        <Collapsible>
-                          <div className="flex items-center">
-                            <SidebarMenuButton 
-                              asChild
-                              className={`${getNavClass(isParentActive(page.path))} flex-1`}
-                            >
-                              <NavLink to={page.path}>
-                                <page.icon className="mr-2 h-4 w-4" />
-                                {showText && <span>{page.name}</span>}
-                              </NavLink>
-                            </SidebarMenuButton>
-                            {showText && (
-                              <CollapsibleTrigger asChild>
-                                <button className="p-1 hover:bg-accent rounded">
-                                  <ChevronDown className="h-4 w-4" />
-                                </button>
-                              </CollapsibleTrigger>
-                            )}
-                          </div>
-                          <CollapsibleContent>
-                            <SidebarMenuSub>
-                              {page.sections.map((section) => (
-                                <SidebarMenuSubItem key={section.path}>
-                                  <SidebarMenuSubButton 
-                                    asChild
-                                    className={getNavClass(isActive(section.path))}
-                                  >
-                                    <NavLink to={section.path}>
-                                       {showText && section.name}
-                                    </NavLink>
-                                  </SidebarMenuSubButton>
-                                </SidebarMenuSubItem>
-                              ))}
-                            </SidebarMenuSub>
-                          </CollapsibleContent>
-                        </Collapsible>
-                      ) : (
-                        <SidebarMenuButton 
+  const renderPageGroup = (label: string, key: string, pages: Page[]) => (
+    <SidebarGroup>
+      <Collapsible open={expandedSections[key]} onOpenChange={() => toggleSection(key)}>
+        <CollapsibleTrigger asChild>
+          <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
+            <span className="flex items-center font-brutalist uppercase tracking-wide">
+              <FileText className="mr-2 h-4 w-4" />
+              {showText && label}
+            </span>
+            {showText && <ChevronDown className="h-4 w-4" />}
+          </SidebarGroupLabel>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {pages.map((page) => (
+                <SidebarMenuItem key={page.path}>
+                  {page.sections.length > 0 ? (
+                    <Collapsible defaultOpen={isParentActive(page.path)}>
+                      <div className="flex items-center">
+                        <SidebarMenuButton
                           asChild
-                          className={getNavClass(isActive(page.path))}
+                          className={`${getNavClass(isActive(page.path))} flex-1`}
                         >
                           <NavLink to={page.path}>
                             <page.icon className="mr-2 h-4 w-4" />
-                            {showText && page.name}
+                            {showText && <span>{page.name}</span>}
                           </NavLink>
                         </SidebarMenuButton>
-                      )}
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </CollapsibleContent>
-          </Collapsible>
+                        {showText && (
+                          <CollapsibleTrigger asChild>
+                            <button className="p-1 hover:bg-accent rounded">
+                              <ChevronDown className="h-4 w-4" />
+                            </button>
+                          </CollapsibleTrigger>
+                        )}
+                      </div>
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          {page.sections.map((section) => (
+                            <SidebarMenuSubItem key={section.path}>
+                              <SidebarMenuSubButton asChild className={getNavClass(isActive(section.path))}>
+                                <NavLink to={section.path}>{showText && section.name}</NavLink>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          ))}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  ) : (
+                    <SidebarMenuButton asChild className={getNavClass(isActive(page.path))}>
+                      <NavLink to={page.path}>
+                        <page.icon className="mr-2 h-4 w-4" />
+                        {showText && page.name}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  )}
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </CollapsibleContent>
+      </Collapsible>
+    </SidebarGroup>
+  );
+
+  return (
+    <Sidebar className="border-r bg-background" collapsible="icon">
+      <SidebarContent className="pt-16 bg-background">
+        {/* Overview */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild className={getNavClass(isActive(CMS_BASE))}>
+                  <NavLink to={CMS_BASE}>
+                    <Home className="mr-2 h-4 w-4" />
+                    {showText && 'Overview'}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Global Content Section */}
+        {renderPageGroup('Country', 'country', countryPages)}
+        {renderPageGroup('Town', 'town', townPages)}
+
+        {/* Global Content */}
         <SidebarGroup>
-          <Collapsible 
-            open={expandedSections.global} 
-            onOpenChange={() => toggleSection('global')}
-          >
+          <Collapsible open={expandedSections.global} onOpenChange={() => toggleSection('global')}>
             <CollapsibleTrigger asChild>
               <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
                 <span className="flex items-center">
                   <Globe className="mr-2 h-4 w-4" />
-                  {showText && "Global Content"}
+                  {showText && 'Global Content'}
                 </span>
                 {showText && <ChevronDown className="h-4 w-4" />}
               </SidebarGroupLabel>
@@ -301,13 +227,10 @@ export const CMSSidebar = () => {
                 <SidebarMenu>
                   {globalSections.map((section) => (
                     <SidebarMenuItem key={section.path}>
-                      <SidebarMenuButton 
-                        asChild
-                        className={getNavClass(isActive(section.path))}
-                      >
+                      <SidebarMenuButton asChild className={getNavClass(isActive(section.path))}>
                         <NavLink to={section.path}>
                           <section.icon className="mr-2 h-4 w-4" />
-                           {showText && section.name}
+                          {showText && section.name}
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -318,17 +241,14 @@ export const CMSSidebar = () => {
           </Collapsible>
         </SidebarGroup>
 
-        {/* Email Templates Section */}
+        {/* Email Templates */}
         <SidebarGroup>
-          <Collapsible 
-            open={expandedSections.emails} 
-            onOpenChange={() => toggleSection('emails')}
-          >
+          <Collapsible open={expandedSections.emails} onOpenChange={() => toggleSection('emails')}>
             <CollapsibleTrigger asChild>
               <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
                 <span className="flex items-center">
                   <Mail className="mr-2 h-4 w-4" />
-                  {showText && "Email Templates"}
+                  {showText && 'Email Templates'}
                 </span>
                 {showText && <ChevronDown className="h-4 w-4" />}
               </SidebarGroupLabel>
@@ -338,10 +258,7 @@ export const CMSSidebar = () => {
                 <SidebarMenu>
                   {emailTemplateStructure.map((template) => (
                     <SidebarMenuItem key={template.path}>
-                      <SidebarMenuButton 
-                        asChild
-                        className={getNavClass(isActive(template.path))}
-                      >
+                      <SidebarMenuButton asChild className={getNavClass(isActive(template.path))}>
                         <NavLink to={template.path}>
                           <template.icon className="mr-2 h-4 w-4" />
                           {showText && template.name}
@@ -355,17 +272,14 @@ export const CMSSidebar = () => {
           </Collapsible>
         </SidebarGroup>
 
-        {/* Management Section */}
+        {/* Assets */}
         <SidebarGroup>
-          <Collapsible 
-            open={expandedSections.management} 
-            onOpenChange={() => toggleSection('management')}
-          >
+          <Collapsible open={expandedSections.management} onOpenChange={() => toggleSection('management')}>
             <CollapsibleTrigger asChild>
               <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
                 <span className="flex items-center">
                   <Settings className="mr-2 h-4 w-4" />
-                  {showText && "Management"}
+                  {showText && 'Assets'}
                 </span>
                 {showText && <ChevronDown className="h-4 w-4" />}
               </SidebarGroupLabel>
@@ -375,10 +289,7 @@ export const CMSSidebar = () => {
                 <SidebarMenu>
                   {managementSections.map((section) => (
                     <SidebarMenuItem key={section.path}>
-                      <SidebarMenuButton 
-                        asChild
-                        className={getNavClass(isActive(section.path))}
-                      >
+                      <SidebarMenuButton asChild className={getNavClass(isActive(section.path))}>
                         <NavLink to={section.path}>
                           <section.icon className="mr-2 h-4 w-4" />
                           {showText && section.name}
