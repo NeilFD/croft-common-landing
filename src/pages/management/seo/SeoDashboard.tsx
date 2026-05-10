@@ -119,6 +119,8 @@ export default function SeoDashboard() {
   const runAll = useMutation({
     mutationFn: async () => {
       setAuditingAll(true);
+      setProgressDone(0);
+      setRunStartedAt(new Date().toISOString());
       const { data, error } = await supabase.functions.invoke('seo-audit', {
         body: { all: true },
       });
@@ -138,8 +140,30 @@ export default function SeoDashboard() {
       });
     },
     onError: (e: any) => toast({ title: 'Audit failed', description: e.message, variant: 'destructive' }),
-    onSettled: () => setAuditingAll(false),
+    onSettled: () => {
+      setAuditingAll(false);
+      setRunStartedAt(null);
+      setProgressDone(0);
+    },
   });
+
+  // Live progress: poll how many audits have been written since the run started.
+  // The edge function inserts one row per route as it finishes, so this gives
+  // a real time count without any extra schema or websocket plumbing.
+  useEffect(() => {
+    if (!auditingAll || !runStartedAt) return;
+    let cancelled = false;
+    const tick = async () => {
+      const { count } = await supabase
+        .from('seo_audits')
+        .select('*', { count: 'exact', head: true })
+        .gte('run_at', runStartedAt);
+      if (!cancelled && typeof count === 'number') setProgressDone(count);
+    };
+    tick();
+    const id = window.setInterval(tick, 2000);
+    return () => { cancelled = true; window.clearInterval(id); };
+  }, [auditingAll, runStartedAt]);
 
   const sortedRows = useMemo(() => {
     return [...pages].sort((a, b) => {
