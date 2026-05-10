@@ -48,9 +48,12 @@ const PropertyPage = ({
 }: Props) => {
   const { config } = useProperty();
   const location = useLocation();
-  const hero = getHeroFor(location.pathname, fallbackHero ?? "");
+  const pageNs = (cmsPage ?? location.pathname.replace(/^\//, "")).toLowerCase();
+  const { assets: cmsCarousel } = useCMSAssets(pageNs, "hero-carousel");
+  const { assets: cmsHero } = useCMSAssets(pageNs, "hero");
   const fit = getHeroFitFor(location.pathname);
-  const carousel = getHeroCarouselFor(location.pathname);
+  const carousel = cmsCarousel.length > 0 ? cmsCarousel.map((a) => a.src) : undefined;
+  const hero = cmsHero[0]?.src ?? getHeroFor(location.pathname, fallbackHero ?? "");
 
   const property: "town" | "country" = location.pathname.startsWith("/town") ? "town" : "country";
   const fullTitle = `${title} | ${config.name}`;
