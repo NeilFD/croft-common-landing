@@ -77,9 +77,6 @@ export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
               </footer>
             </main>
           </div>
-
-          {/* AI Chat Widget */}
-          <ManagementAIChatWidget />
         </div>
       </SidebarProvider>
     </ManagementAIProvider>
