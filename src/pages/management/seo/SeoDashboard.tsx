@@ -254,7 +254,7 @@ export default function SeoDashboard() {
                             {a?.error ? '—' : a?.overall_score ?? '—'}
                           </td>
                           <td className="px-4 py-3">
-                            {a?.overall_grade ? (
+                            {a?.overall_grade && !a.error ? (
                               <Badge className={`${gradeColor(a.overall_grade)} font-display`}>
                                 {a.overall_grade}
                               </Badge>
