@@ -125,9 +125,10 @@ export default function SeoDashboard() {
     },
     onSuccess: (data: any) => {
       qc.invalidateQueries({ queryKey: ['seo-latest-audits'] });
+      const failed = data?.results?.filter((r: any) => r.error).length ?? data?.errors?.length ?? 0;
       toast({
         title: 'Site audit complete',
-        description: `${data?.results?.length ?? 0} pages tested${data?.errors?.length ? `, ${data.errors.length} errors` : ''}.`,
+        description: `${data?.results?.length ?? 0} pages tested${failed ? `, ${failed} Lighthouse failures` : ''}.`,
       });
     },
     onError: (e: any) => toast({ title: 'Audit failed', description: e.message, variant: 'destructive' }),
@@ -250,7 +251,7 @@ export default function SeoDashboard() {
                             <div className="text-xs text-muted-foreground">{p.route}</div>
                           </td>
                           <td className="px-4 py-3 font-display font-bold">
-                            {a?.overall_score ?? '—'}
+                            {a?.error ? '—' : a?.overall_score ?? '—'}
                           </td>
                           <td className="px-4 py-3">
                             {a?.overall_grade ? (
@@ -263,9 +264,9 @@ export default function SeoDashboard() {
                           </td>
                           <td className="px-4 py-3 text-muted-foreground">
                             {!a && 'Not yet tested'}
-                            {a && issues === 0 && 'All checks passing'}
-                            {a && issues > 0 && `${issues} issue${issues > 1 ? 's' : ''}`}
-                            {a?.error && <span className="text-destructive"> • Lighthouse failed</span>}
+                            {a?.error && <span className="text-destructive">Lighthouse failed: {a.error}</span>}
+                            {a && !a.error && issues === 0 && 'All checks passing'}
+                            {a && !a.error && issues > 0 && `${issues} issue${issues > 1 ? 's' : ''}`}
                           </td>
                           <td className="px-4 py-3 text-right space-x-2">
                             <Button
