@@ -22,19 +22,10 @@ export const useDraftContent = (page: string) => {
         return;
       }
 
-      // Count global content drafts (affects all pages)
-      const { count: globalCount, error: globalError } = await (supabase as any)
-        .from('cms_global_content')
-        .select('*', { count: 'exact', head: true })
-        .eq('published', false);
-
-      if (globalError) {
-        console.warn('Failed to fetch global draft count:', globalError);
-        return;
-      }
-
-      const totalDrafts = (pageCount || 0) + (globalCount || 0);
-      console.log('🎯 useDraftContent: Found', pageCount, 'page drafts and', globalCount, 'global drafts for page:', page);
+      // Note: cms_global_content does not have a `published` column, so it
+      // is not part of the draft/publish flow.
+      const totalDrafts = pageCount || 0;
+      console.log('🎯 useDraftContent: Found', pageCount, 'page drafts for page:', page);
       setDraftCount(totalDrafts);
     } catch (err) {
       console.warn('Error fetching draft count:', err);
@@ -59,16 +50,7 @@ export const useDraftContent = (page: string) => {
         throw pageError;
       }
 
-      // Publish global content drafts
-      const { error: globalError } = await (supabase as any)
-        .from('cms_global_content')
-        .update({ published: true })
-        .eq('published', false);
-
-      if (globalError) {
-        console.error('🎯 useDraftContent: Global publish error:', globalError);
-        throw globalError;
-      }
+      // Note: cms_global_content has no `published` column, so it is skipped here.
 
       console.log('🎯 useDraftContent: Publish successful for page:', page);
       // Refresh draft count after publishing
