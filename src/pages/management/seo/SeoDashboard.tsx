@@ -484,6 +484,17 @@ export default function SeoDashboard() {
                             {a && !a.error && issues === 0 && 'All checks passing'}
                             {a && !a.error && issues > 0 && `${issues} issue${issues > 1 ? 's' : ''}`}
                           </td>
+                          <td className="px-4 py-3 text-muted-foreground">
+                            {(() => {
+                              const lt = formatLastTested(a?.run_at);
+                              if (!lt) return <span className="text-muted-foreground">Never</span>;
+                              return (
+                                <span title={lt.absolute} className="font-cb-sans text-xs">
+                                  {lt.relative}
+                                </span>
+                              );
+                            })()}
+                          </td>
                           <td className="px-4 py-3 text-right space-x-2">
                             <Button
                               size="sm"
