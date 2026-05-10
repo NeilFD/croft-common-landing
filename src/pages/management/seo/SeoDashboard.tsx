@@ -268,6 +268,7 @@ export default function SeoDashboard() {
     }
   };
 
+  const sortedRows = useMemo(() => {
     return [...pages].sort((a, b) => {
       const auditA = auditMap.get(a.route);
       const auditB = auditMap.get(b.route);
