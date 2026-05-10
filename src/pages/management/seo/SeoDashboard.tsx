@@ -143,9 +143,7 @@ export default function SeoDashboard() {
       for (let i = 0; i < routes.length; i += 1) {
         const route = routes[i];
         setProgressRoute(route);
-        const { data, error } = await supabase.functions.invoke('seo-audit', {
-          body: { route },
-        });
+        const { data, error } = await invokeAudit(route);
 
         if (error) {
           errors.push({ route, error: error.message });
