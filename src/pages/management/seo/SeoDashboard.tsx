@@ -16,6 +16,7 @@ interface PageRow {
   title: string | null;
   description: string | null;
   og_image: string | null;
+  keywords: string[] | null;
   noindex: boolean;
   updated_at: string;
 }
