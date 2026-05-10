@@ -48,7 +48,7 @@ export class CMSErrorBoundary extends React.Component<CMSErrorBoundaryProps, CMS
                 <RefreshCw className="h-4 w-4" />
                 Try Again
               </Button>
-              <Button variant="outline" onClick={() => window.location.href = '/cms'}>
+              <Button variant="outline" onClick={() => window.location.href = '/management/cms'}>
                 Back to CMS
               </Button>
             </div>

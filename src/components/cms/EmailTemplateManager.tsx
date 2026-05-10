@@ -27,17 +27,17 @@ const templateConfig = {
   welcome: {
     title: 'Welcome Email Template',
     description: 'Email sent to new subscribers when they join the mailing list',
-    previewUrl: '/cms/email-templates/welcome/preview'
+    previewUrl: '/management/cms/email-templates/welcome/preview'
   },
   cinema: {
     title: 'Cinema Ticket Email Template', 
     description: 'Email sent to users when they book cinema tickets',
-    previewUrl: '/cms/email-templates/cinema/preview'
+    previewUrl: '/management/cms/email-templates/cinema/preview'
   },
   event: {
     title: 'Event Management Email Template',
     description: 'Email sent to event organizers with management links',
-    previewUrl: '/cms/email-templates/event/preview'
+    previewUrl: '/management/cms/email-templates/event/preview'
   }
 };
 
