@@ -1,5 +1,10 @@
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { CBSeo } from "@/components/seo/CBSeo";
+import {
+  organizationSchema,
+  websiteSchema,
+  hotelGroupSchema,
+} from "@/components/seo/CBStructuredData";
 import { Suspense, lazy, useEffect, useState } from "react";
 import heroImage from "@/assets/hero-exterior.jpg";
 import CBTopNav from "@/components/crazybear/CBTopNav";
