@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { SeoBulkAiReview, type BulkAiSuggestion } from './SeoBulkAiReview';
 
 interface PageRow {
   id: string;
