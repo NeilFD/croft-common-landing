@@ -43,7 +43,7 @@ const Calendar = () => {
     } else {
       toast({
         title: "Access Granted",
-        description: "Welcome to The Common Room, for Common People",
+        description: "Welcome to The Den. Yours, once you're in.",
         duration: 2000,
       });
       setShowCreateModal(true);
@@ -55,7 +55,7 @@ const Calendar = () => {
     setShowAuthModal(false);
     toast({
       title: "Access Granted",
-      description: "Welcome to The Common Room, for Common People",
+      description: "Welcome to The Den. Yours, once you're in.",
       duration: 2000,
     });
     setShowCreateModal(true);
