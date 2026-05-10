@@ -267,13 +267,27 @@ const SlotEditor = ({ slot }: { slot: AssetSlot }) => {
           <div className="text-sm text-muted-foreground">Loading…</div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {items.map((r, i) => (
-              <div key={r.id} className="space-y-2">
+            {items.map((r, i) => {
+              const isDefault = (r as any)._isDefault;
+              const canDrag = slot.kind !== "hero" && !isDefault;
+              const isDragging = dragId === r.id;
+              const isOver = overId === r.id && dragId && dragId !== r.id;
+              return (
+              <div
+                key={r.id}
+                draggable={canDrag}
+                onDragStart={() => canDrag && setDragId(r.id)}
+                onDragEnd={() => { setDragId(null); setOverId(null); }}
+                onDragOver={(e) => { if (canDrag && dragId) { e.preventDefault(); setOverId(r.id); } }}
+                onDragLeave={() => { if (overId === r.id) setOverId(null); }}
+                onDrop={(e) => { e.preventDefault(); if (canDrag) handleDrop(r.id); }}
+                className={`space-y-2 transition-opacity ${isDragging ? "opacity-40" : ""} ${isOver ? "ring-2 ring-primary rounded" : ""} ${canDrag ? "cursor-grab active:cursor-grabbing" : ""}`}
+              >
                 <div className="aspect-video bg-muted rounded overflow-hidden relative">
-                  <img src={r.image_url} alt={r.alt_text ?? ""} className="w-full h-full object-cover" />
+                  <img src={r.image_url} alt={r.alt_text ?? ""} className="w-full h-full object-cover pointer-events-none" />
                   <span className="absolute top-1 left-1 text-[10px] px-1.5 py-0.5 rounded bg-black/70 text-white">#{i + 1}</span>
                 </div>
-                {!(r as any)._isDefault && (
+                {!isDefault && (
                   <>
                     <Input
                       defaultValue={r.alt_text ?? ""}
