@@ -59,6 +59,8 @@ export default function SeoPageEditor() {
   const [keywords, setKeywords] = useState('');
   const [noindex, setNoindex] = useState(false);
   const [retesting, setRetesting] = useState(false);
+  const [aiBusy, setAiBusy] = useState<null | 'all' | 'title' | 'description' | 'keywords'>(null);
+  const [aiRationale, setAiRationale] = useState<string | null>(null);
 
   const { data: page } = useQuery({
     queryKey: ['seo-page', route],
@@ -137,6 +139,35 @@ export default function SeoPageEditor() {
     }
   };
 
+  const aiSuggest = async (which: 'all' | 'title' | 'description' | 'keywords') => {
+    setAiBusy(which);
+    setAiRationale(null);
+    try {
+      const fields = which === 'all' ? ['title', 'description', 'keywords'] : [which];
+      const { data, error } = await supabase.functions.invoke('seo-copywriter', {
+        body: {
+          route,
+          label: page?.label,
+          fields,
+          current: { title, description },
+        },
+      });
+      if (error) throw error;
+      const d = data as any;
+      if (d?.error) throw new Error(d.error);
+      if (d.title && fields.includes('title')) setTitle(d.title);
+      if (d.description && fields.includes('description')) setDescription(d.description);
+      if (d.keywords && fields.includes('keywords'))
+        setKeywords(Array.isArray(d.keywords) ? d.keywords.join(', ') : String(d.keywords));
+      if (d.rationale) setAiRationale(d.rationale);
+      toast({ title: 'AI suggested copy ready', description: 'Review and Save when happy.' });
+    } catch (e: any) {
+      toast({ title: 'AI suggest failed', description: e.message, variant: 'destructive' });
+    } finally {
+      setAiBusy(null);
+    }
+  };
+
   const titleHint = lengthHint(title, 30, 60);
   const descHint = lengthHint(description, 70, 160);
   const previewTitle = title || '(no title set)';
@@ -156,7 +187,14 @@ export default function SeoPageEditor() {
             </h1>
             <div className="text-sm text-muted-foreground mt-1">{route}</div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              onClick={() => aiSuggest('all')}
+              disabled={aiBusy !== null}
+            >
+              {aiBusy === 'all' ? 'Writing…' : '✨ Suggest with AI'}
+            </Button>
             <Button variant="outline" onClick={runAudit} disabled={retesting}>
               {retesting ? 'Testing…' : 'Re-test'}
             </Button>
@@ -165,6 +203,15 @@ export default function SeoPageEditor() {
             </Button>
           </div>
         </div>
+
+        {aiRationale && (
+          <div className="border border-foreground/20 bg-muted/40 p-3 text-sm">
+            <span className="font-cb-sans font-medium uppercase text-xs tracking-wide mr-2">
+              AI note
+            </span>
+            {aiRationale}
+          </div>
+        )}
 
         {/* Google preview */}
         <Card>
