@@ -17,6 +17,40 @@ const corsHeaders = {
 
 const SITE_BASE = "https://www.crazybear.dev";
 
+const FALLBACK_SEO: Record<string, { title: string; description: string; og_image?: string }> = {
+  "/": { title: "The Crazy Bear | Country & Town", description: "The Crazy Bear. Two hotels, one spirit. Country in Stadhampton, Town in Beaconsfield." },
+  "/about": { title: "About | The Crazy Bear", description: "Born in 1993. Two hotels, one spirit. The story of The Crazy Bear at Stadhampton and Beaconsfield." },
+  "/house-rules": { title: "House Rules | The Crazy Bear", description: "The Crazy Bear house rules. How to behave, dress and disappear." },
+  "/bears-den": { title: "The Bear's Den | The Crazy Bear", description: "A quiet members' room at The Crazy Bear. Town and Country." },
+  "/curious": { title: "Curious? | Crazy Bear", description: "Ask the Bear. Rooms, dining, members, events, or just a hello." },
+  "/country": { title: "Crazy Bear Country | Crazy Bear Country", description: "Crazy Bear Country. 16th century inn in Stadhampton, Oxfordshire. Rooms, restaurants, a pub that refuses to behave." },
+  "/country/pub": { title: "The Country Pub | Crazy Bear", description: "Real ale, proper food, fires lit. The pub at Crazy Bear Country, Stadhampton." },
+  "/country/pub/food": { title: "Country Pub Food | Crazy Bear", description: "Pub food, properly done. Lunch and dinner every day at Crazy Bear Country." },
+  "/country/pub/drink": { title: "Drink | Crazy Bear Country", description: "Real ale, proper wine, cocktails that bite back. The bar at Crazy Bear Country." },
+  "/country/pub/hospitality": { title: "Hospitality | Crazy Bear Country", description: "Fires lit. Doors open. Country pub hospitality at Crazy Bear, Stadhampton." },
+  "/country/rooms": { title: "Rooms | Crazy Bear Country", description: "Bedrooms at Crazy Bear Country. Theatrical, indulgent, never the same twice." },
+  "/country/rooms/types": { title: "Room Types | Crazy Bear Country", description: "Room types at Crazy Bear Country. Pick your character. Sleep accordingly." },
+  "/country/rooms/gallery": { title: "Bedroom Gallery | Crazy Bear Country", description: "Bedroom gallery at Crazy Bear Country, Stadhampton. Theatrical, indulgent, never the same twice." },
+  "/country/parties": { title: "Parties | Crazy Bear Country", description: "Parties at Crazy Bear Country. Loud, long, late. Group bookings and exclusive use." },
+  "/country/events": { title: "Events | Crazy Bear Country", description: "Events at Crazy Bear Country. Private rooms, marquee, exclusive use." },
+  "/country/events/weddings": { title: "Weddings | Crazy Bear Country", description: "Weddings at Crazy Bear Country. Vows, dinner, dancing. Licensed for ceremonies." },
+  "/country/events/birthdays": { title: "Birthdays | Crazy Bear Country", description: "Birthday parties at Crazy Bear Country. From long tables to whole house hire." },
+  "/country/events/business": { title: "Business | Crazy Bear Country", description: "Business meetings and away days at Crazy Bear Country. Private rooms, dinner, rooms." },
+  "/country/culture": { title: "Country Culture | The Crazy Bear, Stadhampton", description: "Country culture. Turf floors, a cow in the dining room, roll-top baths and thirty years of long Sundays in Stadhampton, Oxfordshire." },
+  "/town": { title: "Crazy Bear Town | Crazy Bear Town", description: "Crazy Bear Town. Beaconsfield townhouse. Three restaurants, cocktails, signature rooms, hidden pool." },
+  "/town/food": { title: "Food | Crazy Bear Town", description: "Food at Crazy Bear Town. The Black Bear, the B&B and Hom Thai." },
+  "/town/food/black-bear": { title: "The Black Bear | Crazy Bear", description: "Modern British plates, charcoal and fire. The Black Bear restaurant at Crazy Bear Town." },
+  "/town/food/bnb": { title: "The B&B | Crazy Bear", description: "All day kitchen. Breakfast, brunch and into the night, at Crazy Bear Town." },
+  "/town/food/hom-thai": { title: "Hom Thai | Crazy Bear Town", description: "Hom Thai at Crazy Bear Town. Bangkok by way of Beaconsfield. Sharp, fragrant, fierce." },
+  "/town/drink": { title: "Drink | Crazy Bear Town", description: "Bars at Crazy Bear Town. Mirrored rooms, low light, sharp pours." },
+  "/town/drink/cocktails": { title: "Cocktails | Crazy Bear Town", description: "Cocktail bar at Crazy Bear Town. Stirred with intent. Served without apology." },
+  "/town/rooms": { title: "Rooms | Crazy Bear Town", description: "Rooms at Crazy Bear Town. Velvet, mirror, marble. Each one its own world." },
+  "/town/rooms/types": { title: "Room Types | Crazy Bear Town", description: "Room types at Crazy Bear Town. Each one its own world." },
+  "/town/rooms/gallery": { title: "Bedroom Gallery | Crazy Bear Town", description: "Bedroom gallery at Crazy Bear Town, Beaconsfield. Velvet, mirror, marble. Each bedroom its own world." },
+  "/town/pool": { title: "Pool | Crazy Bear Town", description: "The hidden pool at Crazy Bear Town. Heated, daytime, hotel guests only." },
+  "/town/culture": { title: "Town Culture | The Crazy Bear, Beaconsfield", description: "Town culture. Koi behind the cisterns, Hom Thai upstairs, silver, gold and copper leaf and late nights in Beaconsfield." },
+};
+
 interface Check {
   id: string;
   label: string;
@@ -52,9 +86,10 @@ async function internalScan(
 ): Promise<{ score: number; checks: Check[]; ogImageOk: boolean; pageOk: boolean }> {
   const checks: Check[] = [];
   const url = `${SITE_BASE}${page.route}`;
+  const fallback = FALLBACK_SEO[page.route];
 
   // Title
-  const title = page.title?.trim();
+  const title = (page.title || fallback?.title || "").trim();
   if (!title) {
     checks.push({ id: "title", label: "Page title", status: "fail", message: "No page title set. Search engines and social shares need this." });
   } else if (title.length < 30) {
@@ -66,7 +101,7 @@ async function internalScan(
   }
 
   // Description
-  const desc = page.description?.trim();
+  const desc = (page.description || fallback?.description || "").trim();
   if (!desc) {
     checks.push({ id: "description", label: "Description", status: "fail", message: "No description set. This is the grey snippet under the title in Google." });
   } else if (desc.length < 70) {
@@ -78,7 +113,7 @@ async function internalScan(
   }
 
   // Sharing image
-  const ogImage = page.og_image || defaults.default_og_image;
+  const ogImage = page.og_image || fallback?.og_image || defaults.default_og_image;
   let ogImageOk = false;
   if (!ogImage) {
     checks.push({ id: "og_image", label: "Sharing image", status: "fail", message: "No image set for WhatsApp / Facebook / iMessage previews." });
@@ -206,8 +241,10 @@ async function auditOne(
     psError = (e as Error).message;
   }
 
-  // Combined overall: 40% internal + 60% lighthouse-average (when present)
-  let overall = internal.score;
+  // Combined overall: 40% internal + 60% Lighthouse average.
+  // If Lighthouse fails, keep the score empty so the dashboard never presents
+  // an internal-only fallback as a real SEO performance result.
+  let overall: number | null = null;
   if (perf !== null && seo !== null && a11y !== null && bp !== null) {
     const lhAvg = (perf + seo + a11y + bp) / 4;
     overall = Math.round(internal.score * 0.4 + lhAvg * 0.6);
@@ -226,7 +263,7 @@ async function auditOne(
     cls,
     inp_ms: inp,
     overall_score: overall,
-    overall_grade: gradeFor(overall),
+    overall_grade: overall === null ? null : gradeFor(overall),
     error: psError,
   };
 
@@ -308,7 +345,7 @@ Deno.serve(async (req) => {
     for (const r of routes) {
       try {
         const a = await auditOne(admin, r, defaults, apiKey, source);
-        results.push({ route: r, overall: a.overall_score, grade: a.overall_grade });
+        results.push({ route: r, overall: a.overall_score, grade: a.overall_grade, error: a.error });
       } catch (e) {
         errors.push({ route: r, error: (e as Error).message });
       }

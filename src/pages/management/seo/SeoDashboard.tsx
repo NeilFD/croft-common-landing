@@ -89,6 +89,7 @@ export default function SeoDashboard() {
 
   const overall = useMemo(() => {
     const scores = latestAudits
+      .filter(a => !a.error)
       .map(a => a.overall_score)
       .filter((s): s is number => typeof s === 'number');
     if (!scores.length) return null;
@@ -124,9 +125,10 @@ export default function SeoDashboard() {
     },
     onSuccess: (data: any) => {
       qc.invalidateQueries({ queryKey: ['seo-latest-audits'] });
+      const failed = data?.results?.filter((r: any) => r.error).length ?? data?.errors?.length ?? 0;
       toast({
         title: 'Site audit complete',
-        description: `${data?.results?.length ?? 0} pages tested${data?.errors?.length ? `, ${data.errors.length} errors` : ''}.`,
+        description: `${data?.results?.length ?? 0} pages tested${failed ? `, ${failed} Lighthouse failures` : ''}.`,
       });
     },
     onError: (e: any) => toast({ title: 'Audit failed', description: e.message, variant: 'destructive' }),
@@ -135,8 +137,10 @@ export default function SeoDashboard() {
 
   const sortedRows = useMemo(() => {
     return [...pages].sort((a, b) => {
-      const sa = auditMap.get(a.route)?.overall_score ?? 200;
-      const sb = auditMap.get(b.route)?.overall_score ?? 200;
+      const auditA = auditMap.get(a.route);
+      const auditB = auditMap.get(b.route);
+      const sa = auditA?.error ? -1 : auditA?.overall_score ?? 200;
+      const sb = auditB?.error ? -1 : auditB?.overall_score ?? 200;
       return sa - sb;
     });
   }, [pages, auditMap]);
@@ -179,7 +183,7 @@ export default function SeoDashboard() {
                 {overall !== null ? `${overall}/100` : '—'}
               </div>
               <div className="text-sm text-muted-foreground mt-1">
-                {overall !== null ? 'Average across all tested pages' : 'Run an audit to see your score'}
+                {overall !== null ? 'Average across pages with full tests' : 'Lighthouse data needed for a score'}
               </div>
             </CardContent>
           </Card>
@@ -202,12 +206,20 @@ export default function SeoDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-5xl font-display font-black">
-                {latestAudits.filter(a => (a.overall_score ?? 100) < 70).length}
+                {latestAudits.filter(a => a.error || (a.overall_score ?? 100) < 70).length}
               </div>
-              <div className="text-sm text-muted-foreground mt-1">Pages scoring under 70</div>
+              <div className="text-sm text-muted-foreground mt-1">Failed tests or pages scoring under 70</div>
             </CardContent>
           </Card>
         </div>
+
+        {latestAudits.some(a => a.error) && (
+          <Card className="border-destructive/40">
+            <CardContent className="p-4 text-sm text-destructive">
+              Lighthouse did not return live scores for {latestAudits.filter(a => a.error).length} page{latestAudits.filter(a => a.error).length === 1 ? '' : 's'}. Those pages are shown as failed, not scored, so the dashboard does not fake a 50/100 result.
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader>
@@ -239,10 +251,10 @@ export default function SeoDashboard() {
                             <div className="text-xs text-muted-foreground">{p.route}</div>
                           </td>
                           <td className="px-4 py-3 font-display font-bold">
-                            {a?.overall_score ?? '—'}
+                            {a?.error ? '—' : a?.overall_score ?? '—'}
                           </td>
                           <td className="px-4 py-3">
-                            {a?.overall_grade ? (
+                            {a?.overall_grade && !a.error ? (
                               <Badge className={`${gradeColor(a.overall_grade)} font-display`}>
                                 {a.overall_grade}
                               </Badge>
@@ -252,9 +264,9 @@ export default function SeoDashboard() {
                           </td>
                           <td className="px-4 py-3 text-muted-foreground">
                             {!a && 'Not yet tested'}
-                            {a && issues === 0 && 'All checks passing'}
-                            {a && issues > 0 && `${issues} issue${issues > 1 ? 's' : ''}`}
-                            {a?.error && <span className="text-destructive"> • Lighthouse failed</span>}
+                            {a?.error && <span className="text-destructive">Lighthouse failed: {a.error}</span>}
+                            {a && !a.error && issues === 0 && 'All checks passing'}
+                            {a && !a.error && issues > 0 && `${issues} issue${issues > 1 ? 's' : ''}`}
                           </td>
                           <td className="px-4 py-3 text-right space-x-2">
                             <Button
