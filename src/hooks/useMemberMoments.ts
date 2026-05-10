@@ -113,15 +113,26 @@ export const useMemberMoments = () => {
         userLikes = userLikesData || [];
       }
 
-      // Get likers with profiles for tooltips
-      const { data: likersData, error: likersError } = await (supabase as any)
+      // Get likers, then fetch their names from sanitised view (avoids embedded PII join)
+      const { data: likersRaw, error: likersError } = await (supabase as any)
         .from('moment_likes')
-        .select(`
-          moment_id,
-          user_id,
-          profiles!inner(first_name, last_name)
-        `)
+        .select('moment_id, user_id')
         .in('moment_id', momentIds);
+
+      const likerUserIds = Array.from(new Set((likersRaw || []).map((l: any) => l.user_id)));
+      const { data: likerProfiles } = likerUserIds.length
+        ? await (supabase as any)
+            .from('profiles_public')
+            .select('user_id, first_name, last_name')
+            .in('user_id', likerUserIds)
+        : { data: [] as any[] };
+      const likerProfileMap = new Map<string, any>();
+      (likerProfiles || []).forEach((p: any) => likerProfileMap.set(p.user_id, p));
+      const likersData = (likersRaw || []).map((l: any) => ({
+        moment_id: l.moment_id,
+        user_id: l.user_id,
+        profiles: likerProfileMap.get(l.user_id) || { first_name: null, last_name: null },
+      }));
 
       // Get comment counts (excluding deleted)
       const { data: commentRows } = await (supabase as any)
