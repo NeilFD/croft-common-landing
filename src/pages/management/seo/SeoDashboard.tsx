@@ -117,9 +117,7 @@ export default function SeoDashboard() {
   const runOne = useMutation({
     mutationFn: async (route: string) => {
       setAuditing(route);
-      const { data, error } = await supabase.functions.invoke('seo-audit', {
-        body: { route },
-      });
+      const { data, error } = await invokeAudit(route);
       if (error) throw error;
       return data;
     },
