@@ -100,6 +100,18 @@ export default function SeoPageEditor() {
     }
   }, [page]);
 
+  const runAudit = async () => {
+    setRetesting(true);
+    try {
+      const { error } = await supabase.functions.invoke('seo-audit', { body: { route } });
+      if (error) throw error;
+      qc.invalidateQueries({ queryKey: ['seo-page-audit', route] });
+      qc.invalidateQueries({ queryKey: ['seo-latest-audits'] });
+    } finally {
+      setRetesting(false);
+    }
+  };
+
   const save = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
@@ -116,28 +128,32 @@ export default function SeoPageEditor() {
         .eq('route', route);
       if (error) throw error;
     },
-    onSuccess: () => {
-      toast({ title: 'Saved' });
+    onSuccess: async () => {
       qc.invalidateQueries({ queryKey: ['seo-page', route] });
       qc.invalidateQueries({ queryKey: ['seo-pages'] });
+      try {
+        await runAudit();
+        toast({ title: 'Saved & re-tested' });
+      } catch (e: any) {
+        toast({
+          title: 'Saved (re-test failed)',
+          description: e.message ?? 'Click Re-test to try again.',
+          variant: 'destructive',
+        });
+      }
     },
     onError: (e: any) => toast({ title: 'Save failed', description: e.message, variant: 'destructive' }),
   });
 
-  const runAudit = async () => {
-    setRetesting(true);
+  const manualRetest = async () => {
     try {
-      const { error } = await supabase.functions.invoke('seo-audit', { body: { route } });
-      if (error) throw error;
+      await runAudit();
       toast({ title: 'Re-tested' });
-      qc.invalidateQueries({ queryKey: ['seo-page-audit', route] });
-      qc.invalidateQueries({ queryKey: ['seo-latest-audits'] });
     } catch (e: any) {
       toast({ title: 'Audit failed', description: e.message, variant: 'destructive' });
-    } finally {
-      setRetesting(false);
     }
   };
+
 
   const aiSuggest = async (which: 'all' | 'title' | 'description' | 'keywords') => {
     setAiBusy(which);
@@ -195,11 +211,11 @@ export default function SeoPageEditor() {
             >
               {aiBusy === 'all' ? 'Writing…' : '✨ Suggest with AI'}
             </Button>
-            <Button variant="outline" onClick={runAudit} disabled={retesting}>
-              {retesting ? 'Testing…' : 'Re-test'}
+            <Button variant="outline" onClick={manualRetest} disabled={retesting || save.isPending}>
+              {retesting && !save.isPending ? 'Testing…' : 'Re-test'}
             </Button>
-            <Button onClick={() => save.mutate()} disabled={save.isPending}>
-              {save.isPending ? 'Saving…' : 'Save'}
+            <Button onClick={() => save.mutate()} disabled={save.isPending || retesting}>
+              {save.isPending ? 'Saving…' : retesting ? 'Re-testing…' : 'Save'}
             </Button>
           </div>
         </div>
