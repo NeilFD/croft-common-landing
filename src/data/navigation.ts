@@ -60,5 +60,6 @@ export const townNav: NavItem[] = [
     ],
   },
   { label: "Pool", path: "/town/pool" },
+  { label: "Culture", path: "/town/culture" },
   { label: "Members", path: "/members" },
 ];
