@@ -279,26 +279,14 @@ const CulturePage = ({ site }: Props) => {
         <Collage page={c.page} editable={isEditMode} kicker={c.collageKicker} heading={c.collageHeading} seed={c.collageSeed} />
 
         {/* Playlist */}
-        <section className="border-t border-foreground/10">
-          <div className="mx-auto max-w-4xl px-6 py-16 md:py-24">
-            <p className="font-cb-mono text-[10px] tracking-[0.45em] uppercase opacity-60">{c.playlistKicker}</p>
-            <h2 className="mt-3 font-display text-3xl md:text-5xl uppercase tracking-tight text-foreground">
-              {c.playlistHeading}
-            </h2>
-            <div className="mt-10">
-              <CMSText
-                page={c.page}
-                section="playlist"
-                contentKey="url"
-                fallback={c.playlistFallback}
-                as="div"
-                renderContent={(value) => (
-                  <SpotifyPlaylistEmbed url={value} title={`${site} playlist`} />
-                )}
-              />
-            </div>
-          </div>
-        </section>
+        <PlaylistSection
+          page={c.page}
+          fallbackUrl={c.playlistFallback}
+          heading={c.playlistHeading}
+          kicker={c.playlistKicker}
+          editable={isEditMode}
+          site={site}
+        />
 
         {/* Timeline */}
         <Timeline page={c.page} editable={isEditMode} kicker={c.timelineKicker} heading={c.timelineHeading} seed={c.timelineSeed} />
