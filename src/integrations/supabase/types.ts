@@ -1672,6 +1672,27 @@ export type Database = {
         }
         Relationships: []
       }
+      gold_access_codes: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          label: string | null
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          label?: string | null
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          label?: string | null
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           amount: number | null
