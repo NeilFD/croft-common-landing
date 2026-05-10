@@ -169,6 +169,8 @@ async function internalScan(
   return { score, checks, ogImageOk, pageOk };
 }
 
+const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
 async function pagespeed(url: string, apiKey: string | null) {
   const params = new URLSearchParams({
     url,
@@ -179,11 +181,29 @@ async function pagespeed(url: string, apiKey: string | null) {
   }
   if (apiKey) params.set("key", apiKey);
   const endpoint = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?${params.toString()}`;
-  const r = await fetch(endpoint);
-  if (!r.ok) {
-    throw new Error(`PageSpeed ${r.status}`);
+
+  // Retry with exponential backoff for 429 / 5xx so transient rate limits
+  // don't get persisted as fake "Lighthouse failed" results.
+  const maxAttempts = 4;
+  let lastStatus = 0;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const r = await fetch(endpoint);
+    if (r.ok) {
+      const j = await r.json();
+      return parsePagespeed(j);
+    }
+    lastStatus = r.status;
+    const retryable = r.status === 429 || r.status >= 500;
+    if (!retryable || attempt === maxAttempts) {
+      throw new Error(`PageSpeed ${r.status}`);
+    }
+    // Backoff: 4s, 8s, 16s
+    await sleep(4000 * Math.pow(2, attempt - 1));
   }
-  const j = await r.json();
+  throw new Error(`PageSpeed ${lastStatus}`);
+}
+
+function parsePagespeed(j: any) {
   const cats = j.lighthouseResult?.categories ?? {};
   const audits = j.lighthouseResult?.audits ?? {};
   return {
