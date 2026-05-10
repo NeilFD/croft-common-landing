@@ -212,7 +212,6 @@ export default function SeoPageEditor() {
             {aiRationale}
           </div>
         )}
-        </div>
 
         {/* Google preview */}
         <Card>
