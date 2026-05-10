@@ -170,47 +170,89 @@ export type Database = {
       bookings: {
         Row: {
           created_at: string | null
-          date: string
-          email: string
+          created_by: string | null
+          date: string | null
+          email: string | null
+          end_ts: string | null
           event_id: string | null
           guests: number | null
           id: string
-          name: string
+          lead_id: string | null
+          name: string | null
           notes: string | null
           phone: string | null
+          setup_min: number
+          space_id: string | null
+          start_ts: string | null
           status: string | null
+          teardown_min: number
           time: string | null
+          title: string | null
+          updated_at: string
           user_id: string | null
         }
         Insert: {
           created_at?: string | null
-          date: string
-          email: string
+          created_by?: string | null
+          date?: string | null
+          email?: string | null
+          end_ts?: string | null
           event_id?: string | null
           guests?: number | null
           id?: string
-          name: string
+          lead_id?: string | null
+          name?: string | null
           notes?: string | null
           phone?: string | null
+          setup_min?: number
+          space_id?: string | null
+          start_ts?: string | null
           status?: string | null
+          teardown_min?: number
           time?: string | null
+          title?: string | null
+          updated_at?: string
           user_id?: string | null
         }
         Update: {
           created_at?: string | null
-          date?: string
-          email?: string
+          created_by?: string | null
+          date?: string | null
+          email?: string | null
+          end_ts?: string | null
           event_id?: string | null
           guests?: number | null
           id?: string
-          name?: string
+          lead_id?: string | null
+          name?: string | null
           notes?: string | null
           phone?: string | null
+          setup_min?: number
+          space_id?: string | null
+          start_ts?: string | null
           status?: string | null
+          teardown_min?: number
           time?: string | null
+          title?: string | null
+          updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bookings_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "spaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       campaign_segments: {
         Row: {
