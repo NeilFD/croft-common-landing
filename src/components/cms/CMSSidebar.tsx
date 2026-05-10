@@ -20,6 +20,8 @@ import {
   Globe,
   Eye,
   Mail,
+  BookOpen,
+  Music,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -46,9 +48,8 @@ const countryPages: Page[] = [
     { name: 'Birthdays', path: `${VISUAL}/country/events/birthdays` },
     { name: 'Business', path: `${VISUAL}/country/events/business` },
   ]},
+  { name: 'Country Culture', path: `${VISUAL}/country/culture`, icon: Music, sections: [] },
 ];
-
-const townPages: Page[] = [
   { name: 'Town Home', path: `${VISUAL}/town`, icon: Building2, sections: [] },
   { name: 'Town Food', path: `${VISUAL}/town/food`, icon: UtensilsCrossed, sections: [
     { name: 'The Black Bear', path: `${VISUAL}/town/food/black-bear` },
