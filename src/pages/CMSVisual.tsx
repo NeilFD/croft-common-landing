@@ -49,7 +49,7 @@ const CMSVisualInner = ({ currentPage, normalizedPage }: InnerProps) => {
 
   return (
     <SidebarProvider defaultOpen={false}>
-      <div className="min-h-screen flex flex-col w-full overflow-x-hidden">
+      <div className="min-h-screen flex flex-col w-full overflow-x-hidden pt-16">
         <CMSVisualHeader
           currentPage={currentPage}
           onPublish={handlePublish}
