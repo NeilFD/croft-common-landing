@@ -953,33 +953,48 @@ export type Database = {
       cms_images: {
         Row: {
           alt_text: string | null
+          caption: string | null
           created_at: string | null
           id: string
           image_url: string
+          is_draft: boolean
+          kind: string | null
           page: string
           published: boolean | null
           section: string
+          slot: string | null
           sort_order: number | null
+          updated_at: string
         }
         Insert: {
           alt_text?: string | null
+          caption?: string | null
           created_at?: string | null
           id?: string
           image_url: string
+          is_draft?: boolean
+          kind?: string | null
           page: string
           published?: boolean | null
           section: string
+          slot?: string | null
           sort_order?: number | null
+          updated_at?: string
         }
         Update: {
           alt_text?: string | null
+          caption?: string | null
           created_at?: string | null
           id?: string
           image_url?: string
+          is_draft?: boolean
+          kind?: string | null
           page?: string
           published?: boolean | null
           section?: string
+          slot?: string | null
           sort_order?: number | null
+          updated_at?: string
         }
         Relationships: []
       }
