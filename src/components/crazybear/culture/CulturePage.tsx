@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import SpotifyPlaylistEmbed from "@/components/crazybear/culture/SpotifyPlaylistEmbed";
 import { useCMSContent } from "@/hooks/useCMSContent";
 import HouseRulesInline from "@/components/crazybear/culture/HouseRulesInline";
-import townHero from "@/assets/cb-hero-town-new.jpg";
+import townHero from "@/assets/cb-town-culture-hero.jpg";
 import countryHero from "@/assets/cb-hero-country-new.jpg";
 
 type Site = "town" | "country";
