@@ -413,9 +413,33 @@ const ManagementLogin = () => {
 
     setIsLoading(true);
 
+    const RESET_REDIRECT_URL = "https://www.crazybear.dev/set-password";
+
     try {
+      // Safety check: confirm the redirect destination is the production URL
+      try {
+        const parsed = new URL(RESET_REDIRECT_URL);
+        if (parsed.origin !== "https://www.crazybear.dev" || parsed.pathname !== "/set-password") {
+          toast({
+            title: "Reset blocked",
+            description: `Invalid redirect destination: ${RESET_REDIRECT_URL}. Expected https://www.crazybear.dev/set-password`,
+            variant: "destructive"
+          });
+          setIsLoading(false);
+          return;
+        }
+      } catch {
+        toast({
+          title: "Reset blocked",
+          description: "Reset redirect URL is malformed",
+          variant: "destructive"
+        });
+        setIsLoading(false);
+        return;
+      }
+
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: "https://www.crazybear.dev/set-password"
+        redirectTo: RESET_REDIRECT_URL
       });
 
       if (error) {
