@@ -44,13 +44,8 @@ const ManagementLogin = () => {
   const [sessionValid, setSessionValid] = useState(false);
   const [sessionCheckComplete, setSessionCheckComplete] = useState(false);
 
-  const isCrazyBearHost = typeof window !== 'undefined' && window.location.hostname.includes('crazybear.dev');
-
-  useEffect(() => {
-    if (!isCrazyBearHost) return;
-    const target = '/set-password' + window.location.search + window.location.hash;
-    window.location.replace(target);
-  }, [isCrazyBearHost]);
+  // Management login lives at /management/login on every host, including crazybear.dev.
+  // Never redirect here to /set-password — that page is for Bears Den members only.
 
 
   // Utility: remove auth artefacts (# fragments and sensitive query params)
@@ -110,7 +105,6 @@ const ManagementLogin = () => {
 
       const hasRecoveryTokens = !!(type === 'recovery' || code || tokenHash || accessToken || refreshToken);
  
-      if (isCrazyBearHost) return;
       // Domain canonicalisation handled by index.html bootstrap
  
       // Detect recovery flow early
@@ -214,7 +208,7 @@ const ManagementLogin = () => {
     };
 
     processAuthTokens();
-  }, [isCrazyBearHost]);
+  }, []);
 
   // React to Supabase auth events
   useEffect(() => {
@@ -324,7 +318,7 @@ const ManagementLogin = () => {
       
       // Redirect to login
       setTimeout(() => {
-        window.location.assign(isCrazyBearHost ? 'https://www.crazybear.dev/' : 'https://www.croftcommontest.com/management/login');
+        window.location.assign('/management/login');
       }, 500);
       
     } catch (error: any) {
@@ -413,16 +407,16 @@ const ManagementLogin = () => {
 
     setIsLoading(true);
 
-    const RESET_REDIRECT_URL = "https://www.crazybear.dev/set-password";
+    const RESET_REDIRECT_URL = `${window.location.origin}/management/login`;
 
     try {
-      // Safety check: confirm the redirect destination is the production URL
+      // Safety check: redirect must point to /management/login on this host
       try {
         const parsed = new URL(RESET_REDIRECT_URL);
-        if (parsed.origin !== "https://www.crazybear.dev" || parsed.pathname !== "/set-password") {
+        if (parsed.pathname !== "/management/login") {
           toast({
             title: "Reset blocked",
-            description: `Invalid redirect destination: ${RESET_REDIRECT_URL}. Expected https://www.crazybear.dev/set-password`,
+            description: `Invalid redirect destination: ${RESET_REDIRECT_URL}`,
             variant: "destructive"
           });
           setIsLoading(false);
@@ -468,7 +462,7 @@ const ManagementLogin = () => {
     }
   };
 
-  if (isCrazyBearHost) return null;
+  
 
   return (
     <div className="min-h-screen bg-transparent px-4">

@@ -25,7 +25,7 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
   const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [jobTitle, setJobTitle] = useState('');
-  const [role, setRole] = useState<'Manager' | 'Admin'>('Manager');
+  const [role, setRole] = useState<'admin' | 'sales' | 'ops' | 'finance' | 'readonly'>('sales');
   const [loading, setLoading] = useState(false);
   const [tempPassword, setTempPassword] = useState('');
   const [copied, setCopied] = useState(false);
@@ -43,42 +43,40 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
     }
 
     if (!email.trim()) {
+      toast({ title: 'Error', description: 'Email is required', variant: 'destructive' });
+      return;
+    }
+
+    if (!email.trim().toLowerCase().endsWith('@crazybear.co.uk')) {
       toast({
-        title: 'Error',
-        description: 'Email is required',
+        title: 'Email not allowed',
+        description: 'Only @crazybear.co.uk emails can be added',
         variant: 'destructive'
       });
       return;
     }
 
     if (!jobTitle.trim()) {
-      toast({
-        title: 'Error',
-        description: 'Job title is required',
-        variant: 'destructive'
-      });
+      toast({ title: 'Error', description: 'Job title is required', variant: 'destructive' });
       return;
     }
-
 
     try {
       setLoading(true);
 
-      const apiRole = role === 'Admin' ? 'admin' : 'manager';
-      // Call edge function to create user
       const { data, error } = await supabase.functions.invoke('create-management-user', {
-        body: { 
+        body: {
           user_name: userName.trim(),
           email: email.trim(),
           job_title: jobTitle.trim(),
-          role: apiRole 
+          role
         }
       });
 
       if (error) throw error;
 
       setTempPassword(data.temp_password);
-      
+
       toast({
         title: 'User created',
         description: `${userName} has been created with ${role} access`
@@ -109,7 +107,7 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
     setUserName('');
     setEmail('');
     setJobTitle('');
-    setRole('Manager');
+    setRole('sales');
     setTempPassword('');
     setCopied(false);
     onOpenChange(false);
@@ -202,13 +200,16 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
 
               <div className="space-y-2">
                 <Label htmlFor="role">Role</Label>
-                <Select value={role} onValueChange={(value) => setRole(value as 'Manager' | 'Admin')} disabled={loading}>
+                <Select value={role} onValueChange={(value) => setRole(value as typeof role)} disabled={loading}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Manager">Manager</SelectItem>
-                    <SelectItem value="Admin">Admin</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="sales">Sales</SelectItem>
+                    <SelectItem value="ops">Ops</SelectItem>
+                    <SelectItem value="finance">Finance</SelectItem>
+                    <SelectItem value="readonly">Read only</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

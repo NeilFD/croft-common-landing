@@ -17,12 +17,10 @@ interface ManagementLayoutProps {
 export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
   const { managementUser, loading } = useManagementAuth();
 
-  const isCrazyBearHost = typeof window !== 'undefined' && window.location.hostname.includes('crazybear.dev');
-  const recoveryPath = isCrazyBearHost ? '/set-password' : '/management/login';
-
-  // Block management pages during password recovery
+  // Block management pages during password recovery — always send to management login,
+  // never to the Bears Den /set-password page.
   if (typeof window !== 'undefined' && sessionStorage.getItem('recovery') === '1') {
-    return <Navigate to={recoveryPath} replace />;
+    return <Navigate to="/management/login" replace />;
   }
 
   if (loading) {

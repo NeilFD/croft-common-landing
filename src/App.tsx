@@ -234,14 +234,7 @@ const RouteHydrationBeacon = () => {
   return null;
 };
 
-const ManagementLoginRoute = () => {
-  const isCrazyBearHost = typeof window !== 'undefined' && window.location.hostname.includes('crazybear.dev');
-  if (isCrazyBearHost) {
-    const target = '/set-password' + window.location.search + window.location.hash;
-    return <Navigate to={target} replace />;
-  }
-  return <ManagementLogin />;
-};
+const ManagementLoginRoute = () => <ManagementLogin />;
 
 const MemberRoutes = ({ children }: { children: ReactNode }) => (
   <Suspense fallback={<PageLoader />}>
