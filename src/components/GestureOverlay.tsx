@@ -38,7 +38,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
 
     toast({
       title: 'Access Granted',
-      description: 'Welcome to The Common Room, for Common People',
+      description: "Welcome to The Den. Yours, once you're in.",
       duration: 2000,
     });
     onGestureComplete();
