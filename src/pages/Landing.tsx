@@ -92,7 +92,13 @@ const Landing = () => {
           </div>
         </section>
 
-        <section className="border-t border-white/15 bg-black px-6 py-20 md:py-28">
+        <section className="relative border-t border-white/15 bg-black px-6 py-20 md:py-28">
+          <Link
+            to="/management/login"
+            className="absolute bottom-3 left-4 z-20 font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-40 hover:opacity-100 transition-opacity"
+          >
+            Management
+          </Link>
           <div className="mx-auto max-w-6xl">
             <Suspense fallback={null}>
               <CBSubscriptionForm />
