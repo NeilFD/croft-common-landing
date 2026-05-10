@@ -70,6 +70,7 @@ export default function SeoDashboard() {
       const { data, error } = await supabase
         .from('seo_audits')
         .select('*')
+        .eq('hidden_from_dashboard', false)
         .order('run_at', { ascending: false })
         .limit(500);
       if (error) throw error;
