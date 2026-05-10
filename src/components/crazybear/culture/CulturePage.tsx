@@ -170,18 +170,23 @@ Hom Thai opened upstairs. Gold leaf, lanterns, proper heat. Quietly one of the b
   ],
   timelineSeed: [
     {
-      heading: "The pub reopens.",
-      body: "Jason Hunt takes on a wonky little local in Stadhampton. Gives it a name, a kitchen, and a real turf floor. Sheep optional.",
+      heading: "A pub, a punt, a turf floor.",
+      body: "Jason Hunt takes on a wonky little local in Stadhampton. Gives it a name, a kitchen, and lays real grass across the bar floor. Sheep optional, occasionally arriving anyway.",
       meta: { year: "1993" },
     },
     {
-      heading: "The cow moves in.",
+      heading: "The cow in the dining room.",
       body: "Taxidermy, mirrors, chandeliers in places chandeliers don't belong. The Crazy Bear look starts to harden.",
       meta: { year: "Late 90s" },
     },
     {
-      heading: "Treehouse suites.",
-      body: "Bedrooms in the trees. Roll-top baths above the canopy. Mirrored ceilings, velvet walls, breakfast brought up by hand.",
+      heading: "The Thai room opens.",
+      body: "Hom Thai lands upstairs. Gold leaf, lanterns, proper heat. Quietly one of the best Thai dining rooms in the country.",
+      meta: { year: "00s" },
+    },
+    {
+      heading: "Bedrooms in the trees.",
+      body: "Treehouse suites at the bottom of the garden. Roll-top copper baths above the canopy. Mirrored ceilings, velvet walls, breakfast brought up by hand.",
       meta: { year: "00s" },
     },
     {
@@ -191,7 +196,7 @@ Hom Thai opened upstairs. Gold leaf, lanterns, proper heat. Quietly one of the b
     },
     {
       heading: "Today.",
-      body: "Two restaurants, a pub, treehouses, and the same spirit. Slightly better behaved. Only slightly.",
+      body: "Two restaurants, a pub, the treehouses, and the same spirit. Slightly better behaved. Only slightly.",
       meta: { year: "Now" },
     },
   ],
