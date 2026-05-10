@@ -202,6 +202,24 @@ export default function SeoPageEditor() {
               {page?.label || route}
             </h1>
             <div className="text-sm text-muted-foreground mt-1">{route}</div>
+            {audit && (
+              <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mt-2">
+                <div className="font-display text-2xl md:text-3xl font-black">
+                  {audit.error ? '—' : audit.overall_score ?? '—'}
+                  <span className="text-base text-muted-foreground font-cb-sans font-normal">/100</span>
+                  {audit.overall_grade && !audit.error && (
+                    <span className="ml-2 text-sm align-middle font-cb-sans font-normal text-muted-foreground">
+                      ({audit.overall_grade})
+                    </span>
+                  )}
+                </div>
+                <div className="text-xs text-muted-foreground font-cb-sans">
+                  Last tested {new Date(audit.run_at).toLocaleString('en-GB', {
+                    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+                  })}
+                </div>
+              </div>
+            )}
           </div>
           <div className="flex flex-wrap gap-2">
             <Button
