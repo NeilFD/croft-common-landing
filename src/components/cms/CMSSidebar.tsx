@@ -173,6 +173,11 @@ export const CMSSidebar = () => {
         <span>Overview</span>
       </NavLink>
 
+      <NavLink to={`${VISUAL}/about`} className={cn(itemBase, isActive(`${VISUAL}/about`) ? itemActive : itemIdle)}>
+        <BookOpen className="h-4 w-4" />
+        <span>About</span>
+      </NavLink>
+
       <Group label="Country" icon={Trees} keyName="country">
         {countryPages.map(renderPage)}
       </Group>
