@@ -1,6 +1,8 @@
 import { useState, Suspense, lazy } from 'react';
 import { useEditMode } from '@/contexts/EditModeContext';
 import { CMSModeProvider } from '@/contexts/CMSModeContext';
+import { PropertyProvider } from '@/contexts/PropertyContext';
+import type { PropertyKey } from '@/data/brand';
 import { toast } from '@/hooks/use-toast';
 
 // Crazy Bear pages
@@ -60,6 +62,11 @@ export const CMSVisualEditor = ({ currentPage }: CMSVisualEditorProps) => {
 
   const normalizedPage = currentPage.toLowerCase().replace(/^\//, '').replace(/\/$/, '');
   const PageComponent = pageComponents[normalizedPage];
+  const propertyKey: PropertyKey | null = normalizedPage.startsWith('country')
+    ? 'country'
+    : normalizedPage.startsWith('town')
+    ? 'town'
+    : null;
 
   if (!PageComponent) {
     return (
@@ -84,7 +91,13 @@ export const CMSVisualEditor = ({ currentPage }: CMSVisualEditorProps) => {
         <div className={`transition-all duration-200 ${isEditMode ? 'ring-2 ring-primary/20' : ''}`}>
           <CMSModeProvider isCMSMode={true}>
             <Suspense fallback={<div className="p-6 text-muted-foreground">Loading preview...</div>}>
-              <PageComponent />
+              {propertyKey ? (
+                <PropertyProvider property={propertyKey}>
+                  <PageComponent />
+                </PropertyProvider>
+              ) : (
+                <PageComponent />
+              )}
             </Suspense>
           </CMSModeProvider>
         </div>
