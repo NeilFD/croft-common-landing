@@ -146,7 +146,24 @@ const COUNTRY: Copy = {
 The dining room got a cow. The bedrooms got mirrored ceilings, velvet walls, and roll-top baths. The garden got treehouses with baths above the canopy. Breakfast brought up by hand, slowly. Lunch followed, slower.
 
 The pub still pours. The kitchen still takes itself seriously. Nothing else does.`,
-...
+  collageHeading: "The look.",
+  collageKicker: "Antlers, mirrors, candlelight",
+  playlistHeading: "The soundtrack.",
+  playlistKicker: "Britpop, folk, long Sundays",
+  playlistFallback: "https://open.spotify.com/playlist/37i9dQZF1DWXHYAFP0XcrJ",
+  timelineKicker: "The greatest hits",
+  timelineHeading: "Stories from the garden.",
+  quotesKicker: "What they wrote",
+  quotesHeading: "Country in print.",
+  closingKicker: "Stay the night",
+  closingHeading: "Sunday lunch. Treehouse bath. Repeat.",
+  ctaPrimaryLabel: "Book a treehouse",
+  ctaPrimaryHref: "/country/rooms",
+  ctaSecondaryLabel: "Eat with us",
+  ctaSecondaryHref: "/country/pub/food",
+  hero: countryHero,
+  collageSeed: [
+    { heading: "The turf floor", body: "Real grass. Real opening night. Allegedly real sheep.", meta: {} },
     { heading: "The cow", body: "Taxidermy. Dining room. Watching you eat.", meta: {} },
     { heading: "Treehouse suites", body: "Roll-top bath above the canopy. Mirrored ceilings. Velvet walls. Breakfast by hand.", meta: {} },
     { heading: "The garden", body: "Slow lunches. Longer afternoons. Fires lit by four.", meta: {} },
