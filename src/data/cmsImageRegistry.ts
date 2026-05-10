@@ -5,6 +5,7 @@
 import { propertyHeroMap } from "./propertyHeroMap";
 import { heroCarouselMap } from "./heroCarousels";
 import { townGallery, countryGallery, type GalleryItem } from "./galleryData";
+import townCultureHero from "@/assets/cb-town-culture-hero.jpg";
 import townLook1 from "@/assets/cb-town-culture-look-1-burlesque.jpg";
 import townLook2 from "@/assets/cb-town-culture-look-2-homthai.jpg";
 import townLook3 from "@/assets/cb-town-culture-look-3-redroom.jpg";
@@ -49,6 +50,13 @@ export const cmsImageRegistry: AssetSlot[] = [
   { page: "town/rooms/gallery", slot: "hero", kind: "hero", label: "Town Gallery hero", defaults: heroFromMap("/town/rooms/gallery") },
   { page: "town/rooms/gallery", slot: "gallery", kind: "gallery", label: "Town Bedroom gallery", defaults: galleryFromArr(townGallery) },
   { page: "town/pool", slot: "hero", kind: "hero", label: "Town Pool hero", defaults: heroFromMap("/town/pool") },
+  {
+    page: "town-culture",
+    slot: "hero",
+    kind: "hero",
+    label: "Town Culture hero",
+    defaults: [{ src: townCultureHero, alt: "Town bar at night" }],
+  },
   {
     page: "town-culture",
     slot: "collage",
