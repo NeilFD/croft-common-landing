@@ -113,6 +113,15 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .maybeSingle();
 
+    // Check Gold subscription status to brand the pass accordingly.
+    let isGold = false;
+    try {
+      const { data: goldData } = await supabaseClient.rpc('is_gold', { check_user_id: user.id });
+      isGold = !!goldData;
+    } catch (e) {
+      console.warn('is_gold check failed:', e);
+    }
+
     if (memberError) {
       console.error('cb_members lookup failed:', memberError);
       return new Response(JSON.stringify({ error: 'Member lookup failed' }), {
