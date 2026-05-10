@@ -452,6 +452,7 @@ export default function SeoDashboard() {
                       <th className="px-4 py-3 font-cb-sans uppercase tracking-wide w-24">Score</th>
                       <th className="px-4 py-3 font-cb-sans uppercase tracking-wide w-20">Grade</th>
                       <th className="px-4 py-3 font-cb-sans uppercase tracking-wide">Status</th>
+                      <th className="px-4 py-3 font-cb-sans uppercase tracking-wide w-40">Last tested</th>
                       <th className="px-4 py-3 font-cb-sans uppercase tracking-wide w-48 text-right">Actions</th>
                     </tr>
                   </thead>
