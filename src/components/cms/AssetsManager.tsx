@@ -148,19 +148,51 @@ const SlotEditor = ({ slot }: { slot: AssetSlot }) => {
     window.dispatchEvent(new CustomEvent("draftContentChanged", { detail: { page: slot.page, section: slot.slot } }));
   };
 
+  const persistOrder = async (ordered: typeof items) => {
+    // Write sequential sort_order for every non-default row
+    await Promise.all(
+      ordered.map((r, i) =>
+        (r as any)._isDefault
+          ? Promise.resolve()
+          : (supabase as any).from("cms_images").update({ sort_order: i }).eq("id", r.id)
+      )
+    );
+    await refresh();
+    window.dispatchEvent(new CustomEvent("draftContentChanged", { detail: { page: slot.page, section: slot.slot } }));
+  };
+
   const move = async (id: string, dir: -1 | 1) => {
     const idx = items.findIndex((r) => r.id === id);
     const swapIdx = idx + dir;
     if (swapIdx < 0 || swapIdx >= items.length) return;
-    const a = items[idx];
-    const b = items[swapIdx];
-    if ((a as any)._isDefault || (b as any)._isDefault) {
+    if ((items[idx] as any)._isDefault || (items[swapIdx] as any)._isDefault) {
       toast.error("Upload images first to reorder");
       return;
     }
-    await (supabase as any).from("cms_images").update({ sort_order: b.sort_order }).eq("id", a.id);
-    await (supabase as any).from("cms_images").update({ sort_order: a.sort_order }).eq("id", b.id);
-    await refresh();
+    const next = [...items];
+    [next[idx], next[swapIdx]] = [next[swapIdx], next[idx]];
+    await persistOrder(next);
+  };
+
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
+
+  const handleDrop = async (targetId: string) => {
+    const fromId = dragId;
+    setDragId(null);
+    setOverId(null);
+    if (!fromId || fromId === targetId) return;
+    const fromIdx = items.findIndex((r) => r.id === fromId);
+    const toIdx = items.findIndex((r) => r.id === targetId);
+    if (fromIdx < 0 || toIdx < 0) return;
+    if ((items[fromIdx] as any)._isDefault) {
+      toast.error("Upload images first to reorder");
+      return;
+    }
+    const next = [...items];
+    const [moved] = next.splice(fromIdx, 1);
+    next.splice(toIdx, 0, moved);
+    await persistOrder(next);
   };
 
   const publishSlot = async () => {
