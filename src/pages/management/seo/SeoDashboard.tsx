@@ -182,7 +182,7 @@ export default function SeoDashboard() {
                 {overall !== null ? `${overall}/100` : '—'}
               </div>
               <div className="text-sm text-muted-foreground mt-1">
-                {overall !== null ? 'Average across all tested pages' : 'Run an audit to see your score'}
+                {overall !== null ? 'Average across pages with full tests' : 'Lighthouse data needed for a score'}
               </div>
             </CardContent>
           </Card>
@@ -205,12 +205,20 @@ export default function SeoDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-5xl font-display font-black">
-                {latestAudits.filter(a => (a.overall_score ?? 100) < 70).length}
+                {latestAudits.filter(a => a.error || (a.overall_score ?? 100) < 70).length}
               </div>
-              <div className="text-sm text-muted-foreground mt-1">Pages scoring under 70</div>
+              <div className="text-sm text-muted-foreground mt-1">Failed tests or pages scoring under 70</div>
             </CardContent>
           </Card>
         </div>
+
+        {latestAudits.some(a => a.error) && (
+          <Card className="border-destructive/40">
+            <CardContent className="p-4 text-sm text-destructive">
+              Lighthouse did not return live scores for {latestAudits.filter(a => a.error).length} page{latestAudits.filter(a => a.error).length === 1 ? '' : 's'}. Those pages are shown as failed, not scored, so the dashboard does not fake a 50/100 result.
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader>
