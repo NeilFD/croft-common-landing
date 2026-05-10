@@ -407,16 +407,16 @@ const ManagementLogin = () => {
 
     setIsLoading(true);
 
-    const RESET_REDIRECT_URL = "https://www.crazybear.dev/set-password";
+    const RESET_REDIRECT_URL = `${window.location.origin}/management/login`;
 
     try {
-      // Safety check: confirm the redirect destination is the production URL
+      // Safety check: redirect must point to /management/login on this host
       try {
         const parsed = new URL(RESET_REDIRECT_URL);
-        if (parsed.origin !== "https://www.crazybear.dev" || parsed.pathname !== "/set-password") {
+        if (parsed.pathname !== "/management/login") {
           toast({
             title: "Reset blocked",
-            description: `Invalid redirect destination: ${RESET_REDIRECT_URL}. Expected https://www.crazybear.dev/set-password`,
+            description: `Invalid redirect destination: ${RESET_REDIRECT_URL}`,
             variant: "destructive"
           });
           setIsLoading(false);

@@ -43,6 +43,10 @@ Deno.serve(async (req) => {
     if (!email || !emailRegex.test(email)) {
       throw new Error('Valid email is required')
     }
+    // Lock down to @crazybear.co.uk addresses only
+    if (!email.toLowerCase().endsWith('@crazybear.co.uk')) {
+      throw new Error('Only @crazybear.co.uk email addresses are allowed')
+    }
     if (!role) {
       throw new Error('Role is required')
     }
@@ -53,17 +57,13 @@ Deno.serve(async (req) => {
       throw new Error('Job title is required')
     }
 
-    // Map and validate role
-    const roleMapping: Record<string, string> = {
-      'Admin': 'admin',
-      'Manager': 'manager'
-    }
-    const allowedRoles = new Set(['admin', 'manager'])
-    const mappedRole = roleMapping[role] || role.toLowerCase()
+    // Validate role against the actual role system
+    const allowedRoles = new Set(['admin', 'sales', 'ops', 'finance', 'readonly'])
+    const mappedRole = role.toLowerCase()
     if (!allowedRoles.has(mappedRole)) {
       throw new Error('Invalid role')
     }
-    console.log('Mapped role:', role, '->', mappedRole)
+    console.log('Role:', mappedRole)
 
     // Validate caller is admin using RPC
     const accessToken = authHeader.replace('Bearer ', '').trim()
