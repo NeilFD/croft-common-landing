@@ -6,6 +6,7 @@ import HeroCarousel from "./HeroCarousel";
 import { CBSeo } from "@/components/seo/CBSeo";
 import CBFAQ from "@/components/seo/CBFAQ";
 import CBBreadcrumb from "@/components/seo/CBBreadcrumb";
+import { CMSText } from "@/components/cms/CMSText";
 import {
   hotelSchema,
   restaurantSchema,
@@ -27,6 +28,9 @@ interface Props {
   cuisine?: string[];
   extraJsonLd?: Record<string, any>[];
   children?: React.ReactNode;
+  /** When set, hero text is editable through the CMS under this page namespace
+   *  (e.g. "town/pool"). When omitted, falls back to static props. */
+  cmsPage?: string;
 }
 
 const PropertyPage = ({
@@ -40,6 +44,7 @@ const PropertyPage = ({
   cuisine,
   extraJsonLd,
   children,
+  cmsPage,
 }: Props) => {
   const { config } = useProperty();
   const location = useLocation();
@@ -82,6 +87,9 @@ const PropertyPage = ({
   if (faqEntry) ld.push(faqSchema(faqEntry.faqs));
   if (extraJsonLd) ld.push(...extraJsonLd);
 
+  const eyebrowText = eyebrow ?? config.name;
+  const bodyText = body ?? "More soon. Worth the wait.";
+
   return (
     <>
       <CBSeo
@@ -105,10 +113,32 @@ const PropertyPage = ({
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
         <div className="relative z-10 flex h-full items-end px-6 pb-24 md:px-12 md:pb-28">
           <div>
-            <p className="text-[10px] tracking-[0.4em] uppercase opacity-80">
-              {eyebrow ?? config.name}
-            </p>
-            <h1 className="mt-3 font-serif text-5xl md:text-7xl">{title}</h1>
+            {cmsPage ? (
+              <CMSText
+                page={cmsPage}
+                section="hero"
+                contentKey="eyebrow"
+                fallback={eyebrowText}
+                as="p"
+                className="text-[10px] tracking-[0.4em] uppercase opacity-80"
+              />
+            ) : (
+              <p className="text-[10px] tracking-[0.4em] uppercase opacity-80">
+                {eyebrowText}
+              </p>
+            )}
+            {cmsPage ? (
+              <CMSText
+                page={cmsPage}
+                section="hero"
+                contentKey="title"
+                fallback={title}
+                as="h1"
+                className="mt-3 font-serif text-5xl md:text-7xl"
+              />
+            ) : (
+              <h1 className="mt-3 font-serif text-5xl md:text-7xl">{title}</h1>
+            )}
           </div>
         </div>
         <a
@@ -125,9 +155,20 @@ const PropertyPage = ({
       </section>
       <CBBreadcrumb />
       <section id="cb-page-body" className="mx-auto max-w-3xl px-6 pt-10 pb-20 text-foreground scroll-mt-16">
-        <p className="font-cb-sans text-xl md:text-2xl leading-relaxed">
-          {body ?? "More soon. Worth the wait."}
-        </p>
+        {cmsPage ? (
+          <CMSText
+            page={cmsPage}
+            section="hero"
+            contentKey="body"
+            fallback={bodyText}
+            as="p"
+            className="font-cb-sans text-xl md:text-2xl leading-relaxed"
+          />
+        ) : (
+          <p className="font-cb-sans text-xl md:text-2xl leading-relaxed">
+            {bodyText}
+          </p>
+        )}
       </section>
       {children}
       {faqEntry && <CBFAQ faqs={faqEntry.faqs} title={faqEntry.title} />}
