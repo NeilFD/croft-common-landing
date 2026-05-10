@@ -1,137 +1,84 @@
-## Goal
+## What you'll get
 
-Give you a single place in the Management area to:
-1. **See** how every public page is performing for SEO (clear A–F score, what's wrong).
-2. **Fix** anything wrong from a simple form (no code, no jargon).
-3. **Re-test** on demand and track progress over time.
-
-You won't need to know what a meta tag is. The form labels are plain English ("Page title shown on Google", "Short summary under the title", "Sharing image for WhatsApp/Facebook"). The audit explains every issue in plain English with a fix.
+A single black button on `/management/seo` labelled **"✨ AI complete every page"**. One click. The AI writes title, description and keywords for every tracked page, then shows you a review modal listing all changes side-by-side (old vs new) before anything is saved. You confirm once, everything saves, dashboard refreshes. You can still go into any individual page editor afterwards to tweak.
 
 ---
 
-## What gets built
+## 1. The new global AI tool
 
-### 1. Per-page SEO editor (the "Fix" side)
+**Location:** Top-right of `/management/seo`, next to "Re-test entire site".
 
-A new section under `/management/seo` listing every public route from your sitemap (around 25 pages: `/`, `/town`, `/town/food`, `/country`, `/about`, `/house-rules`, `/bears-den`, etc.).
+**Flow**
 
-For each route you can edit:
-- **Page title** (the blue link on Google) — with a live preview of how Google will show it
-- **Description** (the grey snippet under the title) — same live preview
-- **Sharing image** (what shows up on WhatsApp / Facebook / iMessage) — pick from CMS assets
-- **Keywords** (optional, low priority)
-- **Hide from Google** toggle (for pages you don't want indexed)
+1. Click "✨ AI complete every page".
+2. Progress bar runs the existing `seo-copywriter` edge function once per page, one at a time, with a small delay so we don't hit Lovable AI rate limits. Live counter: "Writing 7 / 41…".
+3. When done, a full-screen review dialog opens. Each page is a row:
+  - Route + label
+  - Title: old → new (with character count, green/yellow)
+  - Description: old → new
+  - Keywords: old → new
+  - Per-row checkbox (default on) so you can deselect any page you don't want changed
+  - "Skip unchanged" toggle to hide rows where AI returned the same copy
+4. Two buttons at the bottom: **Cancel** (throws everything away) and **Save selected** (writes to `seo_pages` in one batch via `upsert`).
+5. Toast confirms how many pages updated. Dashboard reloads.
 
-Stored in a new `seo_pages` table. A single `<CBSeo>` component already exists; it gets upgraded to read overrides from this table (with sensible Bears Den defaults baked in as fallback). So if the table is empty, nothing breaks — defaults still apply.
-
-### 2. The auditor (the "See" side)
-
-A `seo-audit` edge function that, when triggered, does two passes per route:
-
-**Pass A — Internal scan (fast, free, runs in seconds):**
-Fetches the page HTML and checks:
-- Title present, 30–60 chars
-- Description present, 70–160 chars
-- Exactly one `<h1>`
-- All `<img>` have `alt` attributes
-- Canonical URL set
-- Open Graph + Twitter card tags present
-- JSON-LD structured data present
-- Sharing image resolves (not 404)
-- Internal links not broken
-- Robots not accidentally blocking the page
-
-**Pass B — Google PageSpeed Insights (real Lighthouse, slower, ~20s/page):**
-Calls Google's free PageSpeed API and stores the four official Lighthouse scores:
-- Performance
-- SEO
-- Accessibility
-- Best Practices
-Plus Core Web Vitals (LCP, CLS, INP).
-
-Results saved to `seo_audits` (one row per page per run) so you build up history.
-
-### 3. The dashboard (what you'll actually look at)
-
-`/management/seo` opens to a page that shows:
-
-```text
-Overall site score:  B+   (was B last week)
-
-Pages needing attention                Score   Issues
------------------------------------------------------
-/town/food/black-bear                  D       Missing description, no H1, 3 images without alt
-/about                                 C       Title too long (74 chars), slow LCP (3.8s)
-/                                      A       
-/country                               A-      Sharing image is 1.2MB (compress)
-... etc
-```
-
-Each row clicks through to:
-- The Google preview of how it currently looks in search
-- The list of issues with **plain English explanations and an "Edit page SEO" button** that drops you straight into the editor with the right field highlighted
-- Lighthouse score breakdown
-- History chart (score over the last 30 days)
-
-### 4. Re-test controls
-
-- "Re-test this page" button on any page row
-- "Re-test entire site" button on the dashboard
-- Optional weekly automatic re-test via `pg_cron` (every Sunday night) so scores stay current without you doing anything
-
-### 5. Behind the scenes (always-on, no UI needed)
-
-These get wired up site-wide so the score floor goes up immediately, before you touch anything:
-- One `<h1>` enforced per page (audit existing pages, fix offenders)
-- All `<img>` get `alt` attributes (sweep components)
-- `robots.txt` and `sitemap.xml` already exist — sitemap gets auto-regenerated when you add a route
-- JSON-LD `Organization` + `LocalBusiness` schema added to home/town/country
-- Canonical URLs on every page
-- Default OG image for any page that doesn't have a custom one
+**Per-page editor stays exactly as it is** — same "✨ Suggest with AI" button, same Save flow, so you can still edit individually anytime.
 
 ---
 
-## Coverage
+## 2. Are changes actually going live? (Straight answer)
 
-All 25 public routes from your existing `sitemap.xml`. Member, management, admin, CMS routes are explicitly excluded (they shouldn't be indexed anyway).
+**Yes, with two caveats I want to fix in this same plan.**
 
----
+How it works today:
 
-## Permissions
+- `seo_pages` rows are read by `<CBSeo>` on every page load and injected into `<head>` via `react-helmet-async`. Title, description, canonical, OG image, JSON-LD, noindex — all real meta tags.
+- Googlebot renders JavaScript, so it sees these tags. This is the standard approach for Vite/React SPAs and it works.
+- No publish/deploy step needed. Edit in CMS → save → next page load shows new tags. Google picks them up on its next crawl (usually days).
 
-Same access model as the rest of `/management`. Visible to admins. Editors with CMS access can edit per-page SEO; only admins can trigger full-site re-audits (PageSpeed API has rate limits).
+**Caveats found while planning — fixing as part of this work:**
 
----
+a. `**public/robots.txt` and `public/sitemap.xml` still reference `https://www.crazybeartest.com**` (the old test domain). The live site is `www.crazybear.dev`. Right now we're telling Google the sitemap lives at a domain that's gone. This is a real, live SEO bug. I'll rewrite both files to point at `www.crazybear.dev`.
 
-## Technical details
+b. **Not every page wraps itself in `<CBSeo>` yet.** Pages without it fall back to whatever is in `index.html`, which means CMS edits do nothing for those routes. I'll grep the route list against `<CBSeo>` usage and surface a "❌ Not wired to CMS" badge on the dashboard for any page where edits won't take effect, so you can see exactly which ones are wasted effort.
 
-- **New tables:** `seo_pages` (one row per route, holds overrides), `seo_audits` (audit run history), `seo_settings` (global defaults: site name, default OG image, organisation JSON-LD)
-- **New edge function:** `seo-audit` — accepts `{ route }` or `{ all: true }`, runs internal scan + PageSpeed call, writes to `seo_audits`
-- **Google PageSpeed Insights API** — free, no auth required for low volume, but adding a Google API key (free) raises the limit to 25k/day. Will ask you to add `GOOGLE_PAGESPEED_API_KEY` when we get there
-- **CMS routes:** `/management/seo` (dashboard), `/management/seo/:route` (per-page editor), `/management/seo/settings` (global defaults)
-- **Existing `<CBSeo>` component** is extended to merge defaults + per-page overrides from the database, cached client-side
-- **`sitemap.xml`** moves from static file to a generated route (or a build-time script) so new pages auto-appear
-- **Cron:** weekly re-audit via `pg_cron` + `pg_net`
+After (a) and (b), every CMS save genuinely changes what Google sees.
 
 ---
 
-## Build order
+## 3. Alt tags and other "moves the dial" gaps
 
-1. Schema + `seo_pages`/`seo_audits`/`seo_settings` tables with RLS
-2. Upgrade `<CBSeo>` to read overrides + sensible defaults
-3. Sweep existing pages to fix obvious issues (single H1, alt text, canonical) so baseline score is decent
-4. `seo-audit` edge function (internal scan only first)
-5. Management dashboard + per-page editor UI
-6. Add PageSpeed Insights integration (will request the API key here)
-7. History charts + weekly cron
-8. Auto-generated sitemap
+You're right, alt text matters — both for SEO and accessibility (which Google scores). Here's the honest gap list. I'll add each as an **internal check** in the existing audit so it shows on the dashboard, not as silent background work.
 
-Each step is shippable on its own; you'll see progress straight away.
+**Image alt audit** (new check per page)
+
+- Crawl the rendered HTML, count `<img>` tags, count ones missing `alt` or with `alt=""` on non-decorative images. Fail if any are missing.
+
+**Other high-value gaps to add as automated checks**
+
+1. **Canonical URL present and matches current route** — stops duplicate-content penalties.
+2. **One single H1 per page** — Google uses it heavily.
+3. **Heading hierarchy** (no jumping H1 → H4) — accessibility + SEO.
+4. **OG image present and ≥1200×630** — controls how the page looks shared on WhatsApp/iMessage/socials, which drives clicks.
+5. **JSON-LD structured data present** (Organization / Hotel / Restaurant / Breadcrumb) — already partly built in `CBStructuredData.ts`; check it's actually emitted.
+6. **Internal link count** — orphan pages get crawled less.
+7. **Lang attribute on `<html>**` — small but free.
+8. **Title and description length sanity** (already there for the editor; add to the dashboard checks too).
+
+Each becomes a row in the existing "Checks" panel with pass / warn / fail, so the AI tool can be told "fix the warnings on this page" in a future iteration.  
+  
+Please provide fixes for all the above, and tools within SEO monitor tool to ensure we test, score and improve these issues within the /management/seo page
 
 ---
 
-## What I will NOT do
+## Technical detail (for the record)
 
-- Won't add Google Analytics / Search Console here — that's a separate connect-and-paste job we can do anytime
-- Won't pretend to score things Google doesn't actually care about (keyword density, etc.)
-- Won't expose the editor to non-management users
+- New component `SeoBulkAiReview.tsx` rendered as a `Dialog`. Holds an array of `{ route, current, suggested, fields }`.
+- Dashboard adds `runBulkAi` mutation: loops `pages`, calls `supabase.functions.invoke('seo-copywriter', { body: { route, label, fields: ['title','description','keywords'], current } })` with a 1.5s delay between calls and a try/catch per page so one failure doesn't kill the batch. Stores results in component state, opens the review dialog.
+- "Save selected" does a single `await supabase.from('seo_pages').upsert(rows, { onConflict: 'route' })`.
+- Dashboard query `['seo-pages']` invalidated on save. No DB schema changes required for the AI feature itself.
+- New audit checks added to `supabase/functions/seo-audit/index.ts` in the existing `internal_checks` array — no new tables, no new function.
+- `public/robots.txt` and `public/sitemap.xml`: search-and-replace `crazybeartest.com` → `crazybear.dev`.
+- "Not wired to CMS" badge: a small build-time map of routes that import `CBSeo`, exported from a new `src/data/seoWiredRoutes.ts`, compared against `seo_pages.route` on the dashboard.
+
+No new secrets, no migrations, no breaking changes. Existing per-page editor untouched.
