@@ -1,12 +1,12 @@
 import { useLocation } from "react-router-dom";
 import { useProperty } from "@/contexts/PropertyContext";
 import { getHeroFor, getHeroFitFor } from "@/data/propertyHeroMap";
-import { getHeroCarouselFor } from "@/data/heroCarousels";
 import HeroCarousel from "./HeroCarousel";
 import { CBSeo } from "@/components/seo/CBSeo";
 import CBFAQ from "@/components/seo/CBFAQ";
 import CBBreadcrumb from "@/components/seo/CBBreadcrumb";
 import { CMSText } from "@/components/cms/CMSText";
+import { useCMSAssets } from "@/hooks/useCMSAssets";
 import {
   hotelSchema,
   restaurantSchema,
