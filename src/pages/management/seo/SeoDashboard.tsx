@@ -217,6 +217,18 @@ export default function SeoDashboard() {
                 <Link to="/management/seo/settings">Settings</Link>
               </Button>
               <Button
+                onClick={() => {
+                  if (window.confirm('Clear all visible scores and start a fresh scan? Previous results will be archived for stats but removed from the dashboard.')) {
+                    clearScores.mutate();
+                  }
+                }}
+                disabled={auditingAll || clearScores.isPending}
+                variant="outline"
+                className="font-display uppercase tracking-wide"
+              >
+                {clearScores.isPending ? 'Clearing…' : 'Clear & rescan'}
+              </Button>
+              <Button
                 onClick={() => runAll.mutate()}
                 disabled={auditingAll}
                 className="font-display uppercase tracking-wide"
