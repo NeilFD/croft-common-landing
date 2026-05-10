@@ -173,6 +173,22 @@ export default function SeoDashboard() {
     },
   });
 
+  const clearScores = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('seo_audits')
+        .update({ hidden_from_dashboard: true })
+        .eq('hidden_from_dashboard', false);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['seo-latest-audits'] });
+      toast({ title: 'Scores cleared', description: 'Previous results archived. Starting fresh scan…' });
+      runAll.mutate();
+    },
+    onError: (e: any) => toast({ title: 'Clear failed', description: e.message, variant: 'destructive' }),
+  });
+
   const sortedRows = useMemo(() => {
     return [...pages].sort((a, b) => {
       const auditA = auditMap.get(a.route);
