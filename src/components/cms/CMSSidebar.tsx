@@ -1,20 +1,5 @@
 import { useState } from 'react';
 import { useLocation, NavLink } from 'react-router-dom';
-import { useIsMobile } from '@/hooks/use-mobile';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarMenuSub,
-  SidebarMenuSubItem,
-  SidebarMenuSubButton,
-  useSidebar,
-} from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   Home,
@@ -31,10 +16,12 @@ import {
   Download,
   Settings,
   ChevronDown,
+  ChevronRight,
   Globe,
   Eye,
-  Mail
+  Mail,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type Section = { name: string; path: string };
 type Page = { name: string; path: string; icon: any; sections: Section[] };
@@ -89,220 +76,129 @@ const emailTemplateStructure = [
   { name: 'Event Management', path: `${CMS_BASE}/email-templates/event`, icon: Mail },
 ];
 
-const managementSections = [
+const assetSections = [
   { name: 'Images', path: `${CMS_BASE}/images`, icon: Image },
   { name: 'Brand Assets', path: `${CMS_BASE}/brand`, icon: Palette },
-  { name: 'Import/Export', path: `${CMS_BASE}/import`, icon: Download }
+  { name: 'Import/Export', path: `${CMS_BASE}/import`, icon: Download },
 ];
 
+const itemBase = 'flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-sm font-cb-sans transition-colors';
+const itemActive = 'bg-foreground text-background';
+const itemIdle = 'hover:bg-accent/60 text-foreground';
+
 export const CMSSidebar = () => {
-  const { state } = useSidebar();
-  const isMobile = useIsMobile();
   const location = useLocation();
   const currentPath = location.pathname;
 
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    overview: true,
+  const [open, setOpen] = useState<Record<string, boolean>>({
     country: true,
     town: true,
     global: false,
     emails: false,
-    management: false
+    assets: false,
   });
-
-  const toggleSection = (section: string) => {
-    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
-  };
+  const toggle = (k: string) => setOpen((p) => ({ ...p, [k]: !p[k] }));
 
   const isActive = (path: string) => currentPath === path;
   const isParentActive = (basePath: string) => currentPath.startsWith(basePath);
 
-  const getNavClass = (isActiveItem: boolean) =>
-    isActiveItem ? "bg-accent text-accent-foreground font-medium" : "hover:bg-accent/50";
-
-  const showText = state !== "collapsed" || isMobile;
-
-  const renderPageGroup = (label: string, key: string, pages: Page[]) => (
-    <SidebarGroup>
-      <Collapsible open={expandedSections[key]} onOpenChange={() => toggleSection(key)}>
-        <CollapsibleTrigger asChild>
-          <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
-            <span className="flex items-center font-brutalist uppercase tracking-wide">
-              <FileText className="mr-2 h-4 w-4" />
-              {showText && label}
-            </span>
-            {showText && <ChevronDown className="h-4 w-4" />}
-          </SidebarGroupLabel>
-        </CollapsibleTrigger>
+  const renderPage = (page: Page) => {
+    if (page.sections.length === 0) {
+      return (
+        <NavLink key={page.path} to={page.path} className={cn(itemBase, isActive(page.path) ? itemActive : itemIdle)}>
+          <page.icon className="h-4 w-4" />
+          <span>{page.name}</span>
+        </NavLink>
+      );
+    }
+    return (
+      <Collapsible key={page.path} defaultOpen={isParentActive(page.path)}>
+        <div className="flex items-center">
+          <NavLink
+            to={page.path}
+            className={cn(itemBase, 'flex-1', isActive(page.path) ? itemActive : itemIdle)}
+          >
+            <page.icon className="h-4 w-4" />
+            <span>{page.name}</span>
+          </NavLink>
+          <CollapsibleTrigger asChild>
+            <button className="p-1 rounded hover:bg-accent/60" aria-label={`Toggle ${page.name}`}>
+              <ChevronDown className="h-4 w-4" />
+            </button>
+          </CollapsibleTrigger>
+        </div>
         <CollapsibleContent>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {pages.map((page) => (
-                <SidebarMenuItem key={page.path}>
-                  {page.sections.length > 0 ? (
-                    <Collapsible defaultOpen={isParentActive(page.path)}>
-                      <div className="flex items-center">
-                        <SidebarMenuButton
-                          asChild
-                          className={`${getNavClass(isActive(page.path))} flex-1`}
-                        >
-                          <NavLink to={page.path}>
-                            <page.icon className="mr-2 h-4 w-4" />
-                            {showText && <span>{page.name}</span>}
-                          </NavLink>
-                        </SidebarMenuButton>
-                        {showText && (
-                          <CollapsibleTrigger asChild>
-                            <button className="p-1 hover:bg-accent rounded">
-                              <ChevronDown className="h-4 w-4" />
-                            </button>
-                          </CollapsibleTrigger>
-                        )}
-                      </div>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {page.sections.map((section) => (
-                            <SidebarMenuSubItem key={section.path}>
-                              <SidebarMenuSubButton asChild className={getNavClass(isActive(section.path))}>
-                                <NavLink to={section.path}>{showText && section.name}</NavLink>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  ) : (
-                    <SidebarMenuButton asChild className={getNavClass(isActive(page.path))}>
-                      <NavLink to={page.path}>
-                        <page.icon className="mr-2 h-4 w-4" />
-                        {showText && page.name}
-                      </NavLink>
-                    </SidebarMenuButton>
-                  )}
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
+          <div className="ml-6 mt-1 space-y-0.5 border-l border-border pl-2">
+            {page.sections.map((s) => (
+              <NavLink key={s.path} to={s.path} className={cn(itemBase, 'text-xs', isActive(s.path) ? itemActive : itemIdle)}>
+                <span>{s.name}</span>
+              </NavLink>
+            ))}
+          </div>
         </CollapsibleContent>
       </Collapsible>
-    </SidebarGroup>
+    );
+  };
+
+  const Group = ({
+    label,
+    icon: Icon,
+    keyName,
+    children,
+  }: { label: string; icon: any; keyName: string; children: React.ReactNode }) => (
+    <Collapsible open={open[keyName]} onOpenChange={() => toggle(keyName)}>
+      <CollapsibleTrigger asChild>
+        <button className="flex items-center justify-between w-full px-2 py-2 rounded-md hover:bg-accent/60 font-display uppercase tracking-wide text-xs">
+          <span className="flex items-center gap-2">
+            <Icon className="h-4 w-4" />
+            {label}
+          </span>
+          <ChevronRight className={cn('h-3 w-3 transition-transform', open[keyName] && 'rotate-90')} />
+        </button>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className="mt-1 space-y-0.5 pl-1">{children}</div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 
   return (
-    <Sidebar className="border-r bg-background" collapsible="icon">
-      <SidebarContent className="pt-16 bg-background">
-        {/* Overview */}
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild className={getNavClass(isActive(CMS_BASE))}>
-                  <NavLink to={CMS_BASE}>
-                    <Home className="mr-2 h-4 w-4" />
-                    {showText && 'Overview'}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+    <nav className="p-3 space-y-2">
+      <NavLink to={CMS_BASE} end className={cn(itemBase, isActive(CMS_BASE) ? itemActive : itemIdle)}>
+        <Home className="h-4 w-4" />
+        <span>Overview</span>
+      </NavLink>
 
-        {renderPageGroup('Country', 'country', countryPages)}
-        {renderPageGroup('Town', 'town', townPages)}
-
-        {/* Global Content */}
-        <SidebarGroup>
-          <Collapsible open={expandedSections.global} onOpenChange={() => toggleSection('global')}>
-            <CollapsibleTrigger asChild>
-              <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
-                <span className="flex items-center">
-                  <Globe className="mr-2 h-4 w-4" />
-                  {showText && 'Global Content'}
-                </span>
-                {showText && <ChevronDown className="h-4 w-4" />}
-              </SidebarGroupLabel>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {globalSections.map((section) => (
-                    <SidebarMenuItem key={section.path}>
-                      <SidebarMenuButton asChild className={getNavClass(isActive(section.path))}>
-                        <NavLink to={section.path}>
-                          <section.icon className="mr-2 h-4 w-4" />
-                          {showText && section.name}
-                        </NavLink>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </CollapsibleContent>
-          </Collapsible>
-        </SidebarGroup>
-
-        {/* Email Templates */}
-        <SidebarGroup>
-          <Collapsible open={expandedSections.emails} onOpenChange={() => toggleSection('emails')}>
-            <CollapsibleTrigger asChild>
-              <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
-                <span className="flex items-center">
-                  <Mail className="mr-2 h-4 w-4" />
-                  {showText && 'Email Templates'}
-                </span>
-                {showText && <ChevronDown className="h-4 w-4" />}
-              </SidebarGroupLabel>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {emailTemplateStructure.map((template) => (
-                    <SidebarMenuItem key={template.path}>
-                      <SidebarMenuButton asChild className={getNavClass(isActive(template.path))}>
-                        <NavLink to={template.path}>
-                          <template.icon className="mr-2 h-4 w-4" />
-                          {showText && template.name}
-                        </NavLink>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </CollapsibleContent>
-          </Collapsible>
-        </SidebarGroup>
-
-        {/* Assets */}
-        <SidebarGroup>
-          <Collapsible open={expandedSections.management} onOpenChange={() => toggleSection('management')}>
-            <CollapsibleTrigger asChild>
-              <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
-                <span className="flex items-center">
-                  <Settings className="mr-2 h-4 w-4" />
-                  {showText && 'Assets'}
-                </span>
-                {showText && <ChevronDown className="h-4 w-4" />}
-              </SidebarGroupLabel>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {managementSections.map((section) => (
-                    <SidebarMenuItem key={section.path}>
-                      <SidebarMenuButton asChild className={getNavClass(isActive(section.path))}>
-                        <NavLink to={section.path}>
-                          <section.icon className="mr-2 h-4 w-4" />
-                          {showText && section.name}
-                        </NavLink>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </CollapsibleContent>
-          </Collapsible>
-        </SidebarGroup>
-      </SidebarContent>
-    </Sidebar>
+      <Group label="Country" icon={Trees} keyName="country">
+        {countryPages.map(renderPage)}
+      </Group>
+      <Group label="Town" icon={Building2} keyName="town">
+        {townPages.map(renderPage)}
+      </Group>
+      <Group label="Global Content" icon={Globe} keyName="global">
+        {globalSections.map((s) => (
+          <NavLink key={s.path} to={s.path} className={cn(itemBase, isActive(s.path) ? itemActive : itemIdle)}>
+            <s.icon className="h-4 w-4" />
+            <span>{s.name}</span>
+          </NavLink>
+        ))}
+      </Group>
+      <Group label="Email Templates" icon={Mail} keyName="emails">
+        {emailTemplateStructure.map((s) => (
+          <NavLink key={s.path} to={s.path} className={cn(itemBase, isActive(s.path) ? itemActive : itemIdle)}>
+            <s.icon className="h-4 w-4" />
+            <span>{s.name}</span>
+          </NavLink>
+        ))}
+      </Group>
+      <Group label="Assets" icon={Settings} keyName="assets">
+        {assetSections.map((s) => (
+          <NavLink key={s.path} to={s.path} className={cn(itemBase, isActive(s.path) ? itemActive : itemIdle)}>
+            <s.icon className="h-4 w-4" />
+            <span>{s.name}</span>
+          </NavLink>
+        ))}
+      </Group>
+    </nav>
   );
 };
