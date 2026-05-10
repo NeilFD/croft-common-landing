@@ -82,9 +82,9 @@ export const useMemberMoments = () => {
       // Get unique user IDs from moments
       const userIds = [...new Set(momentsData?.map(moment => moment.user_id) || [])];
       
-      // Get profiles for those users
+      // Get profiles for those users (sanitised view, no PII)
       const { data: profilesData, error: profilesError } = await (supabase as any)
-        .from('profiles')
+        .from('profiles_public')
         .select('user_id, first_name, last_name')
         .in('user_id', userIds);
 
