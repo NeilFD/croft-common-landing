@@ -134,20 +134,20 @@ const COUNTRY: Copy = {
   page: "country-culture",
   title: "Country Culture | The Crazy Bear, Stadhampton",
   metaDescription:
-    "Country culture. Turf floors, treehouse suites, cows in the dining room and thirty years of long Sundays in Stadhampton, Oxfordshire.",
+    "Country culture. Turf floors, a cow in the dining room, roll-top baths and thirty years of long Sundays in Stadhampton, Oxfordshire.",
   canonical: "https://www.crazybear.dev/country/culture",
   eyebrow: "Stadhampton / Est. 1993",
   headline: "Country. Misbehaving since 1993.",
   tagline:
-    "A 16th century inn. A turf floor. A cow in the dining room. Treehouse suites with roll-top baths above the canopy. Thirty years of Sundays that wouldn't end.",
+    "A 16th century inn. A turf floor. A cow in the dining room. Roll-top baths, mirrored ceilings, velvet walls. Thirty years of Sundays that wouldn't end.",
   introKicker: "The soul of Country",
   introBody: `In 1993 Jason Hunt took on a wonky little pub in the Oxfordshire village of Stadhampton, gave it a name, a kitchen, and a real turf floor. People came for a pint and stayed for the spectacle. Sheep wandered in. Nobody stopped them.
 
-The dining room got a cow. Taxidermy, mirrors and chandeliers in places chandeliers don't belong. The bedrooms got mirrored ceilings, velvet walls and roll-top baths. The garden got treehouses, with copper baths above the canopy and breakfast brought up by hand. Slowly. Lunch followed, slower.
+The dining room got a cow. Taxidermy, mirrors and chandeliers in places chandeliers don't belong. The bedrooms got mirrored ceilings, velvet walls and roll-top baths. Breakfast brought up by hand. Slowly. Lunch followed, slower.
 
 Hom Thai opened upstairs. Gold leaf, lanterns, proper heat. Quietly one of the best Thai rooms in the country. The pub still pours. The kitchen still takes itself seriously. Nothing else does.`,
   collageHeading: "The look.",
-  collageKicker: "Red bus. Copper bath. Treehouse. Open fire.",
+  collageKicker: "Red bus. Copper bath. Open fire.",
   playlistHeading: "The soundtrack.",
   playlistKicker: "Britpop, folk, long Sundays",
   playlistFallback: "https://open.spotify.com/playlist/4KCZQ5fOj3UauK3pTWDZo7",
@@ -156,15 +156,15 @@ Hom Thai opened upstairs. Gold leaf, lanterns, proper heat. Quietly one of the b
   quotesKicker: "What they wrote",
   quotesHeading: "Country in print.",
   closingKicker: "Stay the night",
-  closingHeading: "Sunday lunch. Treehouse bath. Repeat.",
-  ctaPrimaryLabel: "Book a treehouse",
+  closingHeading: "Sunday lunch. Long bath. Repeat.",
+  ctaPrimaryLabel: "Book a room",
   ctaPrimaryHref: "/country/rooms",
   ctaSecondaryLabel: "Eat with us",
   ctaSecondaryHref: "/country/pub/food",
   hero: countryHero,
   collageSeed: [
     { heading: "Reception by Routemaster.", body: "Check in via the old red bus. Neon sign. Ivy round the door. The arrival sets the tone.", meta: {} },
-    { heading: "Treehouses, copper baths.", body: "Roll-top copper baths above the canopy. Gold tufted walls. Red velvet. Breakfast brought up by hand.", meta: {} },
+    { heading: "Bedrooms with copper.", body: "Roll-top copper baths. Mirrored ceilings. Gold tufted walls. Red velvet. Rooms that don't ask permission.", meta: {} },
     { heading: "The long Thai lunch.", body: "Hom Thai upstairs. Lobster, prawns, curry, carved fruit. Gold leaf and lanterns. Sunday slips into evening.", meta: {} },
     { heading: "Firepit, after dark.", body: "Logs stacked. Fire lit. Lanterns in the palms. Dinner outside until the embers go down.", meta: {} },
   ],
@@ -185,8 +185,8 @@ Hom Thai opened upstairs. Gold leaf, lanterns, proper heat. Quietly one of the b
       meta: { year: "00s" },
     },
     {
-      heading: "Bedrooms in the trees.",
-      body: "Treehouse suites at the bottom of the garden. Roll-top copper baths above the canopy. Mirrored ceilings, velvet walls, breakfast brought up by hand.",
+      heading: "Rooms in the country.",
+      body: "Roll-top baths, mirrored ceilings, velvet walls, your secrets are safe with us. Breakfast brought up by hand. Hangovers part of the package.",
       meta: { year: "00s" },
     },
     {
@@ -196,14 +196,14 @@ Hom Thai opened upstairs. Gold leaf, lanterns, proper heat. Quietly one of the b
     },
     {
       heading: "Today.",
-      body: "Two restaurants, a pub, the treehouses, and the same spirit. Slightly better behaved. Only slightly.",
+      body: "Two restaurants, a pub, and the same spirit. Slightly better behaved. Only slightly.",
       meta: { year: "Now" },
     },
   ],
   quotesSeed: [
     { heading: "One of the most extraordinary pubs in Britain.", body: "", meta: { attribution: "The Times" } },
     { heading: "Bonkers, brilliant, beautifully done.", body: "", meta: { attribution: "The Telegraph" } },
-    { heading: "A treehouse with a bath. We may never leave.", body: "", meta: { attribution: "Conde Nast Traveller" } },
+    { heading: "Your secrets are safe with us.", body: "", meta: { attribution: "Conde Nast Traveller" } },
   ],
 };
 
