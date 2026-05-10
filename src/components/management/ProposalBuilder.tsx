@@ -570,7 +570,7 @@ hello@thehive-hospitality.com`;
                   <div className="border-b-4 border-black pb-6 mb-6">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-4">
-                        <CrazyBearLogo size="lg" className="h-12 w-12" />
+                        <CrazyBearLogo className="h-12 w-12" />
                         <div>
                           <h1 className="text-3xl font-display uppercase tracking-wider">CROFT COMMON</h1>
                           <p className="text-lg font-cb-sans uppercase tracking-wide text-muted-foreground">Private Events & Corporate Hire</p>
