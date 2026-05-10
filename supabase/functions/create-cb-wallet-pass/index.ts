@@ -170,6 +170,9 @@ serve(async (req) => {
           { key: 'membershipNumber', label: 'MEMBER NO.', value: membershipNumber },
           { key: 'tier', label: 'TIER', value: isGold ? 'GOLD' : 'STANDARD', textAlignment: 'PKTextAlignmentRight' },
         ],
+        auxiliaryFields: [
+          { key: 'memberSince', label: 'MEMBER SINCE', value: memberSince },
+        ],
         backFields: [
           { key: 'about', label: 'THE DEN', value: 'Your Crazy Bear membership. Show this card on arrival.' },
           { key: 'website', label: 'WEBSITE', value: 'https://www.crazybear.dev' },
