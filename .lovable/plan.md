@@ -1,39 +1,38 @@
-## Diagnosis
+## Why the editor and the Checks panel disagree
 
-The published site is genuinely crashing before React renders. The live console shows:
+They aren't actually contradicting each other — they're showing two different points in time:
 
-`Cannot read properties of undefined (reading 'forwardRef')`
+- **Edit Page SEO** counts what's in the form right now (your latest copy, including AI drafts).
+- **Latest Test Results / Checks** is a frozen snapshot from the last audit run.
 
-This comes from the published `vendor-radix` bundle. The network confirms all files load with 200s, so this is not your phone, Wi‑Fi, DNS, or Lovable generally.
+For `/town/drink`, the last audit ran at 13:56:53 against the built-in fallback strings (`"Drink | Crazy Bear Town"` = 23 chars, `"Bars at Crazy Bear Town. Mirrored rooms..."` = 64 chars), which is exactly what the WARN messages quote. The new copy you've drafted/saved hasn't been re-tested yet, so the Checks panel still shows the old counts.
 
-Root cause: the recent performance change manually split dependencies into vendor chunks. The published bundle now has a circular dependency:
+Both sides already use the same thresholds (title 30–60, description 70–160) and read from the same `seo_pages` row, so the underlying logic is correctly linked. The fix is making sure a fresh audit always runs after a save.
 
-```text
-vendor-radix imports vendor-react
-vendor-DZPgYX23 imports vendor-radix
-vendor-react imports vendor-DZPgYX23
-```
+## The fix: auto re-test on Save
 
-That cycle means React is still undefined when Radix tries to call `forwardRef`, which leaves the page white.
+When the editor's Save succeeds, immediately trigger a `seo-audit` run for that route, then refresh the Checks panel. The user gets one button, no stale data.
 
-## Plan
+### Changes
 
-1. Remove the risky manual vendor chunk splitting in `vite.config.ts`.
-2. Keep the image optimisation plugin, because that is unrelated to the crash and still helps performance.
-3. Let Vite/Rollup handle safe chunk ordering automatically so React and Radix initialise correctly.
-4. Check the preview after the change for console errors and visible rendering.
-5. Ask you to publish once preview is healthy, because the white screen is on the published domain and needs a fresh production build to replace the broken assets.
+**`src/pages/management/seo/SeoPageEditor.tsx`**
+1. After the existing `save` mutation's `onSuccess`, chain into the existing `runAudit` mutation (or invoke `seo-audit` directly) for the current route — do not require a second click.
+2. Show a single combined progress state on the Save button: `Saving…` → `Re-testing…` → `Saved`.
+3. Invalidate both the page query and the latest-audit query so the Google preview, char hints, and Checks panel all reconcile in one render.
+4. Add a small "Tested HH:MM:SS" line above the Checks card with a manual "Re-test" link (already wired) for cases where someone wants to retest without editing.
 
-## Files to change
+**`src/pages/management/seo/SeoDashboard.tsx`** (small follow-on)
+- After the bulk AI review's "Save all" flow, fan-out the same auto re-test per saved route (sequentially, with the existing 8s pause), so bulk-saved pages don't sit on stale checks either.
 
-- `vite.config.ts`
+### Out of scope
 
-## Expected result
+- No edge-function changes — `seo-audit/index.ts` already reads the saved row and uses the same 30/60/70/160 thresholds as the editor, so the linkage is correct.
+- No DB schema changes.
+- No change to the fallback dictionary.
 
-- `crazybear.dev` will stop loading the broken circular vendor bundle after republish.
-- The home page should render normally instead of a blank white screen.
-- Performance work can continue afterwards, but without unsafe manual chunk boundaries.
+### Verification
 
-&nbsp;
-
-This plan is approved but Please tell me when you have fixed it, when you made a change that broke it and how we avoid this again
+1. Open `/management/seo/page?route=/town/drink`, change the title, hit Save.
+2. Confirm the button shows `Saving…` then `Re-testing…`, and within a few seconds the Checks panel updates to the new char counts and PASS/WARN states matching the editor's hints.
+3. Confirm the "Last tested" stamp on the dashboard table updates for that row.
+4. Run "AI complete every page" → review → Save all, and confirm each saved row's Checks panel reflects the new copy without manual re-tests.
