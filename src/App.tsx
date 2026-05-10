@@ -19,6 +19,7 @@ const HouseRules = lazy(() => import("./pages/HouseRules"));
 const ImagePicker = lazy(() => import("./pages/ImagePicker"));
 const PropertyLayout = lazy(() => import("./components/property/PropertyLayout"));
 const BearsDen = lazy(() => import("./pages/crazybear/BearsDen"));
+const About = lazy(() => import("./pages/crazybear/About"));
 const SetPassword = lazy(() => import("./pages/crazybear/SetPassword"));
 const CountryHome = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryHome })));
 const CountryPub = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryPub })));
@@ -290,6 +291,7 @@ const App = () => {
                     <Suspense fallback={<PageLoader />}>
                       <Routes>
                       <Route path="/" element={<Landing />} />
+                      <Route path="/about" element={<About />} />
                       <Route path="/house-rules" element={<HouseRules />} />
                       <Route path="/image-picker" element={<ImagePicker />} />
 

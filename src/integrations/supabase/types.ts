@@ -1046,6 +1046,48 @@ export type Database = {
         }
         Relationships: []
       }
+      cms_list_items: {
+        Row: {
+          body: string | null
+          created_at: string
+          heading: string | null
+          id: string
+          is_draft: boolean
+          meta: Json
+          page: string
+          published: boolean
+          section: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          heading?: string | null
+          id?: string
+          is_draft?: boolean
+          meta?: Json
+          page: string
+          published?: boolean
+          section: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          heading?: string | null
+          id?: string
+          is_draft?: boolean
+          meta?: Json
+          page?: string
+          published?: boolean
+          section?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cms_menu_items: {
         Row: {
           created_at: string | null
