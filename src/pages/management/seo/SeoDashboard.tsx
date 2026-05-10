@@ -3,11 +3,16 @@ import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { SeoBulkAiReview, type BulkAiSuggestion } from './SeoBulkAiReview';
+
+type FilterKey = 'all' | 'attention' | 'warnings' | 'passing' | 'untested' | 'failed';
+type SortKey = 'score-asc' | 'score-desc' | 'issues-desc' | 'tested-desc' | 'tested-asc' | 'route-asc';
 
 interface PageRow {
   id: string;
