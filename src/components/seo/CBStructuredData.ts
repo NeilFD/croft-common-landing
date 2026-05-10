@@ -169,4 +169,76 @@ export const imageGallerySchema = (
   })),
 });
 
+export const websiteSchema = () => ({
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Crazy Bear",
+  url: CB_SITE,
+  potentialAction: {
+    "@type": "SearchAction",
+    target: `${CB_SITE}/?q={search_term_string}`,
+    "query-input": "required name=search_term_string",
+  },
+});
+
+export const hotelGroupSchema = () => ({
+  "@context": "https://schema.org",
+  "@type": "LodgingBusiness",
+  name: "Crazy Bear",
+  url: CB_SITE,
+  logo: `${CB_SITE}/brand/logo.png`,
+  description:
+    "Two hotels, one spirit. Townhouse glamour in Beaconsfield, 16th century inn in Stadhampton.",
+  subOrganization: [
+    {
+      "@type": "Hotel",
+      name: "Crazy Bear Town",
+      url: `${CB_SITE}/town`,
+      address: TOWN_ADDRESS,
+    },
+    {
+      "@type": "Hotel",
+      name: "Crazy Bear Country",
+      url: `${CB_SITE}/country`,
+      address: COUNTRY_ADDRESS,
+    },
+  ],
+});
+
+export const aboutPageSchema = () => ({
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  url: `${CB_SITE}/about`,
+  name: "About The Crazy Bear",
+  description:
+    "Born in 1993. Two hotels, one spirit. The story of The Crazy Bear at Stadhampton and Beaconsfield.",
+  about: organizationSchema(),
+});
+
+export const goldProductSchema = () => ({
+  "@context": "https://schema.org",
+  "@type": "Product",
+  name: "Bear's Den Gold",
+  description:
+    "Bear's Den Gold. Twenty-five percent off everywhere, in-app and in-venue. A members' room at The Crazy Bear.",
+  brand: { "@type": "Brand", name: "Crazy Bear" },
+  url: `${CB_SITE}/bears-den`,
+  image: `${CB_SITE}/brand/logo.png`,
+  offers: {
+    "@type": "Offer",
+    price: "69.00",
+    priceCurrency: "GBP",
+    priceSpecification: {
+      "@type": "UnitPriceSpecification",
+      price: "69.00",
+      priceCurrency: "GBP",
+      billingIncrement: 1,
+      unitCode: "MON",
+      referenceQuantity: { "@type": "QuantitativeValue", value: 1, unitCode: "MON" },
+    },
+    availability: "https://schema.org/InStock",
+    url: `${CB_SITE}/bears-den`,
+  },
+});
+
 export type { FAQ };
