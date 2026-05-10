@@ -47,15 +47,6 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
       return;
     }
 
-    if (!email.trim().toLowerCase().endsWith('@crazybear.co.uk')) {
-      toast({
-        title: 'Email not allowed',
-        description: 'Only @crazybear.co.uk emails can be added',
-        variant: 'destructive'
-      });
-      return;
-    }
-
     if (!jobTitle.trim()) {
       toast({ title: 'Error', description: 'Job title is required', variant: 'destructive' });
       return;
