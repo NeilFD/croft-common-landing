@@ -308,6 +308,16 @@ export default function SeoDashboard() {
                 {clearScores.isPending ? 'Clearing…' : 'Clear & rescan'}
               </Button>
               <Button
+                onClick={runBulkAi}
+                disabled={bulkAiBusy || auditingAll || pages.length === 0}
+                variant="outline"
+                className="font-display uppercase tracking-wide"
+              >
+                {bulkAiBusy
+                  ? `Writing ${bulkAiDone} / ${pages.length}…`
+                  : '✨ AI complete every page'}
+              </Button>
+              <Button
                 onClick={() => runAll.mutate()}
                 disabled={auditingAll}
                 className="font-display uppercase tracking-wide"
@@ -317,6 +327,21 @@ export default function SeoDashboard() {
                   : 'Re-test entire site'}
               </Button>
             </div>
+            {bulkAiBusy && pages.length > 0 && (
+              <div className="w-full md:w-72 space-y-1">
+                <div className="h-1.5 w-full bg-muted overflow-hidden rounded-sm">
+                  <div
+                    className="h-full bg-foreground transition-all duration-500"
+                    style={{
+                      width: `${Math.min(100, Math.round((bulkAiDone / pages.length) * 100))}%`,
+                    }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground font-cb-sans text-right">
+                  {bulkAiRoute ? `Drafting ${bulkAiRoute}` : 'Starting AI'} · one page at a time
+                </p>
+              </div>
+            )}
             {auditingAll && pages.length > 0 && (
               <div className="w-full md:w-72 space-y-1">
                 <div className="h-1.5 w-full bg-muted overflow-hidden rounded-sm">
