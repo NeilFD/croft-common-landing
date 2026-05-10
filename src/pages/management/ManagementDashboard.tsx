@@ -41,6 +41,14 @@ const ManagementDashboard = () => {
       show: canAccessFeedback()
     },
     {
+      title: 'SEO',
+      description: 'Search performance & meta',
+      icon: BarChart3,
+      href: '/management/seo',
+      color: 'text-[hsl(var(--accent-pink))]',
+      show: canAccessCMS()
+    },
+    {
       title: 'ADMIN',
       description: 'System administration',
       icon: Shield,
