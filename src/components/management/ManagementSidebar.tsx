@@ -470,7 +470,26 @@ export const ManagementSidebar = () => {
             </SidebarGroup>
           )}
 
-          {/* Admin Section */}
+          {/* SEO Section */}
+          {showText && canAccessCMS() && (
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      className={getNavClass(isActive('/management/seo', false))}
+                    >
+                      <NavLink to="/management/seo" className="font-cb-sans">
+                        <TrendingUp className="mr-2 h-5 w-5 text-[hsl(var(--accent-pink))]" />
+                        <span className="font-display uppercase tracking-wide">SEO</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
           {showText && canAccessAdmin() && (
             <SidebarGroup>
               <Collapsible 
