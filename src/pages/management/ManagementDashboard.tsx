@@ -2,7 +2,7 @@ import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { useManagementAuth } from '@/hooks/useManagementAuth';
 import { useRoleBasedAccess } from '@/hooks/useRoleBasedAccess';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, BarChart3, BookOpen, Shield, Layout, FlaskConical, MessageSquare, MessageCircle } from 'lucide-react';
+import { Building2, BarChart3, Shield, Layout, MessageSquare, Settings as SettingsIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { PushDiagnostics } from '@/components/PushDiagnostics';
@@ -12,33 +12,25 @@ import { useState } from 'react';
 
 const ManagementDashboard = () => {
   const { managementUser } = useManagementAuth();
-  const { canAccessAdmin, canAccessCMS, canAccessResearch, canAccessFeedback } = useRoleBasedAccess();
+  const { canAccessAdmin, canAccessCMS, canAccessFeedback } = useRoleBasedAccess();
   const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
 
   const allQuickActions = [
     {
-      title: 'CHAT',
-      description: 'Team communications',
-      icon: MessageCircle,
-      href: '/management/chat',
-      color: 'text-[hsl(var(--accent-pink))]',
-      show: true
-    },
-    {
-      title: 'COMMON KNOWLEDGE',
-      description: 'Operational docs & SOPs',
-      icon: BookOpen,
-      href: '/management/common-knowledge',
-      color: 'text-[hsl(var(--accent-pink))]',
-      show: true
-    },
-    {
       title: 'SPACES',
-      description: 'Event management system',
+      description: 'Bookings, venues, events',
       icon: Building2,
       href: '/management/spaces',
       color: 'text-[hsl(var(--accent-pink))]',
       show: true
+    },
+    {
+      title: 'CMS',
+      description: 'Crazy Bear site content',
+      icon: Layout,
+      href: '/management/cms',
+      color: 'text-[hsl(var(--accent-pink))]',
+      show: canAccessCMS()
     },
     {
       title: 'FEEDBACK',
@@ -57,25 +49,9 @@ const ManagementDashboard = () => {
       show: canAccessAdmin()
     },
     {
-      title: 'CMS',
-      description: 'Content management',
-      icon: Layout,
-      href: '/management/cms',
-      color: 'text-[hsl(var(--accent-pink))]',
-      show: canAccessCMS()
-    },
-    {
-      title: 'RESEARCH',
-      description: 'Research & development',
-      icon: FlaskConical,
-      href: '/management/research',
-      color: 'text-[hsl(var(--accent-pink))]',
-      show: canAccessResearch()
-    },
-    {
       title: 'SETTINGS',
       description: 'Account & push controls',
-      icon: Shield,
+      icon: SettingsIcon,
       href: '/management/settings',
       color: 'text-[hsl(var(--accent-pink))]',
       show: true
