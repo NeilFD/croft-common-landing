@@ -1877,7 +1877,7 @@ export type Database = {
       }
       lead_activity: {
         Row: {
-          activity_type: string
+          activity_type: string | null
           author_id: string | null
           body: string | null
           created_at: string | null
@@ -1889,7 +1889,7 @@ export type Database = {
           type: string
         }
         Insert: {
-          activity_type: string
+          activity_type?: string | null
           author_id?: string | null
           body?: string | null
           created_at?: string | null
@@ -1898,10 +1898,10 @@ export type Database = {
           lead_id: string
           meta?: Json
           notes?: string | null
-          type: string
+          type?: string
         }
         Update: {
-          activity_type?: string
+          activity_type?: string | null
           author_id?: string | null
           body?: string | null
           created_at?: string | null
@@ -4272,6 +4272,11 @@ export type Database = {
         Args: { lead_id_param: string; new_owner_id: string }
         Returns: undefined
       }
+      safe_jsonb_bool: {
+        Args: { fallback?: boolean; value: string }
+        Returns: boolean
+      }
+      safe_jsonb_int: { Args: { value: string }; Returns: number }
       update_lead: {
         Args: { lead_id_param: string; patch: Json }
         Returns: undefined
