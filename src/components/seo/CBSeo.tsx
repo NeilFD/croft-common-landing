@@ -11,6 +11,10 @@ interface CBSeoProps {
   image?: string;
   type?: "website" | "article";
   jsonLd?: Record<string, any> | Record<string, any>[];
+  /** When set, emits a high-priority preload for the LCP hero image so
+   *  the browser starts fetching it in parallel with the JS bundle
+   *  instead of waiting for React to mount. */
+  lcpImage?: string;
 }
 
 interface Override {
@@ -31,6 +35,7 @@ export const CBSeo = ({
   image = "/brand/logo.png",
   type = "website",
   jsonLd,
+  lcpImage,
 }: CBSeoProps) => {
   const [override, setOverride] = useState<Override | null>(
     overrideCache.get(path) ?? null
@@ -78,6 +83,9 @@ export const CBSeo = ({
       <meta name="description" content={finalDescription} />
       <link rel="canonical" href={url} />
       {noindex && <meta name="robots" content="noindex, nofollow" />}
+      {lcpImage && (
+        <link rel="preload" as="image" href={lcpImage} fetchpriority="high" />
+      )}
 
       <meta property="og:type" content={type} />
       <meta property="og:title" content={finalTitle} />

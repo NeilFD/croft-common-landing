@@ -100,6 +100,7 @@ const PropertyPage = ({
         description={description.slice(0, 158)}
         path={location.pathname}
         jsonLd={ld}
+        lcpImage={carousel?.[0] ?? hero ?? undefined}
       />
       <section className="relative h-[70vh] min-h-[480px] w-full overflow-hidden bg-black text-white">
         {carousel ? (
@@ -109,6 +110,9 @@ const PropertyPage = ({
             <img
               src={hero}
               alt={title}
+              loading="eager"
+              decoding="sync"
+              fetchPriority="high"
               className={`absolute inset-0 h-full w-full ${fit === "contain" ? "object-contain" : "object-cover"}`}
             />
           )
