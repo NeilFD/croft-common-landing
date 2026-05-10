@@ -3359,6 +3359,7 @@ export type Database = {
           best_practices_score: number | null
           cls: number | null
           error: string | null
+          hidden_from_dashboard: boolean
           id: string
           inp_ms: number | null
           internal_checks: Json | null
@@ -3377,6 +3378,7 @@ export type Database = {
           best_practices_score?: number | null
           cls?: number | null
           error?: string | null
+          hidden_from_dashboard?: boolean
           id?: string
           inp_ms?: number | null
           internal_checks?: Json | null
@@ -3395,6 +3397,7 @@ export type Database = {
           best_practices_score?: number | null
           cls?: number | null
           error?: string | null
+          hidden_from_dashboard?: boolean
           id?: string
           inp_ms?: number | null
           internal_checks?: Json | null
