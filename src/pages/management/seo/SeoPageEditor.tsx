@@ -278,7 +278,7 @@ export default function SeoPageEditor() {
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <ScoreTile label="Overall" score={audit.overall_score} grade={audit.overall_grade} />
+                  <ScoreTile label="Overall" score={audit.error ? null : audit.overall_score} grade={audit.error ? null : audit.overall_grade} />
                   <ScoreTile label="Performance" score={audit.perf_score} />
                   <ScoreTile label="SEO" score={audit.seo_score} />
                   <ScoreTile label="Accessibility" score={audit.accessibility_score} />
@@ -290,7 +290,7 @@ export default function SeoPageEditor() {
 
                 {audit.error && (
                   <div className="text-sm text-destructive">
-                    Lighthouse failed: {audit.error}. Internal checks below still ran.
+                    Lighthouse failed: {audit.error}. No overall score is shown because this was not a complete live test. Internal checks below still ran.
                   </div>
                 )}
 
