@@ -50,6 +50,8 @@ const countryPages: Page[] = [
   ]},
   { name: 'Country Culture', path: `${VISUAL}/country/culture`, icon: Music, sections: [] },
 ];
+
+const townPages: Page[] = [
   { name: 'Town Home', path: `${VISUAL}/town`, icon: Building2, sections: [] },
   { name: 'Town Food', path: `${VISUAL}/town/food`, icon: UtensilsCrossed, sections: [
     { name: 'The Black Bear', path: `${VISUAL}/town/food/black-bear` },
@@ -64,6 +66,7 @@ const countryPages: Page[] = [
     { name: 'Gallery', path: `${VISUAL}/town/rooms/gallery` },
   ]},
   { name: 'Town Pool', path: `${VISUAL}/town/pool`, icon: Waves, sections: [] },
+  { name: 'Town Culture', path: `${VISUAL}/town/culture`, icon: Music, sections: [] },
 ];
 
 const globalSections = [
