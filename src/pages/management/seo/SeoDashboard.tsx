@@ -89,6 +89,7 @@ export default function SeoDashboard() {
 
   const overall = useMemo(() => {
     const scores = latestAudits
+      .filter(a => !a.error)
       .map(a => a.overall_score)
       .filter((s): s is number => typeof s === 'number');
     if (!scores.length) return null;
@@ -135,8 +136,10 @@ export default function SeoDashboard() {
 
   const sortedRows = useMemo(() => {
     return [...pages].sort((a, b) => {
-      const sa = auditMap.get(a.route)?.overall_score ?? 200;
-      const sb = auditMap.get(b.route)?.overall_score ?? 200;
+      const auditA = auditMap.get(a.route);
+      const auditB = auditMap.get(b.route);
+      const sa = auditA?.error ? -1 : auditA?.overall_score ?? 200;
+      const sb = auditB?.error ? -1 : auditB?.overall_score ?? 200;
       return sa - sb;
     });
   }, [pages, auditMap]);
