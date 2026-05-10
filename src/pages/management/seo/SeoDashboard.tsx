@@ -45,6 +45,32 @@ const gradeColor = (g?: string | null) => {
 
 const auditPause = (ms: number) => new Promise(resolve => window.setTimeout(resolve, ms));
 
+const formatLastTested = (iso?: string | null) => {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const diffMs = Date.now() - d.getTime();
+  const mins = Math.round(diffMs / 60000);
+  let relative: string;
+  if (mins < 1) relative = 'just now';
+  else if (mins < 60) relative = `${mins} min${mins === 1 ? '' : 's'} ago`;
+  else if (mins < 60 * 24) {
+    const h = Math.round(mins / 60);
+    relative = `${h} hour${h === 1 ? '' : 's'} ago`;
+  } else {
+    const days = Math.round(mins / (60 * 24));
+    relative = `${days} day${days === 1 ? '' : 's'} ago`;
+  }
+  const absolute = d.toLocaleString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  return { relative, absolute };
+};
+
 async function invokeAudit(route: string) {
   const { data: sessionData } = await supabase.auth.getSession();
   const token = sessionData?.session?.access_token;
