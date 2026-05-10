@@ -218,7 +218,55 @@ function parsePagespeed(j: any) {
         audits["experimental-interaction-to-next-paint"]?.numericValue ??
         0
     ),
+    audits,
   };
+}
+
+// Curated Lighthouse audit IDs we surface in the dashboard "Checks" panel.
+// Each one maps to a friendly label + plain-English remediation hint.
+const LH_CHECKS: { id: string; label: string; help: string }[] = [
+  { id: "image-alt", label: "Image alt text", help: "Every meaningful <img> needs an alt attribute. Decorative images can use alt=\"\"." },
+  { id: "document-title", label: "Title in HTML", help: "Page must have a <title> tag rendered in the HTML. Edit it in the SEO editor." },
+  { id: "meta-description", label: "Meta description in HTML", help: "Page must have a <meta name=\"description\"> tag. Edit it in the SEO editor." },
+  { id: "html-has-lang", label: "Language attribute", help: "<html> must have a lang attribute (e.g. lang=\"en-GB\")." },
+  { id: "heading-order", label: "Heading order", help: "Headings should not skip levels. Use H1 → H2 → H3 in order." },
+  { id: "link-name", label: "Link descriptive text", help: "Links must have visible, descriptive text. Avoid 'click here'." },
+  { id: "crawlable-anchors", label: "Links are crawlable", help: "Use <a href=\"...\"> not button onClick for navigation, so Google can follow links." },
+  { id: "viewport", label: "Mobile viewport", help: "<meta name=\"viewport\"> required for mobile rendering." },
+  { id: "is-crawlable", label: "Page is crawlable", help: "Page must not be blocked by robots.txt or noindex meta tag (unless intentional)." },
+  { id: "canonical", label: "Canonical URL", help: "<link rel=\"canonical\"> prevents duplicate-content issues." },
+  { id: "structured-data", label: "Structured data", help: "JSON-LD (Hotel, Restaurant, Breadcrumb) helps Google understand the page." },
+  { id: "tap-targets", label: "Tap targets", help: "Buttons and links must be large enough and spaced for thumbs." },
+  { id: "color-contrast", label: "Colour contrast", help: "Text must have enough contrast against its background." },
+  { id: "font-size", label: "Legible font size", help: "Body text should be at least 16px on mobile." },
+];
+
+function lighthouseChecks(audits: any): Check[] {
+  const out: Check[] = [];
+  for (const def of LH_CHECKS) {
+    const a = audits?.[def.id];
+    if (!a) continue;
+    const score = a.score;
+    let status: "pass" | "warn" | "fail";
+    if (score === null || score === undefined) {
+      // notApplicable or manual — skip silently
+      continue;
+    } else if (score >= 0.9) status = "pass";
+    else if (score >= 0.5) status = "warn";
+    else status = "fail";
+
+    let message = a.title || def.label;
+    if (status !== "pass") {
+      message = `${a.title || def.label}. ${def.help}`;
+      // Pull failing item count when available (e.g. images missing alt)
+      const items = a.details?.items;
+      if (Array.isArray(items) && items.length > 0) {
+        message += ` Found ${items.length} issue${items.length > 1 ? "s" : ""}.`;
+      }
+    }
+    out.push({ id: `lh-${def.id}`, label: def.label, status, message });
+  }
+  return out;
 }
 
 async function auditOne(
