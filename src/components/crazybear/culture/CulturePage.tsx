@@ -337,6 +337,41 @@ const CulturePage = ({ site }: Props) => {
   );
 };
 
+/* -------------------------------- Playlist ------------------------------- */
+
+const PlaylistSection = ({
+  page, fallbackUrl, heading, kicker, editable, site,
+}: { page: string; fallbackUrl: string; heading: string; kicker: string; editable: boolean; site: Site }) => {
+  const { content } = useCMSContent(page, "playlist", "url", editable);
+  const url = content || fallbackUrl;
+  return (
+    <section className="border-t border-foreground/10">
+      <div className="mx-auto max-w-4xl px-6 py-16 md:py-24">
+        <p className="font-cb-mono text-[10px] tracking-[0.45em] uppercase opacity-60">{kicker}</p>
+        <h2 className="mt-3 font-display text-3xl md:text-5xl uppercase tracking-tight text-foreground">{heading}</h2>
+        <div className="mt-10">
+          <SpotifyPlaylistEmbed url={url} title={`${site} playlist`} />
+        </div>
+        {editable && (
+          <div className="mt-6">
+            <CMSText
+              page={page}
+              section="playlist"
+              contentKey="url"
+              fallback={fallbackUrl}
+              as="p"
+              className="font-cb-mono text-[10px] tracking-[0.3em] uppercase opacity-60 break-all"
+            />
+            <p className="mt-2 font-cb-mono text-[10px] tracking-[0.3em] uppercase opacity-40">
+              Click the URL above to edit the Spotify playlist.
+            </p>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+};
+
 /* -------------------------------- Collage -------------------------------- */
 
 const Collage = ({
