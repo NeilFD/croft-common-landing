@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { CBSeo } from "@/components/seo/CBSeo";
+import { aboutPageSchema, organizationSchema } from "@/components/seo/CBStructuredData";
 import { useState } from "react";
 import { Plus, Trash2, GripVertical } from "lucide-react";
 import CBTopNav from "@/components/crazybear/CBTopNav";
@@ -99,14 +100,12 @@ const About = () => {
 
   return (
     <>
-      <Helmet>
-        <title>About | The Crazy Bear</title>
-        <meta
-          name="description"
-          content="Born in 1993. Two hotels, one spirit. The story of The Crazy Bear at Stadhampton and Beaconsfield. Turf floors, fish cisterns and thirty years of mischief."
-        />
-        <link rel="canonical" href="https://www.crazybear.dev/about" />
-      </Helmet>
+      <CBSeo
+        title="About | The Crazy Bear"
+        description="Born in 1993. Two hotels, one spirit. The story of The Crazy Bear at Stadhampton and Beaconsfield. Turf floors, fish cisterns and thirty years of mischief."
+        path="/about"
+        jsonLd={[aboutPageSchema(), organizationSchema()]}
+      />
 
       <main className="bg-background text-foreground font-cb-sans">
         {/* Hero manifesto */}

@@ -1,5 +1,10 @@
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { CBSeo } from "@/components/seo/CBSeo";
+import {
+  organizationSchema,
+  websiteSchema,
+  hotelGroupSchema,
+} from "@/components/seo/CBStructuredData";
 import { Suspense, lazy, useEffect, useState } from "react";
 import heroImage from "@/assets/hero-exterior.jpg";
 import CBTopNav from "@/components/crazybear/CBTopNav";
@@ -16,13 +21,12 @@ const Landing = () => {
 
   return (
     <>
-      <Helmet>
-        <title>The Crazy Bear | Country & Town</title>
-        <meta
-          name="description"
-          content="The Crazy Bear. Two hotels, one spirit. Country in Stadhampton, Town in Beaconsfield."
-        />
-      </Helmet>
+      <CBSeo
+        title="The Crazy Bear | Country & Town"
+        description="The Crazy Bear. Two hotels, one spirit. Country in Stadhampton, Town in Beaconsfield."
+        path="/"
+        jsonLd={[organizationSchema(), websiteSchema(), hotelGroupSchema()]}
+      />
 
       <main className="bg-black text-white font-cb-sans">
         <section className="relative h-screen w-full overflow-hidden">

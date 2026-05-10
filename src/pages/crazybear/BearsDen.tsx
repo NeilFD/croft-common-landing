@@ -1,4 +1,5 @@
-import { Helmet } from 'react-helmet-async';
+import { CBSeo } from "@/components/seo/CBSeo";
+import { goldProductSchema, organizationSchema } from "@/components/seo/CBStructuredData";
 import { Link } from 'react-router-dom';
 import bearMark from '@/assets/crazy-bear-mark.png';
 import CBTopNav from '@/components/crazybear/CBTopNav';
@@ -13,10 +14,12 @@ const tiles: { title: string; sub: string; to: string }[] = [
 const BearsDen = () => {
   return (
     <>
-      <Helmet>
-        <title>The Bear's Den | The Crazy Bear</title>
-        <meta name="description" content="A quiet members' room at The Crazy Bear. Town and Country." />
-      </Helmet>
+      <CBSeo
+        title="The Bear's Den | The Crazy Bear"
+        description="A quiet members' room at The Crazy Bear. Town and Country."
+        path="/bears-den"
+        jsonLd={[goldProductSchema(), organizationSchema()]}
+      />
 
       <main className="min-h-screen bg-black text-white font-cb-sans">
         <CBTopNav tone="light" />
