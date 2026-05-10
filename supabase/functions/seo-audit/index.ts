@@ -367,18 +367,32 @@ Deno.serve(async (req) => {
 
     const results: any[] = [];
     const errors: any[] = [];
+    const skipped: any[] = [];
 
-    // Process sequentially to avoid hammering PageSpeed
-    for (const r of routes) {
+    // Throttle: process strictly one-at-a-time with a delay between routes.
+    // PageSpeed Insights enforces a per-second / burst limit; firing 30+
+    // requests back-to-back trips 429 and the whole queue gets recorded as
+    // "Lighthouse failed". A short pause between routes keeps us comfortably
+    // under the limit.
+    const THROTTLE_MS = all ? 2000 : 0;
+    for (let i = 0; i < routes.length; i++) {
+      const r = routes[i];
       try {
-        const a = await auditOne(admin, r, defaults, apiKey, source);
-        results.push({ route: r, overall: a.overall_score, grade: a.overall_grade, error: a.error });
+        const a: any = await auditOne(admin, r, defaults, apiKey, source);
+        if (a?._skipped) {
+          skipped.push({ route: r, reason: "PageSpeed rate limited (429)" });
+        } else {
+          results.push({ route: r, overall: a.overall_score, grade: a.overall_grade, error: a.error });
+        }
       } catch (e) {
         errors.push({ route: r, error: (e as Error).message });
       }
+      if (THROTTLE_MS && i < routes.length - 1) {
+        await sleep(THROTTLE_MS);
+      }
     }
 
-    return new Response(JSON.stringify({ ok: true, results, errors }), {
+    return new Response(JSON.stringify({ ok: true, results, errors, skipped }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
