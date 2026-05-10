@@ -339,49 +339,6 @@ export const ManagementSidebar = () => {
             </SidebarGroup>
           )}
 
-          {/* Common Knowledge Section */}
-          {showText && (
-            <SidebarGroup>
-              <Collapsible 
-                open={expandedSections.knowledge} 
-                onOpenChange={() => toggleSection('knowledge')}
-              >
-                <CollapsibleTrigger asChild>
-                  <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2 text-base">
-                    <span className="flex items-center font-brutalist uppercase tracking-wide">
-                      <BookOpen className="mr-2 h-5 w-5 text-[hsl(var(--accent-pink))]" />
-                      COMMON KNOWLEDGE
-                    </span>
-                    <ChevronDown className={`h-5 w-5 transition-transform ${expandedSections.knowledge ? 'rotate-180' : ''}`} />
-                  </SidebarGroupLabel>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <SidebarGroupContent>
-                    <SidebarMenu>
-                      <SidebarMenuItem>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <SidebarMenuButton 
-                              asChild
-                              className={getNavClass(isActive('/management/common-knowledge', false))}
-                            >
-                              <NavLink to="/management/common-knowledge" className="font-industrial">
-                                <BookOpen className="mr-2 h-4 w-4" />
-                                Dashboard
-                              </NavLink>
-                            </SidebarMenuButton>
-                          </TooltipTrigger>
-                       <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                        <p className="font-industrial">Knowledge Dashboard</p>
-                      </TooltipContent>
-                        </Tooltip>
-                      </SidebarMenuItem>
-                    </SidebarMenu>
-                  </SidebarGroupContent>
-                </CollapsibleContent>
-              </Collapsible>
-            </SidebarGroup>
-          )}
 
           {/* Spaces Event Management Section */}
           {showText && (
@@ -797,49 +754,6 @@ export const ManagementSidebar = () => {
             </SidebarGroup>
           )}
 
-          {/* Research Section */}
-          {showText && canAccessResearch() && (
-            <SidebarGroup>
-              <Collapsible 
-                open={expandedSections.research} 
-                onOpenChange={() => toggleSection('research')}
-              >
-                <CollapsibleTrigger asChild>
-                  <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2 text-base">
-                    <span className="flex items-center font-brutalist uppercase tracking-wide">
-                      <FlaskConical className="mr-2 h-5 w-5 text-[hsl(var(--accent-pink))]" />
-                      RESEARCH
-                    </span>
-                    <ChevronDown className={`h-5 w-5 transition-transform ${expandedSections.research ? 'rotate-180' : ''}`} />
-                  </SidebarGroupLabel>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <SidebarGroupContent>
-                    <SidebarMenu>
-                      <SidebarMenuItem>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <SidebarMenuButton 
-                              asChild
-                              className={getNavClass(isActive('/management/research', false))}
-                            >
-                              <NavLink to="/management/research" className="font-industrial">
-                                <FlaskConical className="mr-2 h-4 w-4" />
-                                Field Research
-                              </NavLink>
-                            </SidebarMenuButton>
-                          </TooltipTrigger>
-                          <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                            <p className="font-industrial">Field Research</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </SidebarMenuItem>
-                    </SidebarMenu>
-                  </SidebarGroupContent>
-                </CollapsibleContent>
-              </Collapsible>
-            </SidebarGroup>
-          )}
         </SidebarContent>
 
         <SidebarFooter className="p-4 pb-10 md:p-4 bg-background border-t">
