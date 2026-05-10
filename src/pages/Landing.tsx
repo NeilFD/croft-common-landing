@@ -21,13 +21,12 @@ const Landing = () => {
 
   return (
     <>
-      <Helmet>
-        <title>The Crazy Bear | Country & Town</title>
-        <meta
-          name="description"
-          content="The Crazy Bear. Two hotels, one spirit. Country in Stadhampton, Town in Beaconsfield."
-        />
-      </Helmet>
+      <CBSeo
+        title="The Crazy Bear | Country & Town"
+        description="The Crazy Bear. Two hotels, one spirit. Country in Stadhampton, Town in Beaconsfield."
+        path="/"
+        jsonLd={[organizationSchema(), websiteSchema(), hotelGroupSchema()]}
+      />
 
       <main className="bg-black text-white font-cb-sans">
         <section className="relative h-screen w-full overflow-hidden">
