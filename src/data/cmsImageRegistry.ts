@@ -5,6 +5,10 @@
 import { propertyHeroMap } from "./propertyHeroMap";
 import { heroCarouselMap } from "./heroCarousels";
 import { townGallery, countryGallery, type GalleryItem } from "./galleryData";
+import townLook1 from "@/assets/cb-town-culture-look-1-burlesque.jpg";
+import townLook2 from "@/assets/cb-town-culture-look-2-homthai.jpg";
+import townLook3 from "@/assets/cb-town-culture-look-3-redroom.jpg";
+import townLook4 from "@/assets/cb-town-culture-look-4-rococo.jpg";
 
 export type AssetKind = "hero" | "carousel" | "gallery";
 
@@ -45,6 +49,18 @@ export const cmsImageRegistry: AssetSlot[] = [
   { page: "town/rooms/gallery", slot: "hero", kind: "hero", label: "Town Gallery hero", defaults: heroFromMap("/town/rooms/gallery") },
   { page: "town/rooms/gallery", slot: "gallery", kind: "gallery", label: "Town Bedroom gallery", defaults: galleryFromArr(townGallery) },
   { page: "town/pool", slot: "hero", kind: "hero", label: "Town Pool hero", defaults: heroFromMap("/town/pool") },
+  {
+    page: "town-culture",
+    slot: "collage",
+    kind: "gallery",
+    label: "Town Culture — The Look",
+    defaults: [
+      { src: townLook1, alt: "Mirrorball burlesque dancers at Town", caption: "The burlesque years" },
+      { src: townLook2, alt: "Pineapple prawn curry at Hom Thai", caption: "Hom Thai" },
+      { src: townLook3, alt: "Red velvet bedroom with copper bath", caption: "Bedrooms with baths" },
+      { src: townLook4, alt: "Black and gold rococo bedroom", caption: "Black on black on black" },
+    ],
+  },
 
   // ----- COUNTRY -----
   { page: "country", slot: "hero-carousel", kind: "carousel", label: "Country home carousel", defaults: carouselFromMap("/country") },
