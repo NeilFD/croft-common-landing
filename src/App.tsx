@@ -45,6 +45,8 @@ const TownRooms = lazy(() => import("./pages/property").then((m) => ({ default: 
 const TownRoomTypes = lazy(() => import("./pages/property").then((m) => ({ default: m.TownRoomTypes })));
 const TownRoomGallery = lazy(() => import("./pages/property").then((m) => ({ default: m.TownRoomGallery })));
 const TownPool = lazy(() => import("./pages/property").then((m) => ({ default: m.TownPool })));
+const TownCulture = lazy(() => import("./pages/property/TownCulture"));
+const CountryCulture = lazy(() => import("./pages/property/CountryCulture"));
 const Cafe = lazy(() => import("./pages/Cafe"));
 const Cocktails = lazy(() => import("./pages/Cocktails"));
 const Beer = lazy(() => import("./pages/Beer"));
@@ -311,6 +313,7 @@ const App = () => {
                         <Route path="events/birthdays" element={<CountryBirthdays />} />
                         <Route path="events/business" element={<CountryBusiness />} />
                         <Route path="members" element={<Navigate to="/members" replace />} />
+                        <Route path="culture" element={<CountryCulture />} />
                       </Route>
 
                       {/* Crazy Bear Town */}
