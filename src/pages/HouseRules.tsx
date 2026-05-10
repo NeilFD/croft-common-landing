@@ -1,5 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import CBTopNav from "@/components/crazybear/CBTopNav";
+import heroImage from "@/assets/cb-town-culture-look-1-burlesque.jpg";
 
 const statement = "We identify as anything you want us to be";
 
@@ -24,20 +25,32 @@ const HouseRules = () => (
     </Helmet>
 
     <main className="min-h-screen bg-background text-foreground">
-      <CBTopNav tone="dark" />
+      {/* Hero */}
+      <section className="relative h-[70vh] min-h-[480px] w-full overflow-hidden bg-black text-white">
+        <img
+          src={heroImage}
+          alt="Crazy Bear, Town"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/85" />
 
-      <section className="pt-40 md:pt-48 pb-32 px-6 md:px-12">
-        <div className="mx-auto max-w-3xl">
-          <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase opacity-60">
+        <CBTopNav tone="light" />
+
+        <div className="relative z-10 flex h-full flex-col items-start justify-end px-6 md:px-12 pb-16 md:pb-20 max-w-5xl">
+          <p className="font-cb-mono text-[10px] md:text-xs tracking-[0.5em] uppercase opacity-85">
             Section 01 / Conduct
           </p>
-          <h1 className="mt-6 font-display text-5xl md:text-7xl uppercase leading-[0.9] tracking-tight">
+          <h1 className="mt-6 font-display uppercase text-5xl md:text-7xl lg:text-8xl leading-[0.9] tracking-tight">
             House
             <br />
             Rules
           </h1>
+        </div>
+      </section>
 
-          <p className="mt-12 font-display text-2xl md:text-4xl uppercase leading-tight tracking-tight max-w-2xl">
+      <section className="pt-16 md:pt-24 pb-32 px-6 md:px-12">
+        <div className="mx-auto max-w-3xl">
+          <p className="font-display text-2xl md:text-4xl uppercase leading-tight tracking-tight max-w-2xl">
             {statement}.
           </p>
           <p className="mt-5 font-cb-mono tracking-[0.5em] uppercase opacity-60 text-base">
