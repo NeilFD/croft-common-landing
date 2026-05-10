@@ -1,0 +1,1 @@
+UPDATE public.cms_list_items SET published = true, is_draft = false WHERE page = 'about' AND is_draft = true;

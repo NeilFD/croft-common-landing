@@ -43,8 +43,19 @@ export const useDraftContent = (page: string) => {
         console.warn('Failed to fetch FAQ draft count:', faqError);
       }
 
-      const totalDrafts = (pageCount || 0) + (imgCount || 0) + (faqCount || 0);
-      console.log('🎯 useDraftContent: Found', pageCount, 'text /', imgCount, 'image /', faqCount, 'faq drafts for page:', page);
+      // Count list-item drafts (timelines, collages, etc.) for the same page
+      const { count: listCount, error: listError } = await (supabase as any)
+        .from('cms_list_items')
+        .select('*', { count: 'exact', head: true })
+        .eq('page', page)
+        .eq('is_draft', true);
+
+      if (listError) {
+        console.warn('Failed to fetch list draft count:', listError);
+      }
+
+      const totalDrafts = (pageCount || 0) + (imgCount || 0) + (faqCount || 0) + (listCount || 0);
+      console.log('🎯 useDraftContent: Found', pageCount, 'text /', imgCount, 'image /', faqCount, 'faq /', listCount, 'list drafts for page:', page);
       setDraftCount(totalDrafts);
     } catch (err) {
       console.warn('Error fetching draft count:', err);
@@ -109,6 +120,30 @@ export const useDraftContent = (page: string) => {
           .from('cms_faq_content')
           .update({ published: true, is_draft: false })
           .eq('page', page)
+          .eq('is_draft', true);
+      }
+
+      // Publish list-item drafts per (page, section): delete published rows for sections
+      // that have drafts, then flip the drafts to published.
+      const { data: draftLists } = await (supabase as any)
+        .from('cms_list_items')
+        .select('section')
+        .eq('page', page)
+        .eq('is_draft', true);
+      const sections = Array.from(new Set(((draftLists as any[]) ?? []).map((r) => r.section).filter(Boolean)));
+      for (const section of sections) {
+        await (supabase as any)
+          .from('cms_list_items')
+          .delete()
+          .eq('page', page)
+          .eq('section', section)
+          .eq('published', true)
+          .eq('is_draft', false);
+        await (supabase as any)
+          .from('cms_list_items')
+          .update({ published: true, is_draft: false })
+          .eq('page', page)
+          .eq('section', section)
           .eq('is_draft', true);
       }
 
