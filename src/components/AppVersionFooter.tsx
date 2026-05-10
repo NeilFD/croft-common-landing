@@ -25,7 +25,7 @@ const AppVersionFooter: React.FC = () => {
       <p className="text-xs md:text-sm text-muted-foreground text-center font-mono">
         {versionInfo ? (
           <>
-            CroftCommon v{versionInfo.version}
+            Crazy Bear v{versionInfo.version}
             {versionInfo.buildNumber && ` (${versionInfo.buildNumber})`}
             {' • '}
             {versionInfo.platform}
