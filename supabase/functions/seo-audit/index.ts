@@ -341,6 +341,15 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { route, all, source = "manual" } = body as { route?: string; all?: boolean; source?: string };
 
+    if (all) {
+      return new Response(JSON.stringify({
+        error: "Whole-site audits must be queued by the browser one page at a time.",
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const apiKey = Deno.env.get("GOOGLE_PAGESPEED_API_KEY") ?? null;
 
     const { data: settings } = await admin
@@ -353,10 +362,7 @@ Deno.serve(async (req) => {
     };
 
     let routes: string[] = [];
-    if (all) {
-      const { data } = await admin.from("seo_pages").select("route");
-      routes = (data ?? []).map((r: any) => r.route as string);
-    } else if (route) {
+    if (route) {
       routes = [route];
     } else {
       return new Response(JSON.stringify({ error: "Provide route or all:true" }), {

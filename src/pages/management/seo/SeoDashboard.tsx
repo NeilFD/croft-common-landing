@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -41,13 +41,15 @@ const gradeColor = (g?: string | null) => {
   return 'bg-background text-foreground border-2 border-foreground font-bold';
 };
 
+const auditPause = (ms: number) => new Promise(resolve => window.setTimeout(resolve, ms));
+
 export default function SeoDashboard() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [auditing, setAuditing] = useState<string | null>(null);
   const [auditingAll, setAuditingAll] = useState(false);
-  const [runStartedAt, setRunStartedAt] = useState<string | null>(null);
   const [progressDone, setProgressDone] = useState(0);
+  const [progressRoute, setProgressRoute] = useState<string | null>(null);
 
   const { data: pages = [], isLoading: pagesLoading } = useQuery({
     queryKey: ['seo-pages'],
@@ -120,12 +122,35 @@ export default function SeoDashboard() {
     mutationFn: async () => {
       setAuditingAll(true);
       setProgressDone(0);
-      setRunStartedAt(new Date().toISOString());
-      const { data, error } = await supabase.functions.invoke('seo-audit', {
-        body: { all: true },
-      });
-      if (error) throw error;
-      return data;
+      setProgressRoute(null);
+
+      const results: any[] = [];
+      const errors: any[] = [];
+      const skipped: any[] = [];
+      const routes = pages.map(page => page.route);
+
+      for (let i = 0; i < routes.length; i += 1) {
+        const route = routes[i];
+        setProgressRoute(route);
+        const { data, error } = await supabase.functions.invoke('seo-audit', {
+          body: { route },
+        });
+
+        if (error) {
+          errors.push({ route, error: error.message });
+        } else {
+          results.push(...(data?.results ?? []));
+          skipped.push(...(data?.skipped ?? []));
+          errors.push(...(data?.errors ?? []));
+        }
+
+        setProgressDone(i + 1);
+        qc.invalidateQueries({ queryKey: ['seo-latest-audits'] });
+
+        if (i < routes.length - 1) await auditPause(8000);
+      }
+
+      return { ok: true, results, errors, skipped };
     },
     onSuccess: (data: any) => {
       qc.invalidateQueries({ queryKey: ['seo-latest-audits'] });
@@ -142,28 +167,10 @@ export default function SeoDashboard() {
     onError: (e: any) => toast({ title: 'Audit failed', description: e.message, variant: 'destructive' }),
     onSettled: () => {
       setAuditingAll(false);
-      setRunStartedAt(null);
       setProgressDone(0);
+      setProgressRoute(null);
     },
   });
-
-  // Live progress: poll how many audits have been written since the run started.
-  // The edge function inserts one row per route as it finishes, so this gives
-  // a real time count without any extra schema or websocket plumbing.
-  useEffect(() => {
-    if (!auditingAll || !runStartedAt) return;
-    let cancelled = false;
-    const tick = async () => {
-      const { count } = await supabase
-        .from('seo_audits')
-        .select('*', { count: 'exact', head: true })
-        .gte('run_at', runStartedAt);
-      if (!cancelled && typeof count === 'number') setProgressDone(count);
-    };
-    tick();
-    const id = window.setInterval(tick, 2000);
-    return () => { cancelled = true; window.clearInterval(id); };
-  }, [auditingAll, runStartedAt]);
 
   const sortedRows = useMemo(() => {
     return [...pages].sort((a, b) => {
@@ -213,7 +220,7 @@ export default function SeoDashboard() {
                   />
                 </div>
                 <p className="text-xs text-muted-foreground font-cb-sans text-right">
-                  ~10s per page · pauses between requests to stay under PageSpeed limits
+                  {progressRoute ? `Now testing ${progressRoute}` : 'Starting queue'} · one page at a time
                 </p>
               </div>
             )}
