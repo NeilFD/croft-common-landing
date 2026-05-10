@@ -304,14 +304,90 @@ export default function SeoDashboard() {
     }
   };
 
+  const issuesFor = (a?: AuditRow) =>
+    Array.isArray(a?.internal_checks)
+      ? a!.internal_checks.filter((c: any) => c.status !== 'pass').length
+      : 0;
+
+  const filteredRows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return pages.filter(p => {
+      if (q) {
+        const hay = `${p.label ?? ''} ${p.route}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      const a = auditMap.get(p.route);
+      const issues = issuesFor(a);
+      const score = a?.overall_score ?? null;
+      switch (filter) {
+        case 'attention':
+          return !!a && (a.error || (score !== null && score < 70));
+        case 'warnings':
+          return !!a && !a.error && score !== null && score >= 70 && issues > 0;
+        case 'passing':
+          return !!a && !a.error && score !== null && score >= 70 && issues === 0;
+        case 'untested':
+          return !a;
+        case 'failed':
+          return !!a?.error;
+        default:
+          return true;
+      }
+    });
+  }, [pages, auditMap, search, filter]);
+
   const sortedRows = useMemo(() => {
-    return [...pages].sort((a, b) => {
+    const rows = [...filteredRows];
+    const SCORE_UNTESTED = 200;
+    const SCORE_ERROR = -1;
+    rows.sort((a, b) => {
       const auditA = auditMap.get(a.route);
       const auditB = auditMap.get(b.route);
-      const sa = auditA?.error ? -1 : auditA?.overall_score ?? 200;
-      const sb = auditB?.error ? -1 : auditB?.overall_score ?? 200;
-      return sa - sb;
+      switch (sort) {
+        case 'score-desc': {
+          const sa = auditA?.error ? SCORE_ERROR : auditA?.overall_score ?? SCORE_UNTESTED;
+          const sb = auditB?.error ? SCORE_ERROR : auditB?.overall_score ?? SCORE_UNTESTED;
+          return sb - sa;
+        }
+        case 'issues-desc':
+          return issuesFor(auditB) - issuesFor(auditA);
+        case 'tested-desc': {
+          const ta = auditA?.run_at ? new Date(auditA.run_at).getTime() : 0;
+          const tb = auditB?.run_at ? new Date(auditB.run_at).getTime() : 0;
+          return tb - ta;
+        }
+        case 'tested-asc': {
+          // "Oldest first" — pages never tested float to the top
+          const ta = auditA?.run_at ? new Date(auditA.run_at).getTime() : -Infinity;
+          const tb = auditB?.run_at ? new Date(auditB.run_at).getTime() : -Infinity;
+          return ta - tb;
+        }
+        case 'route-asc':
+          return a.route.localeCompare(b.route);
+        case 'score-asc':
+        default: {
+          const sa = auditA?.error ? SCORE_ERROR : auditA?.overall_score ?? SCORE_UNTESTED;
+          const sb = auditB?.error ? SCORE_ERROR : auditB?.overall_score ?? SCORE_UNTESTED;
+          return sa - sb;
+        }
+      }
     });
+    return rows;
+  }, [filteredRows, auditMap, sort]);
+
+  const filterCounts = useMemo(() => {
+    const counts = { all: pages.length, attention: 0, warnings: 0, passing: 0, untested: 0, failed: 0 };
+    for (const p of pages) {
+      const a = auditMap.get(p.route);
+      if (!a) { counts.untested += 1; continue; }
+      if (a.error) { counts.failed += 1; counts.attention += 1; continue; }
+      const score = a.overall_score;
+      const issues = issuesFor(a);
+      if (score !== null && score < 70) counts.attention += 1;
+      else if (issues > 0) counts.warnings += 1;
+      else counts.passing += 1;
+    }
+    return counts;
   }, [pages, auditMap]);
 
   return (
