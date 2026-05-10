@@ -50,6 +50,8 @@ export function SeoBulkAiReview({ open, onOpenChange, suggestions }: Props) {
 
   const selectedCount = Object.values(selected).filter(Boolean).length;
 
+  const [retestProgress, setRetestProgress] = useState<{ done: number; total: number; route: string | null } | null>(null);
+
   const save = useMutation({
     mutationFn: async () => {
       const rows = suggestions
@@ -69,11 +71,41 @@ export function SeoBulkAiReview({ open, onOpenChange, suggestions }: Props) {
         const { error } = await supabase.from('seo_pages').update(patch).eq('route', route);
         if (error) throw error;
       }
-      return rows.length;
+      return rows.map(r => r.route);
     },
-    onSuccess: (count) => {
-      toast({ title: 'Saved', description: `${count} page${count === 1 ? '' : 's'} updated.` });
+    onSuccess: async (savedRoutes) => {
+      toast({
+        title: 'Saved',
+        description: `${savedRoutes.length} page${savedRoutes.length === 1 ? '' : 's'} updated. Re-testing now…`,
+      });
       qc.invalidateQueries({ queryKey: ['seo-pages'] });
+
+      // Sequential re-test so the Checks panel reflects the new copy.
+      // 8s pause matches the dashboard's bulk audit throttle to avoid PSI rate-limits.
+      setRetestProgress({ done: 0, total: savedRoutes.length, route: null });
+      let failed = 0;
+      for (let i = 0; i < savedRoutes.length; i++) {
+        const route = savedRoutes[i];
+        setRetestProgress({ done: i, total: savedRoutes.length, route });
+        try {
+          const { error } = await supabase.functions.invoke('seo-audit', { body: { route } });
+          if (error) throw error;
+        } catch {
+          failed += 1;
+        }
+        if (i < savedRoutes.length - 1) {
+          await new Promise(resolve => window.setTimeout(resolve, 8000));
+        }
+      }
+      setRetestProgress(null);
+      qc.invalidateQueries({ queryKey: ['seo-latest-audits'] });
+      qc.invalidateQueries({ queryKey: ['seo-page-audit'] });
+      toast({
+        title: 'Re-test complete',
+        description: failed
+          ? `${savedRoutes.length - failed} re-tested, ${failed} failed.`
+          : `${savedRoutes.length} page${savedRoutes.length === 1 ? '' : 's'} re-tested.`,
+      });
       onOpenChange(false);
     },
     onError: (e: any) => toast({ title: 'Save failed', description: e.message, variant: 'destructive' }),
