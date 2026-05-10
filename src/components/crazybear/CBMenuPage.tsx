@@ -3,9 +3,13 @@ import { useLocation } from "react-router-dom";
 import bearMark from "@/assets/crazy-bear-mark.png";
 import type { Menu, MenuItem, MenuSection } from "@/data/menus";
 import { getHeroFor } from "@/data/propertyHeroMap";
+import { CMSText } from "@/components/cms/CMSText";
 
 interface Props {
   menu: Menu;
+  /** When set, hero text is editable through the CMS under this page namespace
+   *  (e.g. "town/food/black-bear"). When omitted, falls back to static menu data. */
+  cmsPage?: string;
 }
 
 const Dish = ({ item }: { item: MenuItem }) => (
@@ -90,7 +94,7 @@ const Section = ({ section }: { section: MenuSection }) => {
   );
 };
 
-const CBMenuPage = ({ menu }: Props) => {
+const CBMenuPage = ({ menu, cmsPage }: Props) => {
   const location = useLocation();
   const hero = getHeroFor(location.pathname, "");
   return (
@@ -119,16 +123,49 @@ const CBMenuPage = ({ menu }: Props) => {
           </div>
 
           <div className="text-center">
-            <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase text-black/60">
-              {menu.eyebrow}
-            </p>
-            <h1 className="mt-3 font-display uppercase text-4xl sm:text-5xl tracking-tight">
-              {menu.title}
-            </h1>
-            {menu.subtitle && (
-              <p className="mt-3 font-cb-mono text-[10px] tracking-[0.4em] uppercase text-black/70">
-                {menu.subtitle}
+            {cmsPage ? (
+              <CMSText
+                page={cmsPage}
+                section="hero"
+                contentKey="eyebrow"
+                fallback={menu.eyebrow}
+                as="p"
+                className="font-cb-mono text-[10px] tracking-[0.5em] uppercase text-black/60"
+              />
+            ) : (
+              <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase text-black/60">
+                {menu.eyebrow}
               </p>
+            )}
+            {cmsPage ? (
+              <CMSText
+                page={cmsPage}
+                section="hero"
+                contentKey="title"
+                fallback={menu.title}
+                as="h1"
+                className="mt-3 font-display uppercase text-4xl sm:text-5xl tracking-tight"
+              />
+            ) : (
+              <h1 className="mt-3 font-display uppercase text-4xl sm:text-5xl tracking-tight">
+                {menu.title}
+              </h1>
+            )}
+            {(menu.subtitle || cmsPage) && (
+              cmsPage ? (
+                <CMSText
+                  page={cmsPage}
+                  section="hero"
+                  contentKey="subtitle"
+                  fallback={menu.subtitle ?? ""}
+                  as="p"
+                  className="mt-3 font-cb-mono text-[10px] tracking-[0.4em] uppercase text-black/70"
+                />
+              ) : (
+                <p className="mt-3 font-cb-mono text-[10px] tracking-[0.4em] uppercase text-black/70">
+                  {menu.subtitle}
+                </p>
+              )
             )}
           </div>
 
@@ -138,12 +175,23 @@ const CBMenuPage = ({ menu }: Props) => {
             <Section key={s.title} section={s} />
           ))}
 
-          {menu.footer && (
+          {(menu.footer || cmsPage) && (
             <>
               <div className="w-full h-px mt-16 mb-4 bg-black/15" />
-              <p className="font-cb-mono text-[9px] tracking-[0.2em] uppercase text-center leading-relaxed text-black/50">
-                {menu.footer}
-              </p>
+              {cmsPage ? (
+                <CMSText
+                  page={cmsPage}
+                  section="hero"
+                  contentKey="footer"
+                  fallback={menu.footer ?? ""}
+                  as="p"
+                  className="font-cb-mono text-[9px] tracking-[0.2em] uppercase text-center leading-relaxed text-black/50"
+                />
+              ) : (
+                <p className="font-cb-mono text-[9px] tracking-[0.2em] uppercase text-center leading-relaxed text-black/50">
+                  {menu.footer}
+                </p>
+              )}
             </>
           )}
         </div>
