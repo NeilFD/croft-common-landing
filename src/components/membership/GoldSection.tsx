@@ -9,6 +9,8 @@ import { getStripeEnvironment } from '@/lib/stripe';
 import { StripeEmbeddedCheckout } from '@/components/payments/StripeEmbeddedCheckout';
 import { useToast } from '@/hooks/use-toast';
 
+const ACCESS_KEY = 'gold_access_unlocked';
+
 const formatDate = (iso: string | null) => {
   if (!iso) return '—';
   return new Date(iso).toLocaleDateString('en-GB', {
@@ -34,13 +36,18 @@ export const GoldSection: React.FC = () => {
   const [showInfo, setShowInfo] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [accessUnlocked, setAccessUnlocked] = useState(
+    () => typeof window !== 'undefined' && window.sessionStorage?.getItem(ACCESS_KEY) === '1',
+  );
+  const [accessInput, setAccessInput] = useState('');
+  const [accessError, setAccessError] = useState<string | null>(null);
+  const [accessChecking, setAccessChecking] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     if (incomingRef) setRefInput((v) => v || incomingRef);
   }, [incomingRef]);
 
-  // Lock body scroll when modal open
   useEffect(() => {
     const open = showInfo || showCheckout;
     if (!open) return;
@@ -50,6 +57,30 @@ export const GoldSection: React.FC = () => {
       document.body.style.overflow = prev;
     };
   }, [showInfo, showCheckout]);
+
+  const submitAccessCode = async () => {
+    const code = accessInput.trim().toUpperCase();
+    if (!code) return;
+    setAccessChecking(true);
+    setAccessError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('validate-gold-access-code', {
+        body: { code },
+      });
+      if (error) throw new Error(error.message || 'Could not check code');
+      if (data?.ok) {
+        window.sessionStorage?.setItem(ACCESS_KEY, '1');
+        setAccessUnlocked(true);
+        setAccessInput('');
+      } else {
+        setAccessError('Code not recognised.');
+      }
+    } catch (e) {
+      setAccessError(e instanceof Error ? e.message : 'Could not check code');
+    } finally {
+      setAccessChecking(false);
+    }
+  };
 
   const openPortal = async () => {
     setPortalLoading(true);
@@ -186,27 +217,61 @@ export const GoldSection: React.FC = () => {
                     </ul>
                   </div>
 
-                  <div>
-                    <label className="block font-mono text-[10px] tracking-[0.3em] uppercase text-black/60 mb-2">
-                      Referral code (optional)
-                    </label>
-                    <input
-                      value={refInput}
-                      onChange={(e) => setRefInput(e.target.value.toUpperCase())}
-                      placeholder="BEAR-XXXXXX"
-                      className="w-full border-2 border-black bg-white px-3 py-2 font-mono text-sm tracking-[0.2em] placeholder:text-black/30 focus:outline-none"
-                    />
-                  </div>
+                  {accessUnlocked ? (
+                    <>
+                      <div>
+                        <label className="block font-mono text-[10px] tracking-[0.3em] uppercase text-black/60 mb-2">
+                          Referral code (optional)
+                        </label>
+                        <input
+                          value={refInput}
+                          onChange={(e) => setRefInput(e.target.value.toUpperCase())}
+                          placeholder="BEAR-XXXXXX"
+                          className="w-full border-2 border-black bg-white px-3 py-2 font-mono text-sm tracking-[0.2em] placeholder:text-black/30 focus:outline-none"
+                        />
+                      </div>
 
-                  <button
-                    onClick={() => {
-                      setShowInfo(false);
-                      setShowCheckout(true);
-                    }}
-                    className={btnFull}
-                  >
-                    Go Gold
-                  </button>
+                      <button
+                        onClick={() => {
+                          setShowInfo(false);
+                          setShowCheckout(true);
+                        }}
+                        className={btnFull}
+                      >
+                        Go Gold
+                      </button>
+                    </>
+                  ) : (
+                    <div className="border-t-2 border-black pt-6 space-y-3">
+                      <label className="block font-mono text-[10px] tracking-[0.3em] uppercase text-black/60">
+                        Access code
+                      </label>
+                      <input
+                        value={accessInput}
+                        onChange={(e) => {
+                          setAccessInput(e.target.value.toUpperCase());
+                          setAccessError(null);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') submitAccessCode();
+                        }}
+                        placeholder="ENTER CODE"
+                        className="w-full border-2 border-black bg-white px-3 py-2 font-mono text-sm tracking-[0.2em] placeholder:text-black/30 focus:outline-none"
+                      />
+                      {accessError && (
+                        <p className="font-mono text-[10px] tracking-[0.2em] uppercase text-red-700">
+                          {accessError}
+                        </p>
+                      )}
+                      <button
+                        onClick={submitAccessCode}
+                        disabled={accessChecking || !accessInput.trim()}
+                        className={btnFull}
+                      >
+                        {accessChecking ? 'Checking' : 'Unlock'}
+                      </button>
+                    </div>
+                  )}
                 </>
               )}
             </div>
@@ -244,33 +309,6 @@ export const GoldSection: React.FC = () => {
           </div>
         </div>,
         document.body,
-      )}
-
-      {showCheckout && user && (
-        <div className="fixed inset-0 z-50 bg-black/90 overflow-y-auto">
-          <div className="min-h-screen flex flex-col">
-            <div className="p-4 flex justify-between items-center border-b border-white/10">
-              <p className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/70">
-                Checkout
-              </p>
-              <button
-                onClick={() => setShowCheckout(false)}
-                className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/70 hover:text-white"
-              >
-                Close
-              </button>
-            </div>
-            <div className="flex-1 bg-white">
-              <StripeEmbeddedCheckout
-                payload={{
-                  kind: 'gold',
-                  returnUrl: `${window.location.origin}/den/member/profile?checkout=success`,
-                  referralCode: refInput.trim() || null,
-                }}
-              />
-            </div>
-          </div>
-        </div>
       )}
     </>
   );

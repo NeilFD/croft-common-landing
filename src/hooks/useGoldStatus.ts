@@ -26,7 +26,9 @@ export function useGoldStatus(): GoldStatus & { refetch: () => Promise<void> } {
       setState({ isGold: false, status: null, currentPeriodEnd: null, cancelAtPeriodEnd: false, loading: false });
       return;
     }
-    const env = getStripeEnvironment();
+    const unlocked = typeof window !== 'undefined' &&
+      window.sessionStorage?.getItem('gold_access_unlocked') === '1';
+    const env = unlocked ? 'sandbox' : getStripeEnvironment();
     const { data } = await (supabase as any)
       .from("subscriptions")
       .select("status, current_period_end, cancel_at_period_end, price_id")

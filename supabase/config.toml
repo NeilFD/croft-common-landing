@@ -17,3 +17,5 @@ project_id = "szokkwlleqndyiojhsll"
     verify_jwt = false
   [functions.payments-webhook]
     verify_jwt = false
+  [functions.validate-gold-access-code]
+    verify_jwt = false
