@@ -187,7 +187,14 @@ export default function SeoPageEditor() {
             </h1>
             <div className="text-sm text-muted-foreground mt-1">{route}</div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              onClick={() => aiSuggest('all')}
+              disabled={aiBusy !== null}
+            >
+              {aiBusy === 'all' ? 'Writing…' : '✨ Suggest with AI'}
+            </Button>
             <Button variant="outline" onClick={runAudit} disabled={retesting}>
               {retesting ? 'Testing…' : 'Re-test'}
             </Button>
@@ -195,6 +202,16 @@ export default function SeoPageEditor() {
               {save.isPending ? 'Saving…' : 'Save'}
             </Button>
           </div>
+        </div>
+
+        {aiRationale && (
+          <div className="border border-foreground/20 bg-muted/40 p-3 text-sm">
+            <span className="font-cb-sans font-medium uppercase text-xs tracking-wide mr-2">
+              AI note
+            </span>
+            {aiRationale}
+          </div>
+        )}
         </div>
 
         {/* Google preview */}
