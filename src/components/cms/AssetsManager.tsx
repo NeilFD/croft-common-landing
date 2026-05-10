@@ -321,7 +321,8 @@ const SlotEditor = ({ slot }: { slot: AssetSlot }) => {
                   </>
                 )}
               </div>
-            ))}
+              );
+            })}
             {items.length === 0 && (
               <div className="col-span-full text-sm text-muted-foreground flex items-center gap-2">
                 <ImageIcon className="h-4 w-4" /> No images yet — upload one above.
