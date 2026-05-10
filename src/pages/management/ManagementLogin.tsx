@@ -467,7 +467,7 @@ const ManagementLogin = () => {
   return (
     <div className="min-h-screen bg-transparent px-4">
       <div className="absolute top-6 left-6">
-        <CrazyBearLogo size="lg" />
+        <CrazyBearLogo className="h-16 w-16" />
       </div>
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-full max-w-md">
