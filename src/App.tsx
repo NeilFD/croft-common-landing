@@ -419,18 +419,14 @@ const App = () => {
                         {/* Admin under Management */}
                         <Route path="/management/admin/*" element={<Admin />} />
                         
-                        {/* Research under Management */}
-                        <Route path="/management/research" element={<Research />} />
-                        
-                        {/* Common Knowledge Routes */}
-                        <Route path="/management/common-knowledge" element={<CommonKnowledgeDashboard />} />
-                        <Route path="/management/common-knowledge/new" element={<CommonKnowledgeNew />} />
-                        <Route path="/management/common-knowledge/upload" element={<CommonKnowledgeUpload />} />
-                        <Route path="/management/common-knowledge/d/:slug" element={<CommonKnowledgeView />} />
-                        <Route path="/management/fix-doc" element={<FixDocument />} />
-                        
-                        {/* Chat Route */}
-                        <Route path="/management/chat" element={<Chat />} />
+                        {/* Research, Common Knowledge, Chat — hidden, redirect to dashboard */}
+                        <Route path="/management/research" element={<Navigate to="/management" replace />} />
+                        <Route path="/management/common-knowledge" element={<Navigate to="/management" replace />} />
+                        <Route path="/management/common-knowledge/new" element={<Navigate to="/management" replace />} />
+                        <Route path="/management/common-knowledge/upload" element={<Navigate to="/management" replace />} />
+                        <Route path="/management/common-knowledge/d/:slug" element={<Navigate to="/management" replace />} />
+                        <Route path="/management/fix-doc" element={<Navigate to="/management" replace />} />
+                        <Route path="/management/chat" element={<Navigate to="/management" replace />} />
                         
                         {/* Spaces Event Management System */}
                         <Route path="/management/spaces" element={<SpacesDashboard />} />

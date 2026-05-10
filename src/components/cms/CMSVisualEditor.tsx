@@ -1,151 +1,77 @@
-import { useState, useEffect, lazy } from 'react';
+import { useState, Suspense, lazy } from 'react';
 import { useEditMode } from '@/contexts/EditModeContext';
 import { CMSModeProvider } from '@/contexts/CMSModeContext';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Eye, Edit as EditIcon, Globe, Save, RefreshCw } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
-// Import all page components - use lazy imports for consistency with App.tsx
-import Cafe from '@/pages/Cafe';
-import Cocktails from '@/pages/Cocktails';
-import Beer from '@/pages/Beer';
-import Kitchens from '@/pages/Kitchens';
-import Hall from '@/pages/Hall';
-import Community from '@/pages/Community';
-import CommonRoom from '@/pages/CommonRoom';
-const CommonRoomMain = lazy(() => import('@/pages/CommonRoomMain'));
-import Index from '@/pages/Index';
-import Book from '@/pages/Book';
-import Calendar from '@/pages/Calendar';
-import Notifications from '@/pages/Notifications';
+// Crazy Bear pages
+import {
+  CountryHome, CountryPub, CountryPubFood, CountryPubDrink, CountryPubHospitality,
+  CountryRooms, CountryRoomTypes, CountryRoomGallery,
+  CountryParties, CountryEvents, CountryWeddings, CountryBirthdays, CountryBusiness,
+  TownHome, TownFood, TownBlackBear, TownBnB, TownHomThai,
+  TownDrink, TownCocktails,
+  TownRooms, TownRoomTypes, TownRoomGallery, TownPool,
+} from '@/pages/property';
 
-import Privacy from '@/pages/Privacy';
-import CroftCommonDateTime from '@/pages/CroftCommonDateTime';
-import CMSMenuModal from '@/pages/CMSMenuModal';
-
-// Import global component preview pages
+// Global preview pages
 import CMSFooterPreview from '@/pages/CMSFooterPreview';
 import CMSNavigationPreview from '@/pages/CMSNavigationPreview';
-import CMSSubscriptionPreview from '@/pages/CMSSubscriptionPreview';
 import CMSEmailTemplates from '@/pages/CMSEmailTemplates';
-import CMSFAQPage from '@/pages/CMSFAQPage';
 
 interface CMSVisualEditorProps {
   currentPage: string;
 }
 
 const pageComponents: Record<string, React.ComponentType> = {
-  'home': Index,
-  'cafe': Cafe,
-  'cocktails': Cocktails,
-  'beer': Beer,
-  'kitchens': Kitchens,
-  'hall': Hall,
-  'community': Community,
-  'common-room': CommonRoom,
-  'common-room/main': CommonRoomMain,
-  'book': Book,
-  'calendar': Calendar,
-  'notifications': Notifications,
-  
-  'privacy': Privacy,
-  'croftcommondatetime': CroftCommonDateTime,
-  'croft-common-datetime': CroftCommonDateTime,
-  
-  // Menu modal routes
-  'cafe/menu': CMSMenuModal,
-  'cocktails/menu': CMSMenuModal,
-  'beer/menu': CMSMenuModal,
-  'kitchens/menu': CMSMenuModal,
-  'hall/menu': CMSMenuModal,
-  'community/menu': CMSMenuModal,
-  
-  // Global component preview routes
+  // Country
+  'country': CountryHome,
+  'country/pub': CountryPub,
+  'country/pub/food': CountryPubFood,
+  'country/pub/drink': CountryPubDrink,
+  'country/pub/hospitality': CountryPubHospitality,
+  'country/rooms': CountryRooms,
+  'country/rooms/types': CountryRoomTypes,
+  'country/rooms/gallery': CountryRoomGallery,
+  'country/parties': CountryParties,
+  'country/events': CountryEvents,
+  'country/events/weddings': CountryWeddings,
+  'country/events/birthdays': CountryBirthdays,
+  'country/events/business': CountryBusiness,
+  // Town
+  'town': TownHome,
+  'town/food': TownFood,
+  'town/food/black-bear': TownBlackBear,
+  'town/food/bnb': TownBnB,
+  'town/food/hom-thai': TownHomThai,
+  'town/drink': TownDrink,
+  'town/drink/cocktails': TownCocktails,
+  'town/rooms': TownRooms,
+  'town/rooms/types': TownRoomTypes,
+  'town/rooms/gallery': TownRoomGallery,
+  'town/pool': TownPool,
+  // Global
   'global/footer': CMSFooterPreview,
   'global/navigation': CMSNavigationPreview,
-  'global/subscription': CMSSubscriptionPreview,
-  'global/menu-modal': CMSMenuModal,
   'global/email-templates': CMSEmailTemplates,
-  'global/faq': CMSFAQPage,
 };
 
 export const CMSVisualEditor = ({ currentPage }: CMSVisualEditorProps) => {
-  console.log('🎨 CMSVisualEditor: Rendering page:', currentPage);
-  
-  const { 
-    isEditMode, 
-    toggleEditMode, 
-    isPreviewMode, 
-    togglePreviewMode,
-    pendingChanges,
-    resetPendingChanges 
-  } = useEditMode();
-  
-  const [isPublishing, setIsPublishing] = useState(false);
+  const { isEditMode } = useEditMode();
 
-  // Normalize the page name and map URL paths to component page names
-  let normalizedPage = currentPage.toLowerCase().replace(/^\//, '');
-  
-  // Map URL segments to actual page names used in components
-  const pageNameMap: Record<string, string> = {
-    'croftcommondatetime': 'croft-common-datetime',
-    'commonroom': 'common-room'
-  };
-  
-  // Apply mapping if it exists
-  normalizedPage = pageNameMap[normalizedPage] || normalizedPage;
-  
-  console.log('🎨 CMSVisualEditor: Normalized page from', currentPage, 'to', normalizedPage);
-  
+  const normalizedPage = currentPage.toLowerCase().replace(/^\//, '').replace(/\/$/, '');
   const PageComponent = pageComponents[normalizedPage];
-  
-  
-  console.log('🎨 CMSVisualEditor - Current page:', currentPage);
-  console.log('🎨 CMSVisualEditor - Normalized page:', normalizedPage);
-  console.log('🎨 CMSVisualEditor - Page component found:', !!PageComponent);
-  console.log('🎨 CMSVisualEditor - Available components:', Object.keys(pageComponents));
-
-  const handlePublish = async () => {
-    setIsPublishing(true);
-    try {
-      // Simulate publishing process
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      resetPendingChanges();
-      toast({
-        title: "Changes Published",
-        description: "Your content has been published to the live site.",
-      });
-    } catch (error) {
-      toast({
-        title: "Publishing Failed",
-        description: "There was an error publishing your changes.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsPublishing(false);
-    }
-  };
-
-  const handleViewLive = () => {
-    const liveUrl = `/${currentPage === 'home' ? '' : currentPage}`;
-    // Same-origin preview, use _self instead of _blank
-    window.open(liveUrl, '_self');
-  };
 
   if (!PageComponent) {
-    console.warn('⚠️ No component found for page:', normalizedPage);
-    
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold mb-4">Page Not Found</h2>
+        <div className="text-center max-w-lg p-6">
+          <h2 className="text-2xl font-semibold mb-4">Page not editable</h2>
           <p className="text-muted-foreground mb-4">
-            The page "{currentPage}" is not available for visual editing yet.
+            "{currentPage}" is not yet wired into the CMS preview.
           </p>
           <div className="text-sm text-muted-foreground">
-            <strong>Available pages:</strong><br />
-            {Object.keys(pageComponents).join(', ')}
+            <strong>Available pages:</strong>
+            <div className="mt-2 text-xs">{Object.keys(pageComponents).join(', ')}</div>
           </div>
         </div>
       </div>
@@ -154,16 +80,16 @@ export const CMSVisualEditor = ({ currentPage }: CMSVisualEditorProps) => {
 
   return (
     <div className="flex-1 flex flex-col h-full">
-      {/* Page Preview */}
       <div className="flex-1 overflow-auto bg-muted/20">
         <div className={`transition-all duration-200 ${isEditMode ? 'ring-2 ring-primary/20' : ''}`}>
           <CMSModeProvider isCMSMode={true}>
-            <PageComponent />
+            <Suspense fallback={<div className="p-6 text-muted-foreground">Loading preview...</div>}>
+              <PageComponent />
+            </Suspense>
           </CMSModeProvider>
         </div>
       </div>
 
-      {/* Edit Mode Indicator */}
       {isEditMode && (
         <div className="fixed bottom-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium shadow-lg">
           Click text to edit

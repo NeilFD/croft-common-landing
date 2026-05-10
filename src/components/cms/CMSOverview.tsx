@@ -4,22 +4,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  FileText, 
-  Image, 
-  Palette, 
-  Download, 
-  Eye, 
-  Settings,
-  Coffee,
-  Wine,
-  Beer,
-  ChefHat,
-  Calendar,
-  Users,
+import {
+  FileText,
+  Image,
+  Palette,
+  Download,
+  Eye,
+  Trees,
   Building2,
-  Home,
-  TrendingUp,
+  Bed,
+  Wine,
+  UtensilsCrossed,
+  PartyPopper,
+  Waves,
+  ChefHat,
   Clock
 } from 'lucide-react';
 
@@ -98,14 +96,14 @@ export const CMSOverview = () => {
   };
 
   const pages = [
-    { name: 'Home', icon: Home, path: '/cms/visual/home', description: 'Main landing page content' },
-    { name: 'Cafe', icon: Coffee, path: '/cms/visual/cafe', description: 'Coffee and food menu' },
-    { name: 'Cocktails', icon: Wine, path: '/cms/visual/cocktails', description: 'Cocktail menu and specials' },
-    { name: 'Beer', icon: Beer, path: '/cms/visual/beer', description: 'Beer selection and information' },
-    { name: 'Kitchens', icon: ChefHat, path: '/cms/visual/kitchens', description: 'Full kitchen menu' },
-    { name: 'Hall', icon: Calendar, path: '/cms/visual/hall', description: 'Event space information' },
-    { name: 'Community', icon: Users, path: '/cms/visual/community', description: 'Community information' },
-    { name: 'Common Room', icon: Building2, path: '/cms/visual/common-room', description: 'Membership space details' }
+    { name: 'Country Home', icon: Trees, path: '/management/cms/visual/country', description: 'Stadhampton landing' },
+    { name: 'Country Pub', icon: UtensilsCrossed, path: '/management/cms/visual/country/pub', description: 'Pub, food, drink, hospitality' },
+    { name: 'Country Rooms', icon: Bed, path: '/management/cms/visual/country/rooms', description: 'Bedrooms and gallery' },
+    { name: 'Country Events', icon: PartyPopper, path: '/management/cms/visual/country/events', description: 'Weddings, birthdays, business' },
+    { name: 'Town Home', icon: Building2, path: '/management/cms/visual/town', description: 'Beaconsfield landing' },
+    { name: 'Town Food', icon: ChefHat, path: '/management/cms/visual/town/food', description: 'Black Bear, B&B, Hom Thai' },
+    { name: 'Town Drink', icon: Wine, path: '/management/cms/visual/town/drink', description: 'Bars and cocktails' },
+    { name: 'Town Pool', icon: Waves, path: '/management/cms/visual/town/pool', description: 'Hidden pool' }
   ];
 
 
@@ -116,9 +114,9 @@ export const CMSOverview = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">CMS Overview</h2>
+        <h2 className="text-3xl font-bold tracking-tight">CMS</h2>
         <p className="text-muted-foreground">
-          Comprehensive content management for your website
+          Edit content for the Crazy Bear sites: Country and Town.
         </p>
       </div>
 
@@ -270,7 +268,7 @@ export const CMSOverview = () => {
           <Button
             variant="outline"
             className="w-full justify-start h-auto p-4"
-            onClick={() => navigate('/cms/import')}
+            onClick={() => navigate('/management/cms/import')}
           >
             <div className="flex items-center gap-3 w-full">
               <Download className="h-5 w-5" />
