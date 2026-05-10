@@ -220,7 +220,7 @@ export default function SeoDashboard() {
                   />
                 </div>
                 <p className="text-xs text-muted-foreground font-cb-sans text-right">
-                  ~10s per page · pauses between requests to stay under PageSpeed limits
+                  {progressRoute ? `Now testing ${progressRoute}` : 'Starting queue'} · one page at a time
                 </p>
               </div>
             )}
