@@ -188,14 +188,14 @@ export const CMSOverview = () => {
               <Button
                 key={page.name}
                 variant="outline"
-                className="h-auto p-4 flex flex-col items-start gap-2"
+                className="h-auto p-4 flex flex-col items-start gap-2 group hover:bg-foreground hover:text-background hover:border-foreground"
                 onClick={() => navigate(page.path)}
               >
                 <div className="flex items-center gap-2 w-full">
                   <page.icon className="h-4 w-4" />
                   <span className="font-medium">{page.name}</span>
                 </div>
-                <span className="text-xs text-muted-foreground text-left">
+                <span className="text-xs text-muted-foreground text-left group-hover:text-background">
                   {page.description}
                 </span>
               </Button>
