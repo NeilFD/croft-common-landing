@@ -70,6 +70,7 @@ export default function SeoDashboard() {
       const { data, error } = await supabase
         .from('seo_audits')
         .select('*')
+        .eq('hidden_from_dashboard', false)
         .order('run_at', { ascending: false })
         .limit(500);
       if (error) throw error;
@@ -172,6 +173,22 @@ export default function SeoDashboard() {
     },
   });
 
+  const clearScores = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('seo_audits')
+        .update({ hidden_from_dashboard: true })
+        .eq('hidden_from_dashboard', false);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['seo-latest-audits'] });
+      toast({ title: 'Scores cleared', description: 'Previous results archived. Starting fresh scan…' });
+      runAll.mutate();
+    },
+    onError: (e: any) => toast({ title: 'Clear failed', description: e.message, variant: 'destructive' }),
+  });
+
   const sortedRows = useMemo(() => {
     return [...pages].sort((a, b) => {
       const auditA = auditMap.get(a.route);
@@ -198,6 +215,18 @@ export default function SeoDashboard() {
             <div className="flex gap-2">
               <Button asChild variant="outline">
                 <Link to="/management/seo/settings">Settings</Link>
+              </Button>
+              <Button
+                onClick={() => {
+                  if (window.confirm('Clear all visible scores and start a fresh scan? Previous results will be archived for stats but removed from the dashboard.')) {
+                    clearScores.mutate();
+                  }
+                }}
+                disabled={auditingAll || clearScores.isPending}
+                variant="outline"
+                className="font-display uppercase tracking-wide"
+              >
+                {clearScores.isPending ? 'Clearing…' : 'Clear & rescan'}
               </Button>
               <Button
                 onClick={() => runAll.mutate()}

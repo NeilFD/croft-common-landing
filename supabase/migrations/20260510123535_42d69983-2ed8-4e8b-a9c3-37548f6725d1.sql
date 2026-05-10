@@ -1,0 +1,2 @@
+ALTER TABLE public.seo_audits ADD COLUMN IF NOT EXISTS hidden_from_dashboard boolean NOT NULL DEFAULT false;
+CREATE INDEX IF NOT EXISTS seo_audits_visible_idx ON public.seo_audits (route, run_at DESC) WHERE hidden_from_dashboard = false;
