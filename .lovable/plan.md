@@ -1,83 +1,32 @@
-## Town Culture & Country Culture pages
+## The Look — /town/culture
 
-Two new long-read, image-rich, playlist-driven culture pages, fully CMS-editable, sitting under each property and linked from the top nav.
+You uploaded four photos. Three of them don't match the existing tile titles (Silver leaf, The koi, Hom Thai, The pool), so I'll rewrite the tiles to fit the actual imagery, then bind one image per tile in display order.
 
-### Routes & nav
+### Image → Tile mapping
 
-- `/town/culture` → new `TownCulture.tsx` (inside `PropertyLayout property="town"`)
-- `/country/culture` → new `CountryCulture.tsx` (inside `PropertyLayout property="country"`)
-- `CBTopNav`: when on a `/town/*` route show a `Culture` link to `/town/culture`; when on `/country/*` show one to `/country/culture`. (Also added to the mobile sheet and to `CBFooter` site columns.)
+| # | Photo | New tile title | Caption (Bears Den voice) |
+|---|---|---|---|
+| 1 | Disco-ball-head dancers on the dance floor | The burlesque years. | Saturday nights. Mirrorball heads. Heels louder than the music. |
+| 2 | Pineapple prawn curry in low light | Hom Thai. | Lanterns. Gold leaf. Proper heat upstairs. Quietly one of the best. |
+| 3 | Red velvet bedroom with copper bath | Bedrooms with baths. | Crushed velvet, copper tubs, a tassel for everything. Black on black on red. |
+| 4 | Black & gold rococo bedroom | Black on black on black. | Buttoned walls. Gilded beds. Lanterns dimmed to "consequences". |
 
-### Page anatomy (shared structure, distinct content per site)
+Section headline stays **"The look."** Kicker stays **"Black on black on black"**.
 
-```text
-[ Hero manifesto                        ]  full-bleed image, big Archivo Black headline, one-line tagline
-[ Origin / soul of the place           ]  long-form intro (CMSText)
-[ Image collage                         ]  3 to 6 hero images (CMS list, drag-reorder)
-[ Britpop / soundtrack playlist        ]  Spotify embed (playlist URL editable via CMSText)
-[ Culture timeline / vignettes          ]  CMS list: year + heading + body + optional image
-[ House Rules — set the tone           ]  pulls live rules from existing house_rules source, styled bold
-[ Pull-quote wall                       ]  CMS list of quotes + attribution
-[ Closing CTA                          ]  Book a room / Eat with us / Join the Den
-```
+### What I'll do
 
-Same skeleton, but copy, palette accents, photography and playlist differ:
+1. Copy the four uploads into `src/assets/cb-town-culture-look-*.jpg` (filenames matching the order above).
+2. Register a `town-culture / collage` slot in `src/data/cmsImageRegistry.ts` with these four images as bundled defaults so they ship live without needing a CMS upload first.
+3. Update the `collageSeed` for Town in `src/components/crazybear/culture/CulturePage.tsx` with the new titles + captions above.
+4. Confirm `useCMSAssets("town-culture", "collage")` resolves these defaults in order so each tile lines up with its caption.
+5. Country Culture is untouched (different shoot to come).
 
-- **Town (Beaconsfield)** — koi cisterns, Hom Thai launch, burlesque nights, townhouse rooms, pool. Playlist: late-90s/early-00s Britpop + lounge.
-- **Country (Stadhampton)** — turf-floor pub, treehouse suites, cow-in-dining-room, weddings, the gardens. Playlist: Britpop + folk-rock + Sunday-session.
+### Live + CMS behaviour
 
-### CMS
-
-- Reuse existing `CMSText` for the manifesto headline, tagline, intro, playlist URL, closing copy.
-- Reuse `useCMSList` (built for About) under namespaces:
-  - `town-culture` sections: `collage`, `timeline`, `quotes`
-  - `country-culture` sections: `collage`, `timeline`, `quotes`
-- Pink-dot inline editing throughout, draft toggle, drag-reorder, add/remove — same UX as About.
-- Hero image and collage images use existing `cms-assets` bucket via the existing image CMS picker.
-- House Rules section reads the same live source as `/house-rules` (no duplication, no new table). Editing rules still happens in the existing house-rules CMS.
-
-### Spotify integration
-
-- Single editable field: the Spotify playlist share URL.
-- Page converts it to `https://open.spotify.com/embed/playlist/{id}` and renders an `<iframe>` (lazy-loaded).
-- Default seeds:
-  - Town: a Britpop/lounge playlist URL placeholder
-  - Country: a Britpop/folk Sunday playlist URL placeholder
-- Respects existing global Spotify sticky widget (no conflict — embed is inline only).
-
-### Design
-
-- Inherits site B&W high-contrast system (Space Grotesk body, Archivo Black headings).
-- More editorial than About: full-bleed images, asymmetric collage grid, larger pull quotes, generous whitespace.
-- No AI-generated imagery, no lucide icons, no em dashes, £ only, anglicised spellings — per workspace rules.
-- All colours via semantic tokens; no hard-coded hex.
-
-### SEO
-
-- Single H1 per page (the manifesto headline).
-- Unique `<title>` and meta description per page (Town vs Country).
-- Semantic `<section>`/`<article>` per timeline entry, alt text on every image.
-- JSON-LD via existing `CBStructuredData`.
-
-### Files
-
-**New**
-- `src/pages/town/Culture.tsx`
-- `src/pages/country/Culture.tsx`
-- `src/components/crazybear/culture/CultureHero.tsx`
-- `src/components/crazybear/culture/CultureCollage.tsx`
-- `src/components/crazybear/culture/CultureTimeline.tsx`
-- `src/components/crazybear/culture/CultureQuoteWall.tsx`
-- `src/components/crazybear/culture/SpotifyPlaylistEmbed.tsx`
-- `src/components/crazybear/culture/HouseRulesInline.tsx` (renders shared House Rules data inline)
-
-**Edited**
-- `src/App.tsx` — add the two nested routes
-- `src/components/crazybear/CBTopNav.tsx` — context-aware Culture link (Town vs Country)
-- `src/components/crazybear/CBFooter.tsx` — Culture link in Town and Country columns
+- Live `/town/culture`: shows the four photos with the new captions immediately.
+- CMS visual editor (`/management/cms/visual/town/culture`): tiles remain individually editable, and the photos can be replaced per-slot via the existing image picker without losing the captions.
 
 ### Out of scope
 
-- No new database tables (re-uses `cms_list_items`, `cms_text`, existing house-rules source).
-- No real Spotify API auth — public embed only.
-- No new admin UI surface; everything edits inline via pink-dot CMS.
+- No timeline, playlist, or House Rules changes.
+- No new database migration. Defaults live in code; CMS overrides still take precedence when added.
