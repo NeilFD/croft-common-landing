@@ -523,12 +523,64 @@ export default function SeoDashboard() {
         )}
 
         <Card>
-          <CardHeader>
-            <CardTitle className="font-display uppercase tracking-wide">All Pages</CardTitle>
+          <CardHeader className="space-y-4">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <CardTitle className="font-display uppercase tracking-wide">All Pages</CardTitle>
+              <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                <Input
+                  placeholder="Search route or label…"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="sm:w-64"
+                />
+                <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
+                  <SelectTrigger className="sm:w-56">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="score-asc">Score: worst first</SelectItem>
+                    <SelectItem value="score-desc">Score: best first</SelectItem>
+                    <SelectItem value="issues-desc">Most issues first</SelectItem>
+                    <SelectItem value="tested-desc">Recently tested</SelectItem>
+                    <SelectItem value="tested-asc">Oldest / never tested first</SelectItem>
+                    <SelectItem value="route-asc">Route A–Z</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {([
+                ['all', 'All', filterCounts.all],
+                ['attention', 'Needs attention', filterCounts.attention],
+                ['warnings', 'Warnings only', filterCounts.warnings],
+                ['passing', 'Passing', filterCounts.passing],
+                ['untested', 'Not tested', filterCounts.untested],
+                ['failed', 'Failed audits', filterCounts.failed],
+              ] as const).map(([key, label, count]) => {
+                const active = filter === key;
+                return (
+                  <Button
+                    key={key}
+                    type="button"
+                    size="sm"
+                    variant={active ? 'default' : 'outline'}
+                    onClick={() => setFilter(key)}
+                    className="font-cb-sans"
+                  >
+                    {label}
+                    <span className={`ml-2 text-xs ${active ? 'opacity-80' : 'text-muted-foreground'}`}>
+                      {count}
+                    </span>
+                  </Button>
+                );
+              })}
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             {pagesLoading ? (
               <div className="p-6 text-muted-foreground">Loading…</div>
+            ) : sortedRows.length === 0 ? (
+              <div className="p-6 text-muted-foreground">No pages match this filter.</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
