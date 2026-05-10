@@ -84,7 +84,7 @@ export const CBSeo = ({
       <link rel="canonical" href={url} />
       {noindex && <meta name="robots" content="noindex, nofollow" />}
       {lcpImage && (
-        <link rel="preload" as="image" href={lcpImage} fetchpriority="high" />
+        <link rel="preload" as="image" href={lcpImage} {...({ fetchpriority: "high" } as any)} />
       )}
 
       <meta property="og:type" content={type} />

@@ -27,9 +27,6 @@ export default defineConfig(({ mode }) => ({
       avif: { quality: 60 },
       svg: {
         multipass: true,
-        plugins: [
-          { name: 'preset-default', params: { overrides: { removeViewBox: false } } },
-        ],
       },
     }),
   ].filter(Boolean),
