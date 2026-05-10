@@ -148,19 +148,51 @@ const SlotEditor = ({ slot }: { slot: AssetSlot }) => {
     window.dispatchEvent(new CustomEvent("draftContentChanged", { detail: { page: slot.page, section: slot.slot } }));
   };
 
+  const persistOrder = async (ordered: typeof items) => {
+    // Write sequential sort_order for every non-default row
+    await Promise.all(
+      ordered.map((r, i) =>
+        (r as any)._isDefault
+          ? Promise.resolve()
+          : (supabase as any).from("cms_images").update({ sort_order: i }).eq("id", r.id)
+      )
+    );
+    await refresh();
+    window.dispatchEvent(new CustomEvent("draftContentChanged", { detail: { page: slot.page, section: slot.slot } }));
+  };
+
   const move = async (id: string, dir: -1 | 1) => {
     const idx = items.findIndex((r) => r.id === id);
     const swapIdx = idx + dir;
     if (swapIdx < 0 || swapIdx >= items.length) return;
-    const a = items[idx];
-    const b = items[swapIdx];
-    if ((a as any)._isDefault || (b as any)._isDefault) {
+    if ((items[idx] as any)._isDefault || (items[swapIdx] as any)._isDefault) {
       toast.error("Upload images first to reorder");
       return;
     }
-    await (supabase as any).from("cms_images").update({ sort_order: b.sort_order }).eq("id", a.id);
-    await (supabase as any).from("cms_images").update({ sort_order: a.sort_order }).eq("id", b.id);
-    await refresh();
+    const next = [...items];
+    [next[idx], next[swapIdx]] = [next[swapIdx], next[idx]];
+    await persistOrder(next);
+  };
+
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
+
+  const handleDrop = async (targetId: string) => {
+    const fromId = dragId;
+    setDragId(null);
+    setOverId(null);
+    if (!fromId || fromId === targetId) return;
+    const fromIdx = items.findIndex((r) => r.id === fromId);
+    const toIdx = items.findIndex((r) => r.id === targetId);
+    if (fromIdx < 0 || toIdx < 0) return;
+    if ((items[fromIdx] as any)._isDefault) {
+      toast.error("Upload images first to reorder");
+      return;
+    }
+    const next = [...items];
+    const [moved] = next.splice(fromIdx, 1);
+    next.splice(toIdx, 0, moved);
+    await persistOrder(next);
   };
 
   const publishSlot = async () => {
@@ -235,13 +267,27 @@ const SlotEditor = ({ slot }: { slot: AssetSlot }) => {
           <div className="text-sm text-muted-foreground">Loading…</div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {items.map((r, i) => (
-              <div key={r.id} className="space-y-2">
+            {items.map((r, i) => {
+              const isDefault = (r as any)._isDefault;
+              const canDrag = slot.kind !== "hero" && !isDefault;
+              const isDragging = dragId === r.id;
+              const isOver = overId === r.id && dragId && dragId !== r.id;
+              return (
+              <div
+                key={r.id}
+                draggable={canDrag}
+                onDragStart={() => canDrag && setDragId(r.id)}
+                onDragEnd={() => { setDragId(null); setOverId(null); }}
+                onDragOver={(e) => { if (canDrag && dragId) { e.preventDefault(); setOverId(r.id); } }}
+                onDragLeave={() => { if (overId === r.id) setOverId(null); }}
+                onDrop={(e) => { e.preventDefault(); if (canDrag) handleDrop(r.id); }}
+                className={`space-y-2 transition-opacity ${isDragging ? "opacity-40" : ""} ${isOver ? "ring-2 ring-primary rounded" : ""} ${canDrag ? "cursor-grab active:cursor-grabbing" : ""}`}
+              >
                 <div className="aspect-video bg-muted rounded overflow-hidden relative">
-                  <img src={r.image_url} alt={r.alt_text ?? ""} className="w-full h-full object-cover" />
+                  <img src={r.image_url} alt={r.alt_text ?? ""} className="w-full h-full object-cover pointer-events-none" />
                   <span className="absolute top-1 left-1 text-[10px] px-1.5 py-0.5 rounded bg-black/70 text-white">#{i + 1}</span>
                 </div>
-                {!(r as any)._isDefault && (
+                {!isDefault && (
                   <>
                     <Input
                       defaultValue={r.alt_text ?? ""}
@@ -275,7 +321,8 @@ const SlotEditor = ({ slot }: { slot: AssetSlot }) => {
                   </>
                 )}
               </div>
-            ))}
+              );
+            })}
             {items.length === 0 && (
               <div className="col-span-full text-sm text-muted-foreground flex items-center gap-2">
                 <ImageIcon className="h-4 w-4" /> No images yet — upload one above.
