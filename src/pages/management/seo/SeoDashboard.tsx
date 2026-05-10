@@ -482,6 +482,14 @@ export default function SeoDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {reviewOpen && (
+        <SeoBulkAiReview
+          open={reviewOpen}
+          onOpenChange={setReviewOpen}
+          suggestions={bulkAiSuggestions}
+        />
+      )}
     </ManagementLayout>
   );
 }
