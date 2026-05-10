@@ -1,121 +1,80 @@
-## Phase A — Roll out editable text to every CMS-wired page
+## Goal
 
-Apply the same `CMSText` pattern that now works on Black Bear to every other page exposed in the visual editor.
+Make the FAQs that already render at the bottom of every CMS-wired page (`/town`, `/country`, `/town/rooms`, BnB, Hom Thai, Cocktails, etc.) fully editable from the visual editor, exactly like body copy:
 
-**Pages to wire (using existing `cmsPage` namespacing):**
+- Pink-dot edit indicator on each question and answer
+- Inline edit > save as draft > Publish
+- Add a new FAQ at the bottom of any list
+- Remove an existing FAQ
+- Reorder by drag-and-drop (consistent with the carousel reordering we just shipped)
+- A matching "FAQs" panel in the CMS sidebar for bulk management per page
 
-Town
+The current state: FAQs come from a static file (`src/data/cbFaqs.ts`) and render via `CBFAQ`. A `cms_faq_content` table exists but is empty and not wired to the live site. We'll close that loop.
 
-- `town` (TownHome — eyebrow, title, body)
-- `town/food` (TownFood)
-- `town/food/black-bear` (done — verify)
-- `town/food/bnb` (full menu via CBMenuPage, like Black Bear)
-- `town/food/hom-thai`
-- `town/drink`, `town/drink/cocktails`
-- `town/rooms`, `town/rooms/types`, `town/rooms/gallery`
-- `town/pool`
+## How it will work for the user
 
-Country
+1. Open any page in the visual editor.
+2. Scroll to the FAQ section. Every question and every answer shows a pink dot exactly like the hero copy. Click to edit, blur to save as draft.
+3. Below the last FAQ in CMS mode, an "Add question" button appends a new draft FAQ.
+4. Each FAQ in CMS mode shows a small drag handle and a delete (bin) button.
+5. Hit the global Publish button (top right). Text drafts, image drafts and FAQ drafts all publish together.
+6. Live site continues to read published rows only; if a page has no rows it falls back to the bundled `cbFaqs.ts` defaults so nothing ever goes blank.
 
-- `country`, `country/pub`, `country/pub/food` (menu), `country/pub/drink`, `country/pub/hospitality`
-- `country/rooms`, `country/rooms/types`, `country/rooms/gallery`
-- `country/parties`, `country/events`, `country/events/weddings`, `country/events/birthdays`, `country/events/business`
+## Technical plan
 
-**How:**
+### 1. Database (migration)
 
-1. Add an optional `cmsPage` prop to `PropertyPage.tsx`. When present, wrap `eyebrow`, `title`, `body`, FAQ section heading and breadcrumb labels in `CMSText` with stable keys (`hero.eyebrow`, `hero.title`, `hero.body`).
-2. In `src/pages/property/index.tsx`, pass a `cmsPage` matching the route slug to every `PropertyPage` and `MenuRoute`.
-3. Pass `cmsPage` into `CBMenuPage` for the remaining menu pages (BnB, Country Pub Food) so dish names/prices/descriptions get pink dots like Black Bear.
-4. Add `CMSText` wrapping inside `CBGallery` captions for the gallery routes.
-5. Verify the EditMode dot indicator now appears on every editable string and that publish enables/clears correctly across all pages.
+Extend `cms_faq_content` to mirror the draft model used by `cms_images`:
 
----
+- Add `is_draft boolean default false`
+- Add `updated_at timestamptz default now()` with the existing `update_updated_at_column` trigger
+- Add admin RLS for INSERT / UPDATE / DELETE (currently only public SELECT exists). Reuse `is_admin(auth.uid())` like the other CMS tables.
+- Index on `(page, published, is_draft, sort_order)`
 
-## Phase B — Assets section: edit > publish for all imagery
+No data seeding. The static `cbFaqs.ts` stays as the fallback so unedited pages keep working.
 
-A single "Assets" area in the CMS sidebar where every image used on the live site can be swapped, reordered and published, including page hero singles, triptych carousels, and gallery grids.  
-  
-  
-ALSO NEED TO BE ABLE TO ADD MORE IMAGES TO CAROUSELS THAN JUST FOUR, THREE IS NOT A LIMIT
+### 2. New hook: `useCMSFaqs(page, { mode })`
 
-### B1. Inventory & registry
+- `mode = "live"` (default): returns published rows only; if none, returns the entries from `cbFaqs[page]` so the live site is never empty.
+- `mode = "cms"`: returns `drafts ∪ published` merged the same way as `useCMSAssets` (drafts win), plus an `isDraft` flag per item so the editor can style differently.
+- Exposes mutation helpers: `addFaq`, `updateFaq(id, patch)`, `removeFaq(id)`, `reorder(orderedIds)`, `discardDrafts()`, `publish()`.
+- Publish behaviour matches images: delete published rows for the page, flip drafts to `published=true, is_draft=false`.
 
-Create `src/data/cmsImageRegistry.ts` listing every image slot the site renders, grouped by page and slot type:
+### 3. Refactor `CBFAQ`
 
-- `hero` (single image) — e.g. `town/pool`, `country/parties`
-- `carousel` (ordered list) — e.g. `town` triptych, `country` triptych, `town/rooms`, `country/rooms`, cocktails hero
-- `gallery` (ordered grid with captions) — `town/rooms/gallery`, `country/rooms/gallery`
+- Accept either the existing `faqs` prop (for non-CMS callers / fallback) or a `cmsPage` prop.
+- When `cmsPage` is set, internally call `useCMSFaqs(cmsPage)` and ignore the `faqs` prop.
+- Wrap each question and answer in `CMSText` with stable keys: `faq.<id>.question` and `faq.<id>.answer`. (Saved through the same `cms_content` channel? No — better: save the question/answer fields directly on the `cms_faq_content` row to keep one source of truth. `CMSText` becomes a thin inline-edit primitive that takes `value` + `onSave` so it can target either store.)
+- In CMS mode only, render: drag handle on the left of each `AccordionItem`, a delete button on the right, and an "Add question" button below the accordion.
+- Drag-and-drop uses the same native HTML5 pattern as the AssetsManager.
 
-Each entry declares: `page`, `slot`, `kind` (`hero | carousel | gallery`), `label`, `defaultImages[]` (the current hard-coded imports from `propertyHeroMap.ts`, `heroCarousels.ts`, `galleryData.ts`, `heroImages.ts`).
+### 4. Wire into existing pages
 
-This registry is the source of truth the Assets UI iterates over, and it provides fallbacks if no CMS row exists.
+- `src/components/property/PropertyPage.tsx` and `src/pages/property/index.tsx`: where they currently do `<CBFAQ faqs={faqEntry.faqs} title={faqEntry.title} />`, switch to `<CBFAQ cmsPage={cmsPage} fallbackFaqs={faqEntry.faqs} title={faqEntry.title} />` so the live site falls back to bundled defaults until a page has its own rows.
+- Same swap on the standalone pages that render `CBFAQ` directly: `Index.tsx`, `Beer.tsx`, `Cafe.tsx`, `Kitchens.tsx`, `Hall.tsx`, `Cocktails.tsx`.
 
-### B2. Database (single table, draft+publish)
+### 5. Publish flow integration
 
-Extend the existing `cms_images` table (already has `page`, `section`, `image_url`, `alt_text`, `sort_order`, `published`) with the columns we need to support drafts and slot semantics:
+- `useDraftContent` (the hook backing the global Publish button) already tracks text and image drafts. Add a third channel: query `cms_faq_content` for rows where `is_draft = true`, group by page, and on Publish run the same flip-and-delete as images. Surface FAQ drafts in the same "X drafts pending" badge.
 
-- `slot text` — matches registry slot key (replaces ad-hoc `section` use; keep `section` as alias)
-- `kind text` — `hero | carousel | gallery`
-- `caption text` — for gallery items
-- `is_draft boolean default false`
-- `updated_at timestamptz`
-- index on (`page`, `slot`, `published`, `sort_order`)
+### 6. Sidebar "FAQs" panel
 
-Drafts are rows with `is_draft = true, published = false`. Publishing for a slot = transactionally delete the slot's published rows and flip drafts to `published = true, is_draft = false`. Mirrors the text publish flow in `useDraftContent`.
+- Replace the unused `FAQManager.tsx` content with a new panel that uses `useCMSFaqs(page, { mode: "cms" })`.
+- Page selector (same component as the Assets panel), then a list of FAQs with inline edit, drag-to-reorder, delete, add, discard drafts, publish.
 
-Storage: reuse an existing public bucket (or create `cms-assets`) for uploads, with admin-only insert/update/delete and public read.
+### 7. Out of scope
 
-### B3. Read path (live site + preview)
+- No changes to `CBStructuredData` JSON-LD beyond reading from the same merged FAQ list on the server-rendered/initial paint path.
+- No AI generation.
+- No new icons outside the set already used in the editor.
 
-New hook `useCMSAssets(page, slot)`:
+## File touch list
 
-- In CMS preview/edit mode → returns drafts merged over published.
-- On the live site → returns published only.
-- Falls back to registry `defaultImages` when no rows exist (so nothing breaks until an admin uploads).
-
-Refactor consumers to use it:
-
-- `propertyHeroMap` lookups in `PropertyPage` → `useCMSAssets(page, 'hero')`
-- `getHeroCarouselFor` in `PropertyPage` → `useCMSAssets(page, 'hero-carousel')`
-- `CBGallery` items → `useCMSAssets(page, 'gallery')`
-- `CocktailHeroCarousel` (already uses `useCMSImages`) → migrate to the new hook
-- `useCMSImages` becomes a thin compat wrapper
-
-### B4. Assets UI (in `/management/cms`)
-
-New left-sidebar section "Assets" with two views:
-
-1. **By page** — pick a page, see all its slots (hero, carousel, gallery), thumbnails, with a single "Publish page assets" button.
-2. **All assets** — flat searchable list across all pages.
-
-Slot editor card per slot:
-
-- **Hero**: drop-zone, replace single image, alt text field.
-- **Carousel**: thumbnail strip, drag-to-reorder, add/remove, alt text per slide.
-- **Gallery**: same as carousel plus caption field per item.
-
-Common controls per card: Save draft (auto), Discard draft, Publish slot. A global "Publish all drafts" mirrors the text publish flow.
-
-Uploads use the storage bucket; on success the public URL is written as a draft row.
-
-### B5. Visual editor integration
-
-In edit mode (`/management/cms/visual/...`), images rendered through `useCMSAssets` get a pink overlay icon (matching the text dots). Clicking opens the same slot editor as a side panel, so admins can edit imagery in context and publish from the same Publish button as text.
-
----
-
-## Technical notes
-
-- All new tables/columns via `supabase--migration`; keep RLS admin-only writes, public read.
-- Reuse `EditModeContext` and `useDraftContent` patterns so the existing Publish button enables for image drafts too (extend `draftCount` to include image drafts).
-- No new image hosting — Supabase Storage public bucket.
-- No AI generation; only admin uploads (workspace rule).
-- Live site reads stay fast: TanStack Query with the same staleTime as `useCMSImages`, fallback to bundled imports for instant first paint.
-
-## Suggested order of work
-
-1. Phase A (text rollout) — quick, mechanical, unblocks copy editing everywhere.
-2. B1 + B2: registry + migration.
-3. B3: read hook + refactor consumers (site keeps working off defaults until uploads exist).
-4. B4: Assets management UI.
-5. B5: in-context editing in the visual editor.
+- `supabase/migrations/<new>.sql` — schema + RLS
+- `src/hooks/useCMSFaqs.ts` — new
+- `src/components/seo/CBFAQ.tsx` — add `cmsPage` mode, drag/add/delete UI
+- `src/components/cms/CMSText.tsx` — small extension so it can save to an arbitrary store (or a new `CMSInlineText` sibling, decided during implementation)
+- `src/hooks/useDraftContent.ts` — count + publish FAQ drafts
+- `src/components/cms/FAQManager.tsx` — rebuild on top of `useCMSFaqs`
+- `src/components/cms/CMSDashboard.tsx` — surface the FAQs panel in the sidebar
+- `src/components/property/PropertyPage.tsx`, `src/pages/property/index.tsx`, `src/pages/{Index,Beer,Cafe,Kitchens,Hall,Cocktails}.tsx` — pass `cmsPage` + `fallbackFaqs` to `CBFAQ`

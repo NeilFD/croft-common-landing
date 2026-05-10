@@ -41,7 +41,13 @@ const MenuRoute = ({ menu, property, path, title, description, cuisine, faqKey, 
     <>
       <CBSeo title={`${title} | Crazy Bear`} description={description.slice(0, 158)} path={path} jsonLd={ld} />
       <CBMenuPage menu={menu} cmsPage={cmsPage} />
-      {faqEntry && <CBFAQ faqs={faqEntry.faqs} title={faqEntry.title} />}
+      {(cmsPage || faqEntry) && (
+        <CBFAQ
+          cmsPage={cmsPage}
+          fallbackFaqs={faqEntry?.faqs}
+          title={faqEntry?.title ?? "Asked and answered."}
+        />
+      )}
     </>
   );
 };

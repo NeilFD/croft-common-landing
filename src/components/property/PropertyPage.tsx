@@ -174,7 +174,13 @@ const PropertyPage = ({
         )}
       </section>
       {children}
-      {faqEntry && <CBFAQ faqs={faqEntry.faqs} title={faqEntry.title} />}
+      {(cmsPage || faqEntry) && (
+        <CBFAQ
+          cmsPage={cmsPage}
+          fallbackFaqs={faqEntry?.faqs}
+          title={faqEntry?.title ?? "Asked and answered."}
+        />
+      )}
     </>
   );
 };

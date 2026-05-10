@@ -889,28 +889,34 @@ export type Database = {
           answer: string | null
           created_at: string | null
           id: string
+          is_draft: boolean
           page: string
           published: boolean | null
           question: string
           sort_order: number | null
+          updated_at: string
         }
         Insert: {
           answer?: string | null
           created_at?: string | null
           id?: string
+          is_draft?: boolean
           page: string
           published?: boolean | null
           question: string
           sort_order?: number | null
+          updated_at?: string
         }
         Update: {
           answer?: string | null
           created_at?: string | null
           id?: string
+          is_draft?: boolean
           page?: string
           published?: boolean | null
           question?: string
           sort_order?: number | null
+          updated_at?: string
         }
         Relationships: []
       }
