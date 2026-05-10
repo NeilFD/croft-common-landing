@@ -52,16 +52,16 @@ const TOWN: Copy = {
   page: "town-culture",
   title: "Town Culture | The Crazy Bear, Beaconsfield",
   metaDescription:
-    "Town culture. Koi behind the urinals, Hom Thai upstairs, silver-leaf walls and late nights in Beaconsfield. Twenty years of black on black on black.",
+    "Town culture. Koi behind the cisterns, Hom Thai upstairs, silver, gold and copper leaf and late nights in Beaconsfield. Twenty years of black on black on black.",
   canonical: "https://www.crazybear.dev/town/culture",
   eyebrow: "Beaconsfield / Est. 2002",
   headline: "Town. After dark.",
   tagline:
-    "A coaching inn, gutted and reborn in black, silver and Thai gold. Live fish in the cisterns. Glass loos. The kind of weekend you don't put in the brochure.",
+    "A coaching inn, gutted and reborn in black, silver, gold and copper. Live fish in the cisterns. Glass loos. The kind of weekend you don't put in the brochure.",
   introKicker: "The soul of Town",
-  introBody: `In 2002 a wonky old coaching inn in the middle of Beaconsfield was taken on, stripped back, blacked out and lined in silver leaf. Glass loos went in. Koi went in behind the urinals. The Thai room went in upstairs.
+  introBody: `In 2002 a wonky old coaching inn in the middle of Beaconsfield was taken on, stripped back, blacked out and lined in silver, gold and copper leaf. Glass loos went in. Koi went in behind the cisterns. The Thai room went in upstairs.
 
-Town was always meant to be a townhouse, not a hotel. Eight bedrooms, a couple of bars, two restaurants and a pool out the back. Heels on the staircase by ten. Cocktails by eleven. Breakfast a quiet apology by noon.
+Town was always meant to be a townhouse, not a hotel. Eight bedrooms, a couple of bars, two restaurants and a pool out the back. Heels on the staircase by ten. Cocktails by eleven. Breakfast that rolls into the longest lunch of your life.
 
 It still is.`,
   collageHeading: "The look.",
@@ -84,17 +84,22 @@ It still is.`,
     { heading: "The burlesque years.", body: "Saturday nights. Mirrorball heads. Heels louder than the music.", meta: {} },
     { heading: "Hom Thai.", body: "Lanterns. Gold leaf. Proper heat upstairs. Quietly one of the best.", meta: {} },
     { heading: "Bedrooms with baths.", body: "Crushed velvet, copper tubs, a tassel for everything. Black on black on red.", meta: {} },
-    { heading: "Black on black on black.", body: "Buttoned walls. Gilded beds. Lanterns dimmed to consequences.", meta: {} },
+    { heading: "Black on black on black.", body: "Buttoned walls. Gilded beds. Silver, gold and copper leaf catching every candle.", meta: {} },
   ],
   timelineSeed: [
     {
       heading: "The townhouse opens.",
-      body: "Eight bedrooms. Two bars. Two kitchens. The whole place repainted in black and silver in under a year.",
+      body: "Eight bedrooms. Two bars. Two kitchens. Repainted in black and lined in silver, gold and copper leaf in under a year.",
       meta: { year: "2002" },
     },
     {
       heading: "Glass loos go in.",
       body: "You can see out. They can't see in. Allegedly.",
+      meta: { year: "2002" },
+    },
+    {
+      heading: "The koi move in.",
+      body: "Behind the cisterns. Conversation starters since.",
       meta: { year: "2002" },
     },
     {
@@ -114,7 +119,7 @@ It still is.`,
     },
     {
       heading: "Today.",
-      body: "Same building. Same spirit. Slightly tighter ship. Slightly.",
+      body: "Same building. Same spirit. Slightly better behaved. Only slightly.",
       meta: { year: "Now" },
     },
   ],
@@ -136,9 +141,9 @@ const COUNTRY: Copy = {
   tagline:
     "A 16th century inn, a turf floor, a cow in the dining room and a treehouse with a roll-top bath. Thirty years of Sundays that wouldn't end.",
   introKicker: "The soul of Country",
-  introBody: `In 1993 a wonky little pub in Stadhampton was given a name, a kitchen, and a real turf floor. People came for a pint and stayed for the spectacle. Sheep wandered in. Nobody stopped them.
+  introBody: `In 1993 Jason Hunt took on a wonky little pub in Stadhampton, gave it a name, a kitchen, and a real turf floor. People came for a pint and stayed for the spectacle. Sheep wandered in. Nobody stopped them.
 
-The dining room got a cow. The bedrooms got mirrors in places mirrors don't usually go. The garden got treehouses with roll-top baths above the canopy. Breakfast was brought up by hand, slowly.
+The dining room got a cow. The bedrooms got mirrored ceilings, velvet walls, and roll-top baths. The garden got treehouses with baths above the canopy. Breakfast brought up by hand, slowly. Lunch followed, slower.
 
 The pub still pours. The kitchen still takes itself seriously. Nothing else does.`,
   collageHeading: "The look.",
@@ -159,24 +164,24 @@ The pub still pours. The kitchen still takes itself seriously. Nothing else does
   hero: countryHero,
   collageSeed: [
     { heading: "The turf floor", body: "Real grass. Real opening night. Allegedly real sheep.", meta: {} },
-    { heading: "The cow", body: "Taxidermy. Dining room. Don't ask.", meta: {} },
-    { heading: "Treehouse suites", body: "Roll-top bath above the canopy. Champagne by lift.", meta: {} },
+    { heading: "The cow", body: "Taxidermy. Dining room. Watching you eat.", meta: {} },
+    { heading: "Treehouse suites", body: "Roll-top bath above the canopy. Mirrored ceilings. Velvet walls. Breakfast by hand.", meta: {} },
     { heading: "The garden", body: "Slow lunches. Longer afternoons. Fires lit by four.", meta: {} },
   ],
   timelineSeed: [
     {
       heading: "The pub reopens.",
-      body: "A wonky little local in Stadhampton gets a name, a kitchen, and a turf floor.",
+      body: "Jason Hunt takes on a wonky little local in Stadhampton. Gives it a name, a kitchen, and a real turf floor. Sheep optional.",
       meta: { year: "1993" },
     },
     {
       heading: "The cow moves in.",
-      body: "Mirrors, antlers, chandeliers. The Crazy Bear look starts to harden.",
+      body: "Taxidermy, mirrors, chandeliers in places chandeliers don't belong. The Crazy Bear look starts to harden.",
       meta: { year: "Late 90s" },
     },
     {
       heading: "Treehouse suites.",
-      body: "Bedrooms in the trees. Roll-top baths above the canopy. Breakfast brought up by hand.",
+      body: "Bedrooms in the trees. Roll-top baths above the canopy. Mirrored ceilings, velvet walls, breakfast brought up by hand.",
       meta: { year: "00s" },
     },
     {
@@ -186,7 +191,7 @@ The pub still pours. The kitchen still takes itself seriously. Nothing else does
     },
     {
       heading: "Today.",
-      body: "Two restaurants, a pub, treehouses, and the same spirit. Slightly tidier. Slightly.",
+      body: "Two restaurants, a pub, treehouses, and the same spirit. Slightly better behaved. Only slightly.",
       meta: { year: "Now" },
     },
   ],
