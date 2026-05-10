@@ -3918,6 +3918,17 @@ export type Database = {
               total_quantity: number
             }[]
           }
+      get_management_users: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          job_title: string
+          role: string
+          user_id: string
+          user_name: string
+        }[]
+      }
       get_profiles_public: {
         Args: { uids: string[] }
         Returns: {

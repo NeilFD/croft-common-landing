@@ -43,10 +43,7 @@ Deno.serve(async (req) => {
     if (!email || !emailRegex.test(email)) {
       throw new Error('Valid email is required')
     }
-    // Lock down to @crazybear.co.uk addresses only
-    if (!email.toLowerCase().endsWith('@crazybear.co.uk')) {
-      throw new Error('Only @crazybear.co.uk email addresses are allowed')
-    }
+    // Any email is allowed; access is gated by the user_roles row added below.
     if (!role) {
       throw new Error('Role is required')
     }
