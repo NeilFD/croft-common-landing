@@ -3906,6 +3906,11 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_user_management_role: { Args: { _user_id: string }; Returns: string }
+      has_management_role: {
+        Args: { _role: string; _user_id: string }
+        Returns: boolean
+      }
       is_admin: { Args: { uid: string }; Returns: boolean }
       is_gold: { Args: { check_user_id: string }; Returns: boolean }
       move_to_dlq: {
