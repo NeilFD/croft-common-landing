@@ -187,17 +187,36 @@ export default function SeoDashboard() {
               How your pages look to Google. Edit anything, retest anytime.
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button asChild variant="outline">
-              <Link to="/management/seo/settings">Settings</Link>
-            </Button>
-            <Button
-              onClick={() => runAll.mutate()}
-              disabled={auditingAll}
-              className="font-display uppercase tracking-wide"
-            >
-              {auditingAll ? 'Testing all pages…' : 'Re-test entire site'}
-            </Button>
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex gap-2">
+              <Button asChild variant="outline">
+                <Link to="/management/seo/settings">Settings</Link>
+              </Button>
+              <Button
+                onClick={() => runAll.mutate()}
+                disabled={auditingAll}
+                className="font-display uppercase tracking-wide"
+              >
+                {auditingAll
+                  ? `Testing ${Math.min(progressDone, pages.length)} / ${pages.length}…`
+                  : 'Re-test entire site'}
+              </Button>
+            </div>
+            {auditingAll && pages.length > 0 && (
+              <div className="w-full md:w-72 space-y-1">
+                <div className="h-1.5 w-full bg-muted overflow-hidden rounded-sm">
+                  <div
+                    className="h-full bg-foreground transition-all duration-500"
+                    style={{
+                      width: `${Math.min(100, Math.round((progressDone / pages.length) * 100))}%`,
+                    }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground font-cb-sans text-right">
+                  ~10s per page · pauses between requests to stay under PageSpeed limits
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
