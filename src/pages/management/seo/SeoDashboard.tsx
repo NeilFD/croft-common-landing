@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { SeoBulkAiReview, type BulkAiSuggestion } from './SeoBulkAiReview';
 
 interface PageRow {
   id: string;
@@ -15,6 +16,7 @@ interface PageRow {
   title: string | null;
   description: string | null;
   og_image: string | null;
+  keywords: string[] | null;
   noindex: boolean;
   updated_at: string;
 }
@@ -62,6 +64,13 @@ export default function SeoDashboard() {
   const [auditingAll, setAuditingAll] = useState(false);
   const [progressDone, setProgressDone] = useState(0);
   const [progressRoute, setProgressRoute] = useState<string | null>(null);
+
+  // Bulk AI state
+  const [bulkAiBusy, setBulkAiBusy] = useState(false);
+  const [bulkAiDone, setBulkAiDone] = useState(0);
+  const [bulkAiRoute, setBulkAiRoute] = useState<string | null>(null);
+  const [bulkAiSuggestions, setBulkAiSuggestions] = useState<BulkAiSuggestion[]>([]);
+  const [reviewOpen, setReviewOpen] = useState(false);
 
   const { data: pages = [], isLoading: pagesLoading } = useQuery({
     queryKey: ['seo-pages'],
@@ -197,6 +206,68 @@ export default function SeoDashboard() {
     onError: (e: any) => toast({ title: 'Clear failed', description: e.message, variant: 'destructive' }),
   });
 
+  const runBulkAi = async () => {
+    if (bulkAiBusy) return;
+    if (!window.confirm(`Generate AI suggestions for all ${pages.length} pages? You'll review every change before anything is saved.`)) return;
+
+    setBulkAiBusy(true);
+    setBulkAiDone(0);
+    setBulkAiRoute(null);
+    const out: BulkAiSuggestion[] = [];
+
+    try {
+      for (let i = 0; i < pages.length; i++) {
+        const p = pages[i];
+        setBulkAiRoute(p.route);
+        try {
+          const { data, error } = await supabase.functions.invoke('seo-copywriter', {
+            body: {
+              route: p.route,
+              label: p.label,
+              fields: ['title', 'description', 'keywords'],
+              current: { title: p.title ?? '', description: p.description ?? '' },
+            },
+          });
+          if (error) throw error;
+          const d = (data ?? {}) as any;
+          if (d.error) throw new Error(d.error);
+          out.push({
+            route: p.route,
+            label: p.label,
+            current: { title: p.title, description: p.description, keywords: p.keywords },
+            suggested: {
+              title: d.title,
+              description: d.description,
+              keywords: d.keywords,
+              rationale: d.rationale,
+            },
+          });
+        } catch (e: any) {
+          out.push({
+            route: p.route,
+            label: p.label,
+            current: { title: p.title, description: p.description, keywords: p.keywords },
+            suggested: {},
+            error: e.message,
+          });
+        }
+        setBulkAiDone(i + 1);
+        if (i < pages.length - 1) await auditPause(1500);
+      }
+      setBulkAiSuggestions(out);
+      setReviewOpen(true);
+      const failed = out.filter(s => s.error).length;
+      toast({
+        title: 'AI drafts ready',
+        description: `${out.length - failed} pages drafted${failed ? `, ${failed} failed` : ''}. Review and save.`,
+      });
+    } finally {
+      setBulkAiBusy(false);
+      setBulkAiDone(0);
+      setBulkAiRoute(null);
+    }
+  };
+
   const sortedRows = useMemo(() => {
     return [...pages].sort((a, b) => {
       const auditA = auditMap.get(a.route);
@@ -237,6 +308,16 @@ export default function SeoDashboard() {
                 {clearScores.isPending ? 'Clearing…' : 'Clear & rescan'}
               </Button>
               <Button
+                onClick={runBulkAi}
+                disabled={bulkAiBusy || auditingAll || pages.length === 0}
+                variant="outline"
+                className="font-display uppercase tracking-wide"
+              >
+                {bulkAiBusy
+                  ? `Writing ${bulkAiDone} / ${pages.length}…`
+                  : '✨ AI complete every page'}
+              </Button>
+              <Button
                 onClick={() => runAll.mutate()}
                 disabled={auditingAll}
                 className="font-display uppercase tracking-wide"
@@ -246,6 +327,21 @@ export default function SeoDashboard() {
                   : 'Re-test entire site'}
               </Button>
             </div>
+            {bulkAiBusy && pages.length > 0 && (
+              <div className="w-full md:w-72 space-y-1">
+                <div className="h-1.5 w-full bg-muted overflow-hidden rounded-sm">
+                  <div
+                    className="h-full bg-foreground transition-all duration-500"
+                    style={{
+                      width: `${Math.min(100, Math.round((bulkAiDone / pages.length) * 100))}%`,
+                    }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground font-cb-sans text-right">
+                  {bulkAiRoute ? `Drafting ${bulkAiRoute}` : 'Starting AI'} · one page at a time
+                </p>
+              </div>
+            )}
             {auditingAll && pages.length > 0 && (
               <div className="w-full md:w-72 space-y-1">
                 <div className="h-1.5 w-full bg-muted overflow-hidden rounded-sm">
@@ -386,6 +482,14 @@ export default function SeoDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {reviewOpen && (
+        <SeoBulkAiReview
+          open={reviewOpen}
+          onOpenChange={setReviewOpen}
+          suggestions={bulkAiSuggestions}
+        />
+      )}
     </ManagementLayout>
   );
 }
