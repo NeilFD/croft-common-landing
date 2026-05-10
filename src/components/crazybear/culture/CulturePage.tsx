@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import SpotifyPlaylistEmbed from "@/components/crazybear/culture/SpotifyPlaylistEmbed";
+import { useCMSContent } from "@/hooks/useCMSContent";
 import HouseRulesInline from "@/components/crazybear/culture/HouseRulesInline";
 import townHero from "@/assets/cb-hero-town-new.jpg";
 import countryHero from "@/assets/cb-hero-country-new.jpg";
