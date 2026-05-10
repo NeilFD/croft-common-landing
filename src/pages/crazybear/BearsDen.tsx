@@ -14,10 +14,12 @@ const tiles: { title: string; sub: string; to: string }[] = [
 const BearsDen = () => {
   return (
     <>
-      <Helmet>
-        <title>The Bear's Den | The Crazy Bear</title>
-        <meta name="description" content="A quiet members' room at The Crazy Bear. Town and Country." />
-      </Helmet>
+      <CBSeo
+        title="The Bear's Den | The Crazy Bear"
+        description="A quiet members' room at The Crazy Bear. Town and Country."
+        path="/bears-den"
+        jsonLd={[goldProductSchema(), organizationSchema()]}
+      />
 
       <main className="min-h-screen bg-black text-white font-cb-sans">
         <CBTopNav tone="light" />
