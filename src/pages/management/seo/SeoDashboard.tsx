@@ -103,6 +103,11 @@ export default function SeoDashboard() {
   const [bulkAiSuggestions, setBulkAiSuggestions] = useState<BulkAiSuggestion[]>([]);
   const [reviewOpen, setReviewOpen] = useState(false);
 
+  // Filter + sort controls for the All Pages table
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<FilterKey>('all');
+  const [sort, setSort] = useState<SortKey>('score-asc');
+
   const { data: pages = [], isLoading: pagesLoading } = useQuery({
     queryKey: ['seo-pages'],
     queryFn: async () => {
