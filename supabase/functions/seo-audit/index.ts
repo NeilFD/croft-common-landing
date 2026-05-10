@@ -241,8 +241,10 @@ async function auditOne(
     psError = (e as Error).message;
   }
 
-  // Combined overall: 40% internal + 60% lighthouse-average (when present)
-  let overall = internal.score;
+  // Combined overall: 40% internal + 60% Lighthouse average.
+  // If Lighthouse fails, keep the score empty so the dashboard never presents
+  // an internal-only fallback as a real SEO performance result.
+  let overall: number | null = null;
   if (perf !== null && seo !== null && a11y !== null && bp !== null) {
     const lhAvg = (perf + seo + a11y + bp) / 4;
     overall = Math.round(internal.score * 0.4 + lhAvg * 0.6);
@@ -261,7 +263,7 @@ async function auditOne(
     cls,
     inp_ms: inp,
     overall_score: overall,
-    overall_grade: gradeFor(overall),
+    overall_grade: overall === null ? null : gradeFor(overall),
     error: psError,
   };
 
@@ -343,7 +345,7 @@ Deno.serve(async (req) => {
     for (const r of routes) {
       try {
         const a = await auditOne(admin, r, defaults, apiKey, source);
-        results.push({ route: r, overall: a.overall_score, grade: a.overall_grade });
+        results.push({ route: r, overall: a.overall_score, grade: a.overall_grade, error: a.error });
       } catch (e) {
         errors.push({ route: r, error: (e as Error).message });
       }
