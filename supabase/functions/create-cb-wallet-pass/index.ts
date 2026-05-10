@@ -113,6 +113,15 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .maybeSingle();
 
+    // Check Gold subscription status to brand the pass accordingly.
+    let isGold = false;
+    try {
+      const { data: goldData } = await supabaseClient.rpc('is_gold', { check_user_id: user.id });
+      isGold = !!goldData;
+    } catch (e) {
+      console.warn('is_gold check failed:', e);
+    }
+
     if (memberError) {
       console.error('cb_members lookup failed:', memberError);
       return new Response(JSON.stringify({ error: 'Member lookup failed' }), {
@@ -148,18 +157,21 @@ serve(async (req) => {
       serialNumber,
       teamIdentifier,
       organizationName: 'Crazy Bear',
-      description: 'The Den Member Card',
-      logoText: 'THE DEN',
-      foregroundColor: 'rgb(255, 255, 255)',
-      backgroundColor: 'rgb(0, 0, 0)',
-      labelColor: 'rgb(200, 200, 200)',
+      description: isGold ? "The Den Bear's Den Gold Card" : 'The Den Member Card',
+      logoText: isGold ? "BEAR'S DEN GOLD" : 'THE DEN',
+      foregroundColor: isGold ? 'rgb(0, 0, 0)' : 'rgb(255, 255, 255)',
+      backgroundColor: isGold ? 'rgb(212, 175, 55)' : 'rgb(0, 0, 0)',
+      labelColor: isGold ? 'rgb(60, 45, 0)' : 'rgb(200, 200, 200)',
       storeCard: {
         primaryFields: [
           { key: 'memberName', label: 'MEMBER', value: fullName },
         ],
         secondaryFields: [
           { key: 'membershipNumber', label: 'MEMBER NO.', value: membershipNumber },
-          { key: 'memberSince', label: 'MEMBER SINCE', value: memberSince, textAlignment: 'PKTextAlignmentRight' },
+          { key: 'tier', label: 'TIER', value: isGold ? 'GOLD' : 'STANDARD', textAlignment: 'PKTextAlignmentRight' },
+        ],
+        auxiliaryFields: [
+          { key: 'memberSince', label: 'MEMBER SINCE', value: memberSince },
         ],
         backFields: [
           { key: 'about', label: 'THE DEN', value: 'Your Crazy Bear membership. Show this card on arrival.' },
