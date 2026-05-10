@@ -329,6 +329,7 @@ const App = () => {
                         <Route path="rooms/types" element={<TownRoomTypes />} />
                         <Route path="rooms/gallery" element={<TownRoomGallery />} />
                         <Route path="pool" element={<TownPool />} />
+                        <Route path="culture" element={<TownCulture />} />
                         <Route path="members" element={<Navigate to="/members" replace />} />
                       </Route>
 
