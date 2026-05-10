@@ -94,28 +94,18 @@ Deno.serve(async (req) => {
       throw new Error('Only admins can create users')
     }
 
-    // Get user creation data from RPC (includes temp password)
-    const { data: userData, error: rpcError } = await supabase.rpc('create_management_user', {
-      p_email: email,
-      p_role: mappedRole
-    })
-
-    if (rpcError) {
-      console.error('RPC error:', rpcError)
-      throw rpcError
-    }
-
-    console.log('User data from RPC:', userData)
+    // Generate a temporary password
+    const tempPassword = `Cb-${crypto.randomUUID().slice(0, 12)}!9`
 
     // Create user in auth.users using admin client
     const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email: userData.email,
-      password: userData.temp_password,
-      email_confirm: true, // Auto-confirm email for management users
+      email,
+      password: tempPassword,
+      email_confirm: true,
       user_metadata: {
         is_management_user: true,
-        user_name: user_name,
-        job_title: job_title
+        user_name,
+        job_title
       }
     })
 
@@ -126,38 +116,35 @@ Deno.serve(async (req) => {
 
     console.log('Created auth user:', authUser.user.id)
 
-    // Create management profile FIRST to avoid triggers failing on NOT NULL fields
+    // Create management profile
     const { error: profileError } = await supabaseAdmin
       .from('management_profiles')
       .upsert({
         user_id: authUser.user.id,
-        user_name: user_name,
-        email: userData.email,
-        job_title: job_title
+        display_name: user_name,
+        email,
+        job_title
       }, { onConflict: 'user_id' })
 
     if (profileError) {
       console.error('Profile error:', profileError)
-      // Rollback: delete the auth user
       await supabaseAdmin.auth.admin.deleteUser(authUser.user.id)
       throw profileError
     }
 
-    // Add user to user_roles table AFTER profile creation
+    // Add role
     const { error: roleError } = await supabaseAdmin
       .from('user_roles')
-      .insert({
-        user_id: authUser.user.id,
-        role: userData.role
-      })
+      .insert({ user_id: authUser.user.id, role: mappedRole })
 
     if (roleError) {
       console.error('Role error:', roleError)
-      // Rollback: delete auth user and profile to keep system consistent
       await supabaseAdmin.auth.admin.deleteUser(authUser.user.id)
       await supabaseAdmin.from('management_profiles').delete().eq('user_id', authUser.user.id)
       throw roleError
     }
+
+    const userData = { email, role: mappedRole, temp_password: tempPassword, created_by: callerId }
 
     // Create password metadata entry
     const { error: pwdError } = await supabaseAdmin
