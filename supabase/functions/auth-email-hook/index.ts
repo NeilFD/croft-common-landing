@@ -40,6 +40,13 @@ const SITE_NAME = "crazy-bear-web"
 const SENDER_DOMAIN = "notify.crazybear.dev"
 const ROOT_DOMAIN = "crazybear.dev"
 const FROM_DOMAIN = "crazybear.dev" // Domain shown in From address (may be root or sender subdomain)
+const RECOVERY_REDIRECT_URL = "https://www.crazybear.dev/set-password"
+
+function forceRecoveryRedirect(confirmationUrl: string): string {
+  const url = new URL(confirmationUrl)
+  url.searchParams.set('redirect_to', RECOVERY_REDIRECT_URL)
+  return url.toString()
+}
 
 // Sample data for preview mode ONLY (not used in actual email sending).
 // URLs are baked in at scaffold time from the project's real data.
@@ -218,12 +225,26 @@ async function handleWebhook(req: Request): Promise<Response> {
     )
   }
 
+  let confirmationUrl = payload.data.url
+  if (emailType === 'recovery') {
+    try {
+      confirmationUrl = forceRecoveryRedirect(payload.data.url)
+      console.log('Recovery redirect enforced', { run_id, redirect_to: RECOVERY_REDIRECT_URL })
+    } catch (error) {
+      console.error('Recovery redirect enforcement failed', { run_id, error })
+      return new Response(JSON.stringify({ error: 'Invalid recovery URL' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+  }
+
   // Build template props from payload.data (HookData structure)
   const templateProps = {
     siteName: SITE_NAME,
     siteUrl: `https://${ROOT_DOMAIN}`,
     recipient: payload.data.email,
-    confirmationUrl: payload.data.url,
+    confirmationUrl,
     token: payload.data.token,
     email: payload.data.email,
     oldEmail: payload.data.old_email,
