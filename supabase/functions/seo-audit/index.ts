@@ -300,11 +300,13 @@ async function auditOne(
   let cls: number | null = null;
   let inp: number | null = null;
   let psError: string | null = null;
+  let lhExtraChecks: Check[] = [];
 
   try {
     const r = await pagespeed(`${SITE_BASE}${route}`, apiKey);
     perf = r.perf; seo = r.seo; a11y = r.a11y; bp = r.bp;
     lcp = r.lcp; cls = r.cls; inp = r.inp;
+    lhExtraChecks = lighthouseChecks(r.audits);
   } catch (e) {
     psError = (e as Error).message;
   }
@@ -318,11 +320,13 @@ async function auditOne(
     overall = Math.round(internal.score * 0.4 + lhAvg * 0.6);
   }
 
+  const allChecks = [...internal.checks, ...lhExtraChecks];
+
   const audit = {
     route,
     source,
     internal_score: internal.score,
-    internal_checks: internal.checks,
+    internal_checks: allChecks,
     perf_score: perf,
     seo_score: seo,
     accessibility_score: a11y,
