@@ -45,7 +45,10 @@ const Landing = () => {
               introDone ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
             }`}
           >
-            <h1 className="mt-7 font-display text-6xl md:text-8xl lg:text-9xl uppercase leading-[0.85] tracking-tight">
+            <h1
+              className="mt-7 text-6xl md:text-8xl lg:text-9xl uppercase leading-[0.85] tracking-tight font-extrabold"
+              style={{ fontFamily: '"Bricolage Grotesque", sans-serif' }}
+            >
               Crazy Bear
             </h1>
             <p className="mt-7 font-cb-mono text-[10px] md:text-xs tracking-[0.55em] uppercase opacity-85">
