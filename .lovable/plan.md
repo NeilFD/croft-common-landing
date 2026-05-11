@@ -1,39 +1,44 @@
-I checked the live email path. The email domain is verified, the queue is running, and Shane’s records show the app marked the signup, welcome email, and cinema ticket email as sent.
+Here is what happened, specifically for Secret Cinema:
 
-The problem is not the form failing to submit. The system is accepting the send and logging it as sent, but there are two serious reliability gaps that make this unsafe:
+- The Secret Cinema ticket emails were generated and queued.
+- Shane’s ticket email was logged as sent at 11:25:39 to `swturnhill@gmail.com`.
+- Your ticket email was logged as sent at 12:06:35 to `neil.fincham-dukes@crazybear.co.uk`.
+- The queue is now empty, so the app did not leave either message stuck.
+- Neither address is on the app suppression list.
+- The sender domain `notify.crazybear.dev` is verified.
 
-1. The app currently treats “accepted by the email sender” as “delivered”. That is not good enough.
-2. There are still legacy email paths in the codebase using old sender identities and older sending methods. One current function is still using the decommissioned `crazybeartest.com` domain for the welcome email sender. That must be removed.
+The failure is that the app is only proving “accepted for sending”, not “delivered to inbox”. That is not good enough for tickets.
 
 Plan:
 
-1. Standardise the remaining Bears Den email sender paths
-   - Update the welcome email function so it uses `notify.crazybear.dev` only.
-   - Remove the remaining decommissioned `crazybeartest.com` sender values from active email code.
-   - Check the relevant Bears Den email functions for any old Croft Common or third-party sender remnants that affect deliverability.
+1. Fix Secret Cinema delivery certainty
+   - Change the Secret Cinema ticket flow so the ticket state is not treated as complete just because the email was accepted by the sender.
+   - Store clearer metadata for every ticket email: booking, release, ticket numbers, recipient, sender domain, and send purpose.
+   - Label the status in admin as “sent to mail provider”, not “delivered”, unless there is a real delivery event.
 
-2. Add proper delivery visibility
-   - Add clearer email log metadata for Bears Den sends so each signup, welcome, and cinema email can be traced by recipient and purpose.
-   - Keep the existing queue, but make the app distinguish between queued, accepted, failed, and blocked states instead of treating all accepted sends as final delivery.
+2. Add an admin resend for Secret Cinema tickets
+   - Add a safe resend action in the admin cinema area for a single booking.
+   - Resend only that booking’s ticket email.
+   - Use a new idempotency key per manual resend so the resend is not skipped by the existing “already sent” check.
+   - Log the resend separately so staff can see exactly when it was retried.
 
-3. Add an admin resend route for member-critical emails
-   - Add a safe resend path for signup confirmation, welcome email, and cinema ticket emails.
-   - Avoid duplicate spam by checking the latest log before resending.
-   - Keep this admin-only where it touches member data.
+3. Add a non-email ticket fallback
+   - Add an admin copy/open ticket link for each Secret Cinema booking.
+   - Staff can send the ticket link manually if inbox delivery fails.
+   - This avoids leaving guests stuck when email providers silently bin accepted mail.
 
-4. Add a member-facing fallback for signup verification
-   - On `/set-password`, keep the resend button but make the state clearer when a code is resent.
-   - If the email still does not arrive, provide a non-email recovery path for staff/admin support rather than leaving the member stuck.
+4. Clean up legacy dead-letter noise
+   - The current dead-letter rows are old welcome emails from the retired sender domain, not today’s Secret Cinema tickets.
+   - Keep the data for audit, but stop it confusing the email dashboard by making the dashboard show template, status, and latest attempt clearly.
 
-5. Deploy and verify
-   - Deploy the changed email functions.
-   - Send a real test to the affected addresses.
-   - Confirm the backend logs show the right sender domain, queue processing, and final status.
+5. Verify after implementation
+   - Resend one real Secret Cinema ticket to Shane and one to you.
+   - Confirm the new log rows show the correct sender domain and manual resend metadata.
+   - Confirm the admin fallback link is available even if email delivery fails again.
 
-Technical notes:
+Technical details:
 
-- `auth-email-hook` is already queue-based and uses `notify.crazybear.dev`.
-- `process-email-queue` is active and currently has no waiting messages.
-- Shane’s email records show `sent` for signup, welcome, and cinema ticket entries.
-- `cb-send-welcome` still contains `SENDER_DOMAIN = notify.crazybeartest.com` and `FROM_DOMAIN = crazybeartest.com`, which conflicts with the current sender domain memory and must be fixed.
-- Earlier failures in the log include `domain_not_verified` and missing app email parameters. Those appear historic, but the code still contains legacy risk.
+- Main function involved: `send-cinema-ticket-email`.
+- Main data involved: `cinema_bookings`, `cinema_releases`, and `email_send_log`.
+- Existing problem: the current idempotency key makes a second send to the same recipient, date, and ticket numbers get skipped once the first attempt is marked sent.
+- Fix: add a deliberate manual resend path that creates a new tracked send attempt without duplicating the booking.

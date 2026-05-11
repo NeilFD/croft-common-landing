@@ -21,6 +21,10 @@ type EmailPayload = {
   screeningTime: string;
   title?: string | null;
   walletToken?: string | null;
+  forceResend?: boolean;
+  bookingId?: string | null;
+  releaseId?: string | null;
+  resendReason?: string | null;
 };
 
 const fmtDate = (isoDate: string) => {
@@ -221,22 +225,27 @@ Deno.serve(async (req) => {
     );
 
     const tickets = (payload.ticketNumbers || []).join(",");
-    const idempotencyKey = `cinema-ticket-${payload.toEmail}-${payload.screeningDate}-${tickets}`;
+    const baseKey = `cinema-ticket-${payload.toEmail}-${payload.screeningDate}-${tickets}`;
+    const idempotencyKey = payload.forceResend
+      ? `${baseKey}-resend-${Date.now()}`
+      : baseKey;
 
-    // Skip duplicates
-    const { data: latest } = await admin
-      .from("email_send_log")
-      .select("status")
-      .eq("message_id", idempotencyKey)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    // Skip duplicates only on automatic sends; manual resends always go through
+    if (!payload.forceResend) {
+      const { data: latest } = await admin
+        .from("email_send_log")
+        .select("status")
+        .eq("message_id", idempotencyKey)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    if (latest?.status === "sent") {
-      return new Response(
-        JSON.stringify({ ok: true, skipped: "already_sent" }),
-        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } },
-      );
+      if (latest?.status === "sent") {
+        return new Response(
+          JSON.stringify({ ok: true, skipped: "already_sent" }),
+          { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } },
+        );
+      }
     }
 
     // Unsubscribe token (one per email)
@@ -261,11 +270,24 @@ Deno.serve(async (req) => {
     const text = buildText(payload);
     const subject = `Secret Cinema · ${(payload.title || "Tonight").toUpperCase()} · Ticket${payload.ticketNumbers.length > 1 ? "s" : ""} #${payload.ticketNumbers.join(", ")}`;
 
+    const logMetadata = {
+      sender_domain: SENDER_DOMAIN,
+      from_address: FROM_ADDRESS,
+      booking_id: payload.bookingId ?? null,
+      release_id: payload.releaseId ?? null,
+      ticket_numbers: payload.ticketNumbers,
+      screening_date: payload.screeningDate,
+      title: payload.title ?? null,
+      manual_resend: payload.forceResend === true,
+      resend_reason: payload.resendReason ?? null,
+    };
+
     await admin.from("email_send_log").insert({
       message_id: idempotencyKey,
       template_name: "cinema_ticket",
       recipient_email: payload.toEmail,
       status: "pending",
+      metadata: logMetadata,
     });
 
     const { error: enqueueError } = await admin.rpc("enqueue_email", {
@@ -293,6 +315,7 @@ Deno.serve(async (req) => {
         recipient_email: payload.toEmail,
         status: "failed",
         error_message: enqueueError.message,
+        metadata: logMetadata,
       });
       return new Response(
         JSON.stringify({ error: "Failed to enqueue", details: enqueueError.message }),
