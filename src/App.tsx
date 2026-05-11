@@ -249,6 +249,12 @@ const MemberRoutes = ({ children }: { children: ReactNode }) => (
   </Suspense>
 );
 
+const MembersGate = () => {
+  const { isMember, loading } = useCBMember();
+  if (loading) return null;
+  return isMember ? <Navigate to="/den" replace /> : <CBMembers />;
+};
+
 const App = () => {
   const { isOpen, handleLogoTap, closePanel } = useHiddenDevPanel();
   
