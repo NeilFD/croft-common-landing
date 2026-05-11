@@ -35,7 +35,7 @@ const PinkDot = () => (
 const TIMELINE_SEED: CMSListSeed[] = [
   {
     heading: "A pub, a punt, a turf floor.",
-    body: "The Stadhampton local reopens. Real grass laid across the bar floor. Sheep optional, occasionally arriving anyway.",
+    body: "The Stadhampton local reopens. Real grass laid across the bar floor. Koi behind the cisterns. Sheep optional, occasionally arriving anyway.",
     meta: { year: "1993", source: "" },
   },
   {
@@ -45,18 +45,13 @@ const TIMELINE_SEED: CMSListSeed[] = [
   },
   {
     heading: "Town arrives.",
-    body: "A wonky coaching inn in Beaconsfield is taken on and rebuilt as a townhouse hotel. Glass loos. Silver leaf walls. Black on black on black.",
+    body: "A wonky coaching inn in Beaconsfield is taken on and rebuilt as a townhouse hotel. Glass loos. Mirrored ceilings. Silver leaf walls. Black on black on black.",
     meta: { year: "2002", source: "" },
   },
   {
-    heading: "Live fish in the cisterns.",
-    body: "Koi swim behind the gents' urinals at Town. Talking point. Conversation starter. Still there.",
-    meta: { year: "Town", source: "" },
-  },
-  {
-    heading: "The Thai room opens.",
-    body: "Hom Thai lands upstairs at Town. Gold leaf, lanterns, proper heat. Quietly one of the best Thai rooms in the country.",
-    meta: { year: "Town", source: "" },
+    heading: "The Thai rooms open.",
+    body: "Hom Thai lands upstairs at Town, then at Country. Gold leaf, lanterns, proper heat. Quietly one of the best Thai rooms in the country.",
+    meta: { year: "00s", source: "" },
   },
   {
     heading: "The burlesque years.",
@@ -175,9 +170,9 @@ const About = () => {
             page={PAGE}
             section="intro"
             contentKey="body"
-            fallback={`In 1993, Jason Hunt bought a wonky little pub in the Oxfordshire village of Stadhampton, called it The Crazy Bear, and laid real turf across the floor. People came for a pint and stayed for the spectacle. The kitchen took itself seriously. Nothing else did.
+            fallback={`In 1993, Jason Hunt bought a wonky little pub in the Oxfordshire village of Stadhampton, called it The Crazy Bear, and laid real turf across the floor. People came for a pint and stayed for the spectacle. Koi swam behind the cisterns. The kitchen took itself seriously. Nothing else did.
 
-Nine years later, a coaching inn in Beaconsfield was given the same treatment, in reverse: stripped back, blacked out, lined in silver leaf, fitted with glass loos and live koi swimming behind the urinals. Town was born.
+Nine years later, a coaching inn in Beaconsfield was given the same treatment, in reverse: stripped back, blacked out, lined in silver leaf, fitted with glass loos and mirrored ceilings. Town was born.
 
 Two hotels. One spirit. Pubs and rooms and Thai kitchens and treehouses and burlesque nights and breakfasts that go on too long. Born in 1993. Yet to grow up.`}
             as="p"

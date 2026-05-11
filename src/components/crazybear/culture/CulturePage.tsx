@@ -52,14 +52,14 @@ const TOWN: Copy = {
   page: "town-culture",
   title: "Town Culture | The Crazy Bear, Beaconsfield",
   metaDescription:
-    "Town culture. Koi behind the cisterns, Hom Thai upstairs, silver, gold and copper leaf and late nights in Beaconsfield. Twenty years of black on black on black.",
+    "Town culture. Hom Thai upstairs, silver, gold and copper leaf, mirrored ceilings and late nights in Beaconsfield. Twenty years of black on black on black.",
   canonical: "https://www.crazybear.dev/town/culture",
   eyebrow: "Beaconsfield / Est. 2002",
   headline: "Town. After dark.",
   tagline:
-    "A coaching inn, gutted and reborn in black, silver, gold and copper. Live fish in the cisterns. Glass loos. The kind of weekend you don't put in the brochure.",
+    "A coaching inn, gutted and reborn in black, silver, gold and copper. Mirrored ceilings. Glass loos. The kind of weekend you don't put in the brochure.",
   introKicker: "The soul of Town",
-  introBody: `In 2002 a wonky old coaching inn in the middle of Beaconsfield was taken on, stripped back, blacked out and lined in silver, gold and copper leaf. Glass loos went in. Koi went in behind the cisterns. The Thai room went in upstairs.
+  introBody: `In 2002 a wonky old coaching inn in the middle of Beaconsfield was taken on, stripped back, blacked out and lined in silver, gold and copper leaf. Glass loos went in. The bedrooms got mirrored ceilings. The Thai room went in upstairs.
 
 Town was always meant to be a townhouse, not a hotel. Eight bedrooms, a couple of bars, two restaurants and a pool out the back. Heels on the staircase by ten. Cocktails by eleven. Breakfast that rolls into the longest lunch of your life.
 
@@ -83,7 +83,7 @@ It still is.`,
   collageSeed: [
     { heading: "The burlesque years.", body: "Saturday nights. Mirrorball heads. Heels louder than the music.", meta: {} },
     { heading: "Hom Thai.", body: "Lanterns. Gold leaf. Proper heat upstairs. Quietly one of the best.", meta: {} },
-    { heading: "Bedrooms with baths.", body: "Crushed velvet, copper tubs, a tassel for everything. Black on black on red.", meta: {} },
+    { heading: "Bedrooms with baths.", body: "Crushed velvet, copper tubs, mirrored ceilings, a tassel for everything. Black on black on red.", meta: {} },
     { heading: "Fireside, after eleven.", body: "Negronis by the embers. Brass taps. The room dimmed to a glow.", meta: {} },
   ],
   timelineSeed: [
@@ -98,8 +98,8 @@ It still is.`,
       meta: { year: "2002" },
     },
     {
-      heading: "The koi move in.",
-      body: "Behind the cisterns. Conversation starters since.",
+      heading: "The bedrooms get mirrored ceilings.",
+      body: "Reflections above the beds. Velvet walls. Theatrical from the ground up.",
       meta: { year: "2002" },
     },
     {
@@ -134,16 +134,16 @@ const COUNTRY: Copy = {
   page: "country-culture",
   title: "Country Culture | The Crazy Bear, Stadhampton",
   metaDescription:
-    "Country culture. Turf floors, a cow in the dining room, roll-top baths and thirty years of long Sundays in Stadhampton, Oxfordshire.",
+    "Country culture. Turf floors, a cow in the dining room, koi behind the cisterns, roll-top baths and thirty years of long Sundays in Stadhampton, Oxfordshire.",
   canonical: "https://www.crazybear.dev/country/culture",
   eyebrow: "Stadhampton / Est. 1993",
   headline: "Country. Misbehaving since 1993.",
   tagline:
-    "A 16th century inn. A turf floor. A cow in the dining room. Roll-top baths, mirrored ceilings, velvet walls. Thirty years of Sundays that wouldn't end.",
+    "A 16th century inn. A turf floor. A cow in the dining room. Koi behind the cisterns. Roll-top baths, velvet walls. Thirty years of Sundays that wouldn't end.",
   introKicker: "The soul of Country",
   introBody: `In 1993 Jason Hunt took on a wonky little pub in the Oxfordshire village of Stadhampton, gave it a name, a kitchen, and a real turf floor. People came for a pint and stayed for the spectacle. Sheep wandered in. Nobody stopped them.
 
-The dining room got a cow. Taxidermy, mirrors and chandeliers in places chandeliers don't belong. The bedrooms got mirrored ceilings, velvet walls and roll-top baths. Breakfast brought up by hand. Slowly. Lunch followed, slower.
+The dining room got a cow. Taxidermy, mirrors and chandeliers in places chandeliers don't belong. The bedrooms got velvet walls, roll-top copper baths and koi swimming behind the cisterns. Breakfast brought up by hand. Slowly. Lunch followed, slower.
 
 Hom Thai opened upstairs. Gold leaf, lanterns, proper heat. Quietly one of the best Thai rooms in the country. The pub still pours. The kitchen still takes itself seriously. Nothing else does.`,
   collageHeading: "The look.",
@@ -164,7 +164,7 @@ Hom Thai opened upstairs. Gold leaf, lanterns, proper heat. Quietly one of the b
   hero: countryHero,
   collageSeed: [
     { heading: "Reception by Routemaster.", body: "Check in via the old red bus. Neon sign. Ivy round the door. The arrival sets the tone.", meta: {} },
-    { heading: "Bedrooms with copper.", body: "Roll-top copper baths. Mirrored ceilings. Gold tufted walls. Red velvet. Rooms that don't ask permission.", meta: {} },
+    { heading: "Bedrooms with copper.", body: "Roll-top copper baths. Velvet walls, gold tufted headboards. Red velvet. Rooms that don't ask permission.", meta: {} },
     { heading: "The long Thai lunch.", body: "Hom Thai upstairs. Lobster, prawns, curry, carved fruit. Gold leaf and lanterns. Sunday slips into evening.", meta: {} },
     { heading: "Firepit, after dark.", body: "Logs stacked. Fire lit. Lanterns in the palms. Dinner outside until the embers go down.", meta: {} },
   ],
@@ -186,7 +186,7 @@ Hom Thai opened upstairs. Gold leaf, lanterns, proper heat. Quietly one of the b
     },
     {
       heading: "Rooms in the country.",
-      body: "Roll-top baths, mirrored ceilings, velvet walls, your secrets are safe with us. Breakfast brought up by hand. Hangovers part of the package.",
+      body: "Roll-top baths, velvet walls, your secrets are safe with us. Breakfast brought up by hand. Hangovers part of the package.",
       meta: { year: "00s" },
     },
     {
