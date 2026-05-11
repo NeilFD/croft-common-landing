@@ -48,6 +48,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
     ticketNumbers: number[];
     releaseId: string;
     walletToken?: string | null;
+    bookingId?: string | null;
   } | null>(null);
 
   const formattedScreening = useMemo(() => {
@@ -144,8 +145,9 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
       const ticket_numbers: number[] = row?.ticket_numbers ?? [];
       const release_id: string = row?.release_id;
       const wallet_token: string | null = row?.wallet_token ?? null;
+      const booking_id: string | null = row?.booking_id ?? null;
 
-      setConfirmation({ ticketNumbers: ticket_numbers, releaseId: release_id, walletToken: wallet_token });
+      setConfirmation({ ticketNumbers: ticket_numbers, releaseId: release_id, walletToken: wallet_token, bookingId: booking_id });
       toast({ title: 'Booking confirmed', description: `You've got ticket${ticket_numbers.length > 1 ? 's' : ''} #${ticket_numbers.join(', ')}` });
 
       // Send confirmation email (best-effort with explicit error handling)
@@ -161,6 +163,8 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
           screeningTime,
           title: status.title ?? 'Secret Cinema Club',
           walletToken: wallet_token,
+          bookingId: booking_id,
+          releaseId: release_id,
         },
       });
       if (emailError) {
@@ -208,6 +212,10 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
           screeningTime,
           title: status.title ?? 'Secret Cinema Club',
           walletToken: confirmation.walletToken ?? null,
+          bookingId: confirmation.bookingId ?? null,
+          releaseId: confirmation.releaseId,
+          forceResend: true,
+          resendReason: 'user_resend_button',
         },
       });
       toast({ title: 'Email sent', description: `Sent to ${user.email}` });

@@ -4179,6 +4179,7 @@ export type Database = {
           _user_id: string
         }
         Returns: {
+          booking_id: string
           release_id: string
           ticket_numbers: number[]
           wallet_token: string
