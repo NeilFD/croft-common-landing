@@ -28,9 +28,9 @@ export const useAvatarUpload = () => {
         throw new Error('Please select an image file');
       }
 
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        throw new Error('Image size must be less than 5MB');
+      // Validate file size (max 15MB)
+      if (file.size > 15 * 1024 * 1024) {
+        throw new Error('Image size must be less than 15MB');
       }
 
       // Create a unique filename

@@ -202,7 +202,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
       />
 
       <p className="text-xs text-muted-foreground text-center max-w-xs">
-        Drag and drop an image or click to browse. Max 5MB.
+        Drag and drop an image or click to browse. Max 15MB.
       </p>
     </div>
   );
