@@ -63,10 +63,10 @@ serve(async (req) => {
     }
 
     // Fetch active subscriptions and opt-in events with known user ids
-    const [{ data: subs, error: subsErr }, { data: events, error: eventsErr }] = await Promise.all([
-      admin.from("push_subscriptions").select("id, endpoint, user_id, is_active").eq("is_active", true),
-      admin.from("push_optin_events").select("subscription_id, endpoint, user_id").not("user_id", "is", null),
-    ]);
+    const { data: subs, error: subsErr } = await admin
+      .from("push_subscriptions")
+      .select("id, endpoint, user_id, is_active")
+      .eq("is_active", true);
 
     if (subsErr) {
       console.error("backfill-push-user-links subs error", subsErr);
@@ -75,20 +75,9 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    if (eventsErr) {
-      console.error("backfill-push-user-links events error", eventsErr);
-      return new Response(JSON.stringify({ error: eventsErr.message }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     const endpointToUser = new Map<string, string>();
     const subIdToUser = new Map<string, string>();
-    for (const e of events ?? []) {
-      if (e.endpoint && e.user_id && !endpointToUser.has(e.endpoint)) endpointToUser.set(e.endpoint, e.user_id);
-      if (e.subscription_id && e.user_id && !subIdToUser.has(e.subscription_id)) subIdToUser.set(e.subscription_id, e.user_id);
-    }
 
     const idsByUser = new Map<string, string[]>();
     let remainingUnknown = 0;
