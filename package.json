@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "check:cms-registry": "tsx scripts/check-cms-registry.ts",
+    "prebuild": "tsx scripts/check-cms-registry.ts",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
