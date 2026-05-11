@@ -59,11 +59,13 @@ const CommonRoomMain = () => {
 
   return (
     <div
-      className="min-h-screen relative overflow-y-auto"
+      className="min-h-screen relative overflow-y-auto select-none"
       style={{
         touchAction: 'pan-y pinch-zoom',
         WebkitOverflowScrolling: 'touch',
         overscrollBehavior: 'contain',
+        WebkitUserSelect: 'none',
+        WebkitTouchCallout: 'none',
       }}
     >
       {/* Fixed B&W Crazy Bear background */}
