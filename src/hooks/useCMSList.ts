@@ -112,17 +112,23 @@ export const useCMSList = (page: string, section: string, opts: Options = {}) =>
   };
 
   const ensureSeeded = async (): Promise<CMSListRow[]> => {
-    if (rows.length > 0) return rows;
-    if (fallback.length === 0) return [];
-    const seed = fallback.map((f, i) => ({
+    if (fallback.length === 0) return rows;
+    // Seed any MISSING fallback entries as published baseline rows so unedited
+    // entries are preserved on publish (publish replaces per sort_order).
+    const existingOrders = new Set(rows.map((r) => r.sort_order));
+    const missing = fallback
+      .map((f, i) => ({ f, i }))
+      .filter(({ i }) => !existingOrders.has(i));
+    if (missing.length === 0) return rows;
+    const seed = missing.map(({ f, i }) => ({
       page,
       section,
       heading: f.heading ?? null,
       body: f.body ?? null,
       meta: f.meta ?? {},
       sort_order: i,
-      published: false,
-      is_draft: true,
+      published: true,
+      is_draft: false,
     }));
     const { data, error } = await (supabase as any)
       .from("cms_list_items")
@@ -130,11 +136,11 @@ export const useCMSList = (page: string, section: string, opts: Options = {}) =>
       .select("id, page, section, sort_order, heading, body, meta, published, is_draft");
     if (error) {
       console.error("CMS list seed error", error);
-      return [];
+      return rows;
     }
-    const next = (data as CMSListRow[]) ?? [];
+    const inserted = (data as CMSListRow[]) ?? [];
+    const next = [...rows, ...inserted].sort((a, b) => a.sort_order - b.sort_order);
     setRows(next);
-    notifyDraftChange();
     return next;
   };
 
