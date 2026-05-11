@@ -225,7 +225,11 @@ Deno.serve(async (req) => {
     );
 
     const tickets = (payload.ticketNumbers || []).join(",");
-    const baseKey = `cinema-ticket-${payload.toEmail}-${payload.screeningDate}-${tickets}`;
+    // Prefer the booking ID as the stable identity. Falls back to the
+    // legacy email+date+tickets key only for very old callers.
+    const baseKey = payload.bookingId
+      ? `cinema-ticket-booking-${payload.bookingId}`
+      : `cinema-ticket-${payload.toEmail}-${payload.screeningDate}-${tickets}`;
     const idempotencyKey = payload.forceResend
       ? `${baseKey}-resend-${Date.now()}`
       : baseKey;
