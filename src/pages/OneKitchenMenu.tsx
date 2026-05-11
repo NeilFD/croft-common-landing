@@ -4,6 +4,8 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { oneKitchenMenuData } from '@/data/oneKitchenMenuData';
+import { CMSText } from '@/components/cms/CMSText';
+import { useCMSMode } from '@/contexts/CMSModeContext';
 
 const OneKitchenMenu = () => {
   return (
