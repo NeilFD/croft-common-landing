@@ -13,10 +13,14 @@ const ROOT = resolve(__dirname, '..');
 const APP = readFileSync(resolve(ROOT, 'src/App.tsx'), 'utf8');
 const REG = readFileSync(resolve(ROOT, 'src/data/cmsPages.ts'), 'utf8');
 
-// Pull every <Route path="..."> from App.tsx
+// Pull every <Route path="..."> from App.tsx (public-site routes only)
 const routePaths = Array.from(APP.matchAll(/<Route\s+path="([^"]+)"/g))
   .map((m) => m[1])
-  .filter((p) => p && p !== '*' && !p.includes('cms/visual'));
+  .filter((p) => p && p !== '*' && !p.includes('cms/visual'))
+  // Exclude management/admin/internal routes — those have their own auth + UI
+  .filter((p) => !p.startsWith('/management') && !p.startsWith('/beo') &&
+    !p.startsWith('/client-login') && !p.startsWith('/proposal') &&
+    !p.startsWith('/from-notification') && !p.startsWith('/p/') && !p.startsWith('/c/'));
 
 // Pull registry routes & excluded routes via simple string matching
 const registryRoutes = Array.from(REG.matchAll(/route:\s*'([^']+)'/g)).map((m) => m[1]);
