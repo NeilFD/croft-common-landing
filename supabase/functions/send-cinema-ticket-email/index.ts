@@ -21,6 +21,10 @@ type EmailPayload = {
   screeningTime: string;
   title?: string | null;
   walletToken?: string | null;
+  forceResend?: boolean;
+  bookingId?: string | null;
+  releaseId?: string | null;
+  resendReason?: string | null;
 };
 
 const fmtDate = (isoDate: string) => {
