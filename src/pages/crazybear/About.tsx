@@ -50,7 +50,7 @@ const TIMELINE_SEED: CMSListSeed[] = [
   },
   {
     heading: "The Thai rooms open.",
-    body: "Hom Thai lands upstairs at Town, then at Country. Gold leaf, lanterns, proper heat. Quietly one of the best Thai rooms in the country.",
+    body: "Thai lands upstairs at Town, then at Country. Gold leaf, lanterns, proper heat. Quietly one of the best Thai rooms in the country.",
     meta: { year: "00s", source: "" },
   },
   {
@@ -194,7 +194,7 @@ Two hotels. One spirit. Pubs and rooms and Thai kitchens and treehouses and burl
                 { src: countryLook1, alt: "Reception by Routemaster at Country" },
                 { src: townLook3, alt: "Red room at Town" },
                 { src: countryLook2, alt: "Copper bath bedroom at Country" },
-                { src: townLook2, alt: "Hom Thai at Town" },
+                { src: townLook2, alt: "Thai at Town" },
                 { src: countryLook4, alt: "Firepit terrace at Country" },
                 { src: townLook4, alt: "Rococo interior at Town" },
                 { src: countryLook3, alt: "Long Thai lunch at Country" },

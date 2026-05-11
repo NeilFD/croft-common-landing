@@ -52,7 +52,7 @@ const TOWN: Copy = {
   page: "town-culture",
   title: "Town Culture | The Crazy Bear, Beaconsfield",
   metaDescription:
-    "Town culture. Hom Thai upstairs, silver, gold and copper leaf, mirrored ceilings and late nights in Beaconsfield. Twenty years of black on black on black.",
+    "Town culture. Thai upstairs, silver, gold and copper leaf, mirrored ceilings and late nights in Beaconsfield. Twenty years of black on black on black.",
   canonical: "https://www.crazybear.dev/town/culture",
   eyebrow: "Beaconsfield / Est. 2002",
   headline: "Town. After dark.",
@@ -82,7 +82,7 @@ It still is.`,
   hero: townHero,
   collageSeed: [
     { heading: "The burlesque years.", body: "Saturday nights. Mirrorball heads. Heels louder than the music.", meta: {} },
-    { heading: "Hom Thai.", body: "Lanterns. Gold leaf. Proper heat upstairs. Quietly one of the best.", meta: {} },
+    { heading: "Thai.", body: "Lanterns. Gold leaf. Proper heat upstairs. Quietly one of the best.", meta: {} },
     { heading: "Bedrooms with baths.", body: "Crushed velvet, copper tubs, mirrored ceilings, a tassel for everything. Black on black on red.", meta: {} },
     { heading: "Fireside, after eleven.", body: "Negronis by the embers. Brass taps. The room dimmed to a glow.", meta: {} },
   ],
@@ -103,7 +103,7 @@ It still is.`,
       meta: { year: "2002" },
     },
     {
-      heading: "Hom Thai upstairs.",
+      heading: "Thai upstairs.",
       body: "Quietly one of the best Thai dining rooms in the country. Quietly.",
       meta: { year: "2003" },
     },
@@ -145,7 +145,7 @@ const COUNTRY: Copy = {
 
 The dining room got a cow. Taxidermy, mirrors and chandeliers in places chandeliers don't belong. The bedrooms got velvet walls, roll-top copper baths and koi swimming behind the cisterns. Breakfast brought up by hand. Slowly. Lunch followed, slower.
 
-Hom Thai opened upstairs. Gold leaf, lanterns, proper heat. Quietly one of the best Thai rooms in the country. The pub still pours. The kitchen still takes itself seriously. Nothing else does.`,
+Thai opened upstairs. Gold leaf, lanterns, proper heat. Quietly one of the best Thai rooms in the country. The pub still pours. The kitchen still takes itself seriously. Nothing else does.`,
   collageHeading: "The look.",
   collageKicker: "Red bus. Copper bath. Open fire.",
   playlistHeading: "The soundtrack.",
@@ -165,7 +165,7 @@ Hom Thai opened upstairs. Gold leaf, lanterns, proper heat. Quietly one of the b
   collageSeed: [
     { heading: "Reception by Routemaster.", body: "Check in via the old red bus. Neon sign. Ivy round the door. The arrival sets the tone.", meta: {} },
     { heading: "Bedrooms with copper.", body: "Roll-top copper baths. Velvet walls, gold tufted headboards. Red velvet. Rooms that don't ask permission.", meta: {} },
-    { heading: "The long Thai lunch.", body: "Hom Thai upstairs. Lobster, prawns, curry, carved fruit. Gold leaf and lanterns. Sunday slips into evening.", meta: {} },
+    { heading: "The long Thai lunch.", body: "Thai upstairs. Lobster, prawns, curry, carved fruit. Gold leaf and lanterns. Sunday slips into evening.", meta: {} },
     { heading: "Firepit, after dark.", body: "Logs stacked. Fire lit. Lanterns in the palms. Dinner outside until the embers go down.", meta: {} },
   ],
   timelineSeed: [
@@ -181,7 +181,7 @@ Hom Thai opened upstairs. Gold leaf, lanterns, proper heat. Quietly one of the b
     },
     {
       heading: "The Thai room opens.",
-      body: "Hom Thai lands upstairs. Gold leaf, lanterns, proper heat. Quietly one of the best Thai dining rooms in the country.",
+      body: "Thai lands upstairs. Gold leaf, lanterns, proper heat. Quietly one of the best Thai dining rooms in the country.",
       meta: { year: "00s" },
     },
     {
