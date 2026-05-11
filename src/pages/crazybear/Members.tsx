@@ -135,7 +135,7 @@ const Members = () => {
                   section="get"
                   contentKey={p.k}
                   fallback={p.t}
-                  as="span"
+                  as="p"
                   className="font-cb-sans text-base md:text-lg leading-relaxed"
                 />
               </li>
