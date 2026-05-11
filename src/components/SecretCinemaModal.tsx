@@ -147,7 +147,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
       const wallet_token: string | null = row?.wallet_token ?? null;
       const booking_id: string | null = row?.booking_id ?? null;
 
-      setConfirmation({ ticketNumbers: ticket_numbers, releaseId: release_id, walletToken: wallet_token, bookingId: booking_id } as any);
+      setConfirmation({ ticketNumbers: ticket_numbers, releaseId: release_id, walletToken: wallet_token, bookingId: booking_id });
       toast({ title: 'Booking confirmed', description: `You've got ticket${ticket_numbers.length > 1 ? 's' : ''} #${ticket_numbers.join(', ')}` });
 
       // Send confirmation email (best-effort with explicit error handling)
