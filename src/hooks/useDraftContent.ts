@@ -123,22 +123,30 @@ export const useDraftContent = (page: string) => {
           .eq('is_draft', true);
       }
 
-      // Publish list-item drafts per (page, section): delete published rows for sections
-      // that have drafts, then flip the drafts to published.
+      // Publish list-item drafts per (page, section). For each draft, only delete the
+      // matching published row at the SAME sort_order (per-row replacement). This avoids
+      // wiping unrelated published entries that the user did not edit.
       const { data: draftLists } = await (supabase as any)
         .from('cms_list_items')
-        .select('section')
+        .select('section, sort_order')
         .eq('page', page)
         .eq('is_draft', true);
-      const sections = Array.from(new Set(((draftLists as any[]) ?? []).map((r) => r.section).filter(Boolean)));
+      const draftRows = (draftLists as Array<{ section: string; sort_order: number }> | null) ?? [];
+      const sections = Array.from(new Set(draftRows.map((r) => r.section).filter(Boolean)));
       for (const section of sections) {
-        await (supabase as any)
-          .from('cms_list_items')
-          .delete()
-          .eq('page', page)
-          .eq('section', section)
-          .eq('published', true)
-          .eq('is_draft', false);
+        const orders = Array.from(
+          new Set(draftRows.filter((r) => r.section === section).map((r) => r.sort_order)),
+        );
+        if (orders.length > 0) {
+          await (supabase as any)
+            .from('cms_list_items')
+            .delete()
+            .eq('page', page)
+            .eq('section', section)
+            .eq('published', true)
+            .eq('is_draft', false)
+            .in('sort_order', orders);
+        }
         await (supabase as any)
           .from('cms_list_items')
           .update({ published: true, is_draft: false })
