@@ -77,6 +77,7 @@ export const CMSSidebar = () => {
   const currentPath = location.pathname;
 
   const [open, setOpen] = useState<Record<string, boolean>>({
+    standalone: true,
     country: true,
     town: true,
     global: false,
