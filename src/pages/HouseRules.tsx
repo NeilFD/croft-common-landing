@@ -17,13 +17,11 @@ const DEFAULT_RULES = [
 
 const HouseRules = () => {
   const { isCMSMode } = useCMSMode();
-  const { items } = useCMSList(
-    "house-rules",
-    "rules",
-    DEFAULT_RULES.map((text, i) => ({ id: `seed-${i}`, sort_order: i, content_data: { text } }))
-  );
+  const { items } = useCMSList("house-rules", "rules", {
+    fallback: DEFAULT_RULES.map((text) => ({ body: text })),
+  });
   const rules: string[] = items.length
-    ? items.map((it: any) => it.content_data?.text ?? "")
+    ? items.map((it) => it.body)
     : DEFAULT_RULES;
 
   return (
