@@ -7,8 +7,10 @@
  * Wired into prebuild so missing entries fail the build.
  */
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const APP = readFileSync(resolve(ROOT, 'src/App.tsx'), 'utf8');
 const REG = readFileSync(resolve(ROOT, 'src/data/cmsPages.ts'), 'utf8');
