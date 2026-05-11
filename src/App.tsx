@@ -252,7 +252,15 @@ const MemberRoutes = ({ children }: { children: ReactNode }) => (
 
 const MembersGate = () => {
   const { isMember, loading } = useCBMember();
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <p className="font-cb-mono text-[10px] tracking-[0.45em] uppercase text-white/60">
+          One moment.
+        </p>
+      </div>
+    );
+  }
   return isMember ? <Navigate to="/den" replace /> : <CBMembers />;
 };
 
