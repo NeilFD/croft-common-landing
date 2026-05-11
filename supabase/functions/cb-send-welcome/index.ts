@@ -10,8 +10,8 @@ const corsHeaders = {
 }
 
 const SITE_NAME = 'The Crazy Bear'
-const SENDER_DOMAIN = 'notify.crazybeartest.com'
-const FROM_DOMAIN = 'crazybeartest.com'
+const SENDER_DOMAIN = 'notify.crazybear.dev'
+const FROM_DOMAIN = 'notify.crazybear.dev'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
