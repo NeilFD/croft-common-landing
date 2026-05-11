@@ -4277,6 +4277,15 @@ export type Database = {
         Returns: boolean
       }
       safe_jsonb_int: { Args: { value: string }; Returns: number }
+      seed_seo_page: {
+        Args: {
+          p_description: string
+          p_noindex?: boolean
+          p_route: string
+          p_title: string
+        }
+        Returns: undefined
+      }
       update_lead: {
         Args: { lead_id_param: string; patch: Json }
         Returns: undefined

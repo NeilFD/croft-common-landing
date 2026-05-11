@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { syncSeoPagesFromRegistry } from '@/lib/syncSeoPages';
 import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -95,6 +96,14 @@ export default function SeoDashboard() {
   const [auditingAll, setAuditingAll] = useState(false);
   const [progressDone, setProgressDone] = useState(0);
   const [progressRoute, setProgressRoute] = useState<string | null>(null);
+
+  // Auto-register every page from the CMS registry into seo_pages.
+  // Idempotent — existing rows are never overwritten.
+  useEffect(() => {
+    syncSeoPagesFromRegistry().then(() => {
+      qc.invalidateQueries({ queryKey: ['seo-pages'] });
+    });
+  }, [qc]);
 
   // Bulk AI state
   const [bulkAiBusy, setBulkAiBusy] = useState(false);
