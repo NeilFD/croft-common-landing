@@ -42,7 +42,7 @@ const Members = () => {
             page={PAGE}
             section="hero"
             contentKey="intro"
-            fallback="Free to join. The bear remembers you. Birthdays, bookings, the odd quiet table when the room looks full. Town and Country. Both houses, one ear."
+            fallback="Free to join. The bear remembers you. Quiet rates, the odd cinema night, a recipe from the kitchens. Town and Country. Both houses, one ear."
             as="p"
             className="mt-8 max-w-2xl font-cb-sans text-lg md:text-xl leading-relaxed opacity-90"
           />
@@ -108,25 +108,29 @@ const Members = () => {
         </div>
       </section>
 
-      {/* What you get */}
+      {/* What's inside */}
       <section className="border-t border-white/15 px-6 md:px-16 py-16 md:py-24">
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-5xl">
           <CMSText
             page={PAGE}
             section="get"
             contentKey="kicker"
-            fallback="What you get"
+            fallback="What's inside"
             as="p"
             className="font-cb-mono text-[10px] tracking-[0.45em] uppercase opacity-60"
           />
-          <ul className="mt-10 space-y-5">
+          <ul className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-x-10">
             {[
-              { k: "perk-1", t: "Priority on quiet rooms and last-minute tables." },
-              { k: "perk-2", t: "First word on new openings, suppers and odd nights." },
-              { k: "perk-3", t: "A birthday nod from the bear." },
-              { k: "perk-4", t: "Members-only moments. Town and Country." },
+              { k: "perk-1", t: "Roll the Dice. A pour you didn't ask for." },
+              { k: "perk-2", t: "Recipe of the Month. From the kitchens. Yours to cook." },
+              { k: "perk-3", t: "Rooms offer. A quiet rate. Town or Country." },
+              { k: "perk-4", t: "Pool day bed. When the sun shows up." },
+              { k: "perk-5", t: "Secret Cinema. Rare nights, members first." },
+              { k: "perk-6", t: "Moments. Your nights at Town and Country, tagged and kept." },
+              { k: "perk-7", t: "Takeaway. Members-only ordering. Thai, when you want it." },
+              { k: "perk-8", t: "The Ledger. Receipts and spend. Quiet maths." },
             ].map((p) => (
-              <li key={p.k} className="flex gap-5 border-b border-white/15 pb-5">
+              <li key={p.k} className="flex gap-5 border-b border-white/15 py-5">
                 <span aria-hidden className="font-cb-mono text-[11px] tracking-[0.4em] opacity-60 pt-1">
                   /
                 </span>
@@ -136,7 +140,7 @@ const Members = () => {
                   contentKey={p.k}
                   fallback={p.t}
                   as="p"
-                  className="font-cb-sans text-base md:text-lg leading-relaxed"
+                  className="font-cb-sans text-base md:text-lg leading-relaxed [&>strong]:font-semibold first-letter:font-semibold"
                 />
               </li>
             ))}
