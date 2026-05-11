@@ -176,12 +176,22 @@ const Curious: React.FC = () => {
           {!category && (
             <>
               <p className="font-mono text-[10px] tracking-[0.4em] uppercase text-black/50 mb-3">/ / /</p>
-              <h1 className="font-display uppercase text-5xl md:text-6xl tracking-tight leading-none mb-4">
-                Ask the Bear
-              </h1>
-              <p className="font-sans text-base text-black/70 max-w-xl mb-12">
-                Pick your line of enquiry. We answer in plain English, usually within a working day.
-              </p>
+              <CMSText
+                page="curious"
+                section="hero"
+                contentKey="title"
+                fallback="Ask the Bear"
+                as="h1"
+                className="font-display uppercase text-5xl md:text-6xl tracking-tight leading-none mb-4"
+              />
+              <CMSText
+                page="curious"
+                section="hero"
+                contentKey="description"
+                fallback="Pick your line of enquiry. We answer in plain English, usually within a working day."
+                as="p"
+                className="font-sans text-base text-black/70 max-w-xl mb-12"
+              />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {CATEGORIES.map((c) => (
