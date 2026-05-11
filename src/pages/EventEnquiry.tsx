@@ -83,11 +83,23 @@ const EventEnquiry = () => {
         <header className="border-b-2 border-black/80 px-6 md:px-12 pt-safe-6 pb-6 flex items-center gap-4 bg-white/85 backdrop-blur-sm">
           <Link to="/" className="flex items-center gap-3">
             <img src="/brand/crazy-bear-mark.png" alt="Crazy Bear" className="w-10 h-10" />
-            <span className="font-display uppercase tracking-tight text-xl">Crazy Bear</span>
+            <CMSText
+              page="event-enquiry"
+              section="header"
+              contentKey="brand"
+              fallback="Crazy Bear"
+              as="div"
+              className="font-display uppercase tracking-tight text-xl"
+            />
           </Link>
-          <span className="ml-auto font-mono text-[10px] tracking-[0.4em] uppercase text-black/60">
-            {isComplete ? 'Review' : 'Plan Your Event'}
-          </span>
+          <CMSText
+            page="event-enquiry"
+            section="header"
+            contentKey="title"
+            fallback={isComplete ? 'Review' : 'Plan Your Event'}
+            as="div"
+            className="ml-auto font-mono text-[10px] tracking-[0.4em] uppercase text-black/60"
+          />
           <button
             onClick={() => navigate('/curious')}
             className="font-mono text-[10px] tracking-[0.4em] uppercase text-black/70 hover:text-black"
