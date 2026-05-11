@@ -22,7 +22,7 @@ import {
   BookOpen,
   Music,
 } from 'lucide-react';
-
+import { CMS_PAGES } from '@/data/cmsPages';
 interface OverviewStats {
   totalContent: number;
   totalMenuSections: number;
