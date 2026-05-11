@@ -20,7 +20,10 @@ const routePaths = Array.from(APP.matchAll(/<Route\s+path="([^"]+)"/g))
   // Exclude management/admin/internal routes — those have their own auth + UI
   .filter((p) => !p.startsWith('/management') && !p.startsWith('/beo') &&
     !p.startsWith('/client-login') && !p.startsWith('/proposal') &&
-    !p.startsWith('/from-notification') && !p.startsWith('/p/') && !p.startsWith('/c/'));
+  // Skip relative paths (children of <Route> with a leading parent path) — those are checked via parent route in the registry
+  .filter((p) => p.startsWith('/'))
+  // Skip /cms/* legacy redirects (handled inside management area)
+  .filter((p) => !p.startsWith('/cms'));
 
 // Pull registry routes & excluded routes via simple string matching
 const registryRoutes = Array.from(REG.matchAll(/route:\s*'([^']+)'/g)).map((m) => m[1]);
