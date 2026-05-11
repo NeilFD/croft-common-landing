@@ -398,7 +398,7 @@ const OneKitchenMenu = () => {
           </div>
         </main>
 
-        <Footer />
+        {!isCMSMode && <Footer />}
       </div>
     </>
   );
