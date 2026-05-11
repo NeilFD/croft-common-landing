@@ -175,9 +175,9 @@ const About = () => {
             page={PAGE}
             section="intro"
             contentKey="body"
-            fallback={`In 1993, Jason Hunt bought a wonky little pub in the Oxfordshire village of Stadhampton, called it The Crazy Bear, and laid real turf across the floor. People came for a pint and stayed for the spectacle. The kitchen took itself seriously. Nothing else did.
+            fallback={`In 1993, Jason Hunt bought a wonky little pub in the Oxfordshire village of Stadhampton, called it The Crazy Bear, and laid real turf across the floor. People came for a pint and stayed for the spectacle. Koi swam behind the cisterns. The kitchen took itself seriously. Nothing else did.
 
-Nine years later, a coaching inn in Beaconsfield was given the same treatment, in reverse: stripped back, blacked out, lined in silver leaf, fitted with glass loos and live koi swimming behind the urinals. Town was born.
+Nine years later, a coaching inn in Beaconsfield was given the same treatment, in reverse: stripped back, blacked out, lined in silver leaf, fitted with glass loos and mirrored ceilings. Town was born.
 
 Two hotels. One spirit. Pubs and rooms and Thai kitchens and treehouses and burlesque nights and breakfasts that go on too long. Born in 1993. Yet to grow up.`}
             as="p"
