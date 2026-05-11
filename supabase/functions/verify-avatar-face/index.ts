@@ -31,20 +31,27 @@ serve(async (req) => {
     }
 
     const prompt = `You are reviewing a profile picture for a private members' club.
-Decide if the image is acceptable as a member's profile photo.
+Be GENEROUS. The goal is only to filter out images that clearly are NOT a photo of the member.
 
-ACCEPT only if ALL of the following are true:
-- A single human face is clearly visible
-- The face is roughly front-facing (looking towards the camera, not in profile / not turned away)
-- The face is well-lit and in focus
-- The face fills a reasonable portion of the frame (not a tiny figure in the distance)
-- It is a real photograph of a real person (not a cartoon, illustration, logo, animal, object, meme, screenshot, or AI-generated avatar)
-- No heavy obscuring (sunglasses covering eyes, mask covering face, hands covering face, etc.)
+ACCEPT if the image plausibly contains a real human person, in any of these situations:
+- Any angle (front, side, three-quarter, looking away).
+- Sunglasses, hats, scarves, masks, partial obscuring - all fine.
+- Slightly blurry, dim, grainy, candid, or stylised photographs.
+- Group shots where a person is clearly present.
+- Selfies, full-body shots, distance shots, action shots.
+- Black and white, filtered, or moody photography.
 
-REJECT for any of: no face, multiple people, side profile, looking away, blurry, too dark, sunglasses or mask hiding face, animal, object, cartoon, illustration, group shot, image of a screen, or anything that is not clearly the member's own face.
+REJECT only if it is clearly NOT a photo of a person:
+- No human at all (logo, object, blank wall, food, scenery, product shot).
+- Animal, cartoon, illustration, meme, emoji, or obviously AI-generated avatar with no real person in it.
+- Screenshot of an app, website, document, chart, or messaging thread.
+- Pornographic or explicit content.
+- So dark, broken or corrupted that nothing can be made out at all.
+
+When in doubt, ACCEPT.
 
 Respond with ONLY a compact JSON object, no prose, no markdown fences:
-{"valid": true|false, "reason": "<short reason, max 18 words, suitable to show the user>"}`;
+{"valid": true|false, "reason": "<short, gentle reason, max 18 words. For rejections say something like: Looks like that is not a photo of you - try one with you in it.>"}`;
 
     const aiRes = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
