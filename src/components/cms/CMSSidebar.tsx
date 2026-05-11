@@ -56,11 +56,6 @@ const globalSections = [
   { name: 'Modal Content', path: `${CMS_BASE}/global/modals`, icon: Eye },
 ];
 
-const _legacyGlobalSections = [
-  { name: 'Footer', path: `${VISUAL}/global/footer`, icon: FileText },
-  { name: 'Navigation', path: `${VISUAL}/global/navigation`, icon: Globe },
-  { name: 'Modal Content', path: `${CMS_BASE}/global/modals`, icon: Eye },
-];
 
 const emailTemplateStructure = [
   { name: 'Welcome Email', path: `${CMS_BASE}/email-templates/welcome`, icon: Mail },
