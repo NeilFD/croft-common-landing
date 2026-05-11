@@ -17,13 +17,17 @@ const REG = readFileSync(resolve(ROOT, 'src/data/cmsPages.ts'), 'utf8');
 const routePaths = Array.from(APP.matchAll(/<Route\s+path="([^"]+)"/g))
   .map((m) => m[1])
   .filter((p) => p && p !== '*' && !p.includes('cms/visual'))
-  // Exclude management/admin/internal routes — those have their own auth + UI
-  .filter((p) => !p.startsWith('/management') && !p.startsWith('/beo') &&
-    !p.startsWith('/client-login') && !p.startsWith('/proposal') &&
-  // Skip relative paths (children of <Route> with a leading parent path) — those are checked via parent route in the registry
+  // Only fully-qualified public-site paths
   .filter((p) => p.startsWith('/'))
-  // Skip /cms/* legacy redirects (handled inside management area)
-  .filter((p) => !p.startsWith('/cms'));
+  // Exclude management/admin/internal namespaces
+  .filter((p) => !p.startsWith('/management') &&
+    !p.startsWith('/beo') &&
+    !p.startsWith('/client-login') &&
+    !p.startsWith('/proposal') &&
+    !p.startsWith('/from-notification') &&
+    !p.startsWith('/p/') &&
+    !p.startsWith('/c/') &&
+    !p.startsWith('/cms'));
 
 // Pull registry routes & excluded routes via simple string matching
 const registryRoutes = Array.from(REG.matchAll(/route:\s*'([^']+)'/g)).map((m) => m[1]);
