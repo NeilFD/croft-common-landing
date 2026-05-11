@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { EventEnquiryChat } from '@/components/enquiry/EventEnquiryChat';
 import { EnquiryReview } from '@/components/enquiry/EnquiryReview';
 import cbBgImage from '@/assets/den-bg-neon.jpg';
+import { CMSText } from '@/components/cms/CMSText';
 
 export type Message = {
   role: 'user' | 'assistant';
