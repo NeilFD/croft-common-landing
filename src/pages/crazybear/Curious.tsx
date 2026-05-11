@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import cbBgImage from '@/assets/den-bg-neon.jpg';
+import { CMSText } from '@/components/cms/CMSText';
 
 type Category = 'general' | 'rooms' | 'dining' | 'membership';
 
