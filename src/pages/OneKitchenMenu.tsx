@@ -22,16 +22,21 @@ const OneKitchenMenu = () => {
       </Helmet>
 
       <div className="min-h-screen bg-background">
-        <Navigation />
+        {!isCMSMode && <Navigation />}
         
         {/* Hero Section */}
         <section className="relative bg-[hsl(var(--accent-pink))] pt-20 pb-16 md:py-24">
           <div className="container mx-auto px-4">
             <div className="text-center text-white">
               <div className="w-24 h-0.5 bg-white mx-auto mb-8"></div>
-              <h1 className="font-brutalist text-4xl md:text-6xl lg:text-7xl tracking-wider uppercase mb-4">
-                Crazy Bear Kitchen
-              </h1>
+              <CMSText
+                page="onekitchen-menu"
+                section="hero"
+                contentKey="title"
+                fallback="Crazy Bear Kitchen"
+                as="h1"
+                className="font-brutalist text-4xl md:text-6xl lg:text-7xl tracking-wider uppercase mb-4"
+              />
               <div className="w-24 h-0.5 bg-white mx-auto"></div>
             </div>
           </div>
