@@ -663,3 +663,7 @@ body:has([data-radix-dialog-overlay][data-state="open"]) .mobile-safe-carousel {
 }
 .seven-flash { animation: seven-flash 900ms ease-out forwards; }
 .seven-ring { animation: seven-ring 1100ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+
+/* Display font default weight (Bricolage Grotesque) - matches the visual weight Archivo Black gave us */
+.font-display { font-weight: 800; }
+
