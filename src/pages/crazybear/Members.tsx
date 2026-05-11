@@ -13,7 +13,6 @@ const Members = () => {
     title: "Join the Bears Den / The Crazy Bear",
     description:
       "The Bears Den. The bear's memory of you. Quiet perks across Town and Country. Free to join.",
-    path: "/members",
   });
 
   return (
