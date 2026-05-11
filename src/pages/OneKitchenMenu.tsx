@@ -8,6 +8,7 @@ import { CMSText } from '@/components/cms/CMSText';
 import { useCMSMode } from '@/contexts/CMSModeContext';
 
 const OneKitchenMenu = () => {
+  const { isCMSMode } = useCMSMode();
   return (
     <>
       <Helmet>
