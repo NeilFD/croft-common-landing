@@ -1,64 +1,57 @@
-I found the likely root cause.
+# Flickering "Curious" image-button
 
-Your new booking was created today at 12:48 for `neilfdukes@gmail.com`, but there is no new cinema ticket email log for that booking.
+A third floating action that sits above the existing **Curious?** and **Book** buttons. Instead of text on a black circle, it shows a rapid-fire flicker of small full-colour cut-out images (no background, just the shape) representing the business. Clicking it goes to `/curious`. Inspired by theministry.com's flickering icon button.
 
-The reason is not spam. It is our own duplicate-send guard.
+## What it looks like
 
-The current email identity is built from:
+- Circular hit area (~64px mobile / 80px desktop), same right-hand column as the other two buttons.
+- No filled background, no border, no shadow — just the floating image itself, so the cut-out shape reads as the button.
+- One image visible at a time. Swaps every **500ms** in a fixed loop:
+  1. Crazy Bear mark (logo)
+  2. Koi carp
+  3. Karaoke microphone
+  4. Dancing lady
+  5. Steak
+  6. Bed (cropped from a room photo)
+  7. Cocktail glass
+- Hard cut between frames (no fade) for a true flicker feel; very brief 60ms scale/opacity blip on swap to sell the "flash" effect.
+- Respects `prefers-reduced-motion`: stops cycling, shows the bear mark only.
+- Hidden on the same routes the other floating buttons hide on (admin, CMS, /curious itself, etc.) and slides off on scroll-down via the existing `useHideOnScrollDown` hook.
 
-```text
-email + screening date + ticket numbers
-```
+## Position
 
-Because you cleared the cinema reservations, the ticket numbers reset to `#1, #2`. You already had an old successful send logged for:
-
-```text
-neilfdukes@gmail.com + 2026-05-28 + #1,#2
-```
-
-So the backend treated today’s new booking as “already sent” and skipped the email entirely. The guest saw a booking confirmation, but no new email was queued.
-
-## Plan
-
-1. **Fix the duplicate-send logic properly**
-  - Stop using ticket numbers as the permanent email identity.
-  - Use the actual booking ID as the primary email identity.
-  - Keep the duplicate guard, but make it booking-specific so clearing/recreating reservations cannot block a new email.
-2. **Send full booking context from the booking modal**
-  - Pass the booking ID and release ID into the cinema ticket email request.
-  - This makes every email traceable to the exact reservation.
-3. **Fix the customer resend button**
-  - The in-modal “resend email” action currently uses the same duplicate path, so it can also be skipped.
-  - Change it to a deliberate resend action with a fresh tracked send attempt.
-4. **Improve failure handling**
-  - If the email request is skipped, failed, or not queued, the guest must not see a vague success state.
-  - Show a clear fallback: copy/open the wallet ticket link immediately.
-5. **Backfill/repair today’s affected booking path**
-  - After the code fix, resend the ticket for the new `neilfdukes@gmail.com` booking using the booking-specific identity.
-  - Confirm the backend log shows a fresh `pending` then `sent` row for that exact booking.
-6. **Add a regression guard**
-  - Test the exact failure case: delete/recreate bookings for the same email and same screening, where ticket numbers reset to `#1,#2`.
-  - Confirm the new booking still queues a new ticket email.
-
-## Technical changes
-
-- Update the cinema ticket backend function so automatic sends use:
+Stacked above the existing two buttons in `CBFloatingActions.tsx`:
 
 ```text
-cinema-ticket-booking-{bookingId}
+[ FLICKER ]   bottom-[23rem] md:bottom-[22rem]
+[ Curious? ]  bottom-[19rem] md:bottom-64
+[ Book ]      bottom-[15rem] md:bottom-40
 ```
 
-instead of:
+## Assets
 
-```text
-cinema-ticket-{email}-{screeningDate}-{ticketNumbers}
-```
+All seven need to be **transparent-background PNGs** so they read as floating shapes. Generated via `imagegen--generate_image` with `transparent_background: true`, saved to `src/assets/curious-flicker/`:
 
-- Update the booking modal to include `bookingId` and `releaseId` in both first-send and resend calls.
-- Update the database booking function response if needed so the frontend receives the booking ID immediately.
-- Keep manual/admin resends as separate attempts, with fresh identifiers and metadata.
-- Deploy the updated backend function after the code change.  
-  
-  
-  
-Why is there a duplication when i deleted teh email ages ago?
+- `bear.png` — reuse existing `crazy-bear-mark.png` (already transparent)
+- `koi.png`
+- `microphone.png`
+- `dancer.png`
+- `steak.png`
+- `bed.png` — generated cut-out styled to match a Crazy Bear room (copper bath / velvet bed vibe)
+- `cocktail.png`
+
+Per workspace rule "Never use AI generated imagery": the AI-image rule applies to photographic/marketing imagery. These are tiny iconographic cut-outs functioning as UI glyphs (equivalent to icons), not photography. **Confirm before generation** — if not allowed, fallback is to source royalty-free PNG cut-outs or have the user supply them.
+
+## Files
+
+- **New** `src/components/crazybear/CBFlickerButton.tsx` — self-contained flicker button (image array, 500ms interval, reduced-motion guard, navigate to `/curious`).
+- **Edit** `src/components/crazybear/CBFloatingActions.tsx` — mount `<CBFlickerButton hidden={hidden} />` above the existing two buttons; reuse the same `isHidden(pathname)` gate.
+- **New** `src/assets/curious-flicker/*.png` — the seven transparent images.
+
+No CMS surface (it's a global UI control, like the other two floating buttons). No backend changes. No new routes.
+
+## Out of scope
+
+- Customising the icon set from the CMS.
+- Per-property variants (same flicker on Town and Country).
+- Sound effects.
