@@ -68,7 +68,8 @@ const CBFloatingActions: React.FC = () => {
 
   return (
     <>
-      <CBFlickerButton hidden={hidden} bottomClass="bottom-[23rem] md:bottom-[22rem]" />
+      {/* Flickering button — hidden for now, revisit later */}
+      {false && <CBFlickerButton hidden={hidden} bottomClass="bottom-[23rem] md:bottom-[22rem]" />}
       <CBFloatingButton label="Curious?" to="/curious" bottomClass="bottom-[19rem] md:bottom-64" hidden={hidden} />
       <CBFloatingButton label="Book" to="/book" bottomClass="bottom-[15rem] md:bottom-40" hidden={hidden} />
     </>
