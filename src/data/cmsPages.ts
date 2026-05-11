@@ -403,6 +403,12 @@ export const CMS_EXCLUDED_ROUTES: string[] = [
   '/image-picker',
   '/set-password',
   '/croft', // legacy alias to old Croft Common index
+  '/research',
+  '/enquire',
+  '/profile',
+  '/notifications',
+  '/uncommon-standards',
+  '/ext',
   '/secretkitchens',
   '/secretkitchenadmin',
   '/check-in',
