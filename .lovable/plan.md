@@ -1,44 +1,64 @@
-Here is what happened, specifically for Secret Cinema:
+I found the likely root cause.
 
-- The Secret Cinema ticket emails were generated and queued.
-- Shane’s ticket email was logged as sent at 11:25:39 to `swturnhill@gmail.com`.
-- Your ticket email was logged as sent at 12:06:35 to `neil.fincham-dukes@crazybear.co.uk`.
-- The queue is now empty, so the app did not leave either message stuck.
-- Neither address is on the app suppression list.
-- The sender domain `notify.crazybear.dev` is verified.
+Your new booking was created today at 12:48 for `neilfdukes@gmail.com`, but there is no new cinema ticket email log for that booking.
 
-The failure is that the app is only proving “accepted for sending”, not “delivered to inbox”. That is not good enough for tickets.
+The reason is not spam. It is our own duplicate-send guard.
 
-Plan:
+The current email identity is built from:
 
-1. Fix Secret Cinema delivery certainty
-   - Change the Secret Cinema ticket flow so the ticket state is not treated as complete just because the email was accepted by the sender.
-   - Store clearer metadata for every ticket email: booking, release, ticket numbers, recipient, sender domain, and send purpose.
-   - Label the status in admin as “sent to mail provider”, not “delivered”, unless there is a real delivery event.
+```text
+email + screening date + ticket numbers
+```
 
-2. Add an admin resend for Secret Cinema tickets
-   - Add a safe resend action in the admin cinema area for a single booking.
-   - Resend only that booking’s ticket email.
-   - Use a new idempotency key per manual resend so the resend is not skipped by the existing “already sent” check.
-   - Log the resend separately so staff can see exactly when it was retried.
+Because you cleared the cinema reservations, the ticket numbers reset to `#1, #2`. You already had an old successful send logged for:
 
-3. Add a non-email ticket fallback
-   - Add an admin copy/open ticket link for each Secret Cinema booking.
-   - Staff can send the ticket link manually if inbox delivery fails.
-   - This avoids leaving guests stuck when email providers silently bin accepted mail.
+```text
+neilfdukes@gmail.com + 2026-05-28 + #1,#2
+```
 
-4. Clean up legacy dead-letter noise
-   - The current dead-letter rows are old welcome emails from the retired sender domain, not today’s Secret Cinema tickets.
-   - Keep the data for audit, but stop it confusing the email dashboard by making the dashboard show template, status, and latest attempt clearly.
+So the backend treated today’s new booking as “already sent” and skipped the email entirely. The guest saw a booking confirmation, but no new email was queued.
 
-5. Verify after implementation
-   - Resend one real Secret Cinema ticket to Shane and one to you.
-   - Confirm the new log rows show the correct sender domain and manual resend metadata.
-   - Confirm the admin fallback link is available even if email delivery fails again.
+## Plan
 
-Technical details:
+1. **Fix the duplicate-send logic properly**
+  - Stop using ticket numbers as the permanent email identity.
+  - Use the actual booking ID as the primary email identity.
+  - Keep the duplicate guard, but make it booking-specific so clearing/recreating reservations cannot block a new email.
+2. **Send full booking context from the booking modal**
+  - Pass the booking ID and release ID into the cinema ticket email request.
+  - This makes every email traceable to the exact reservation.
+3. **Fix the customer resend button**
+  - The in-modal “resend email” action currently uses the same duplicate path, so it can also be skipped.
+  - Change it to a deliberate resend action with a fresh tracked send attempt.
+4. **Improve failure handling**
+  - If the email request is skipped, failed, or not queued, the guest must not see a vague success state.
+  - Show a clear fallback: copy/open the wallet ticket link immediately.
+5. **Backfill/repair today’s affected booking path**
+  - After the code fix, resend the ticket for the new `neilfdukes@gmail.com` booking using the booking-specific identity.
+  - Confirm the backend log shows a fresh `pending` then `sent` row for that exact booking.
+6. **Add a regression guard**
+  - Test the exact failure case: delete/recreate bookings for the same email and same screening, where ticket numbers reset to `#1,#2`.
+  - Confirm the new booking still queues a new ticket email.
 
-- Main function involved: `send-cinema-ticket-email`.
-- Main data involved: `cinema_bookings`, `cinema_releases`, and `email_send_log`.
-- Existing problem: the current idempotency key makes a second send to the same recipient, date, and ticket numbers get skipped once the first attempt is marked sent.
-- Fix: add a deliberate manual resend path that creates a new tracked send attempt without duplicating the booking.
+## Technical changes
+
+- Update the cinema ticket backend function so automatic sends use:
+
+```text
+cinema-ticket-booking-{bookingId}
+```
+
+instead of:
+
+```text
+cinema-ticket-{email}-{screeningDate}-{ticketNumbers}
+```
+
+- Update the booking modal to include `bookingId` and `releaseId` in both first-send and resend calls.
+- Update the database booking function response if needed so the frontend receives the booking ID immediately.
+- Keep manual/admin resends as separate attempts, with fresh identifiers and metadata.
+- Deploy the updated backend function after the code change.  
+  
+  
+  
+Why is there a duplication when i deleted teh email ages ago?
