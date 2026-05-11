@@ -48,6 +48,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
     ticketNumbers: number[];
     releaseId: string;
     walletToken?: string | null;
+    bookingId?: string | null;
   } | null>(null);
 
   const formattedScreening = useMemo(() => {
@@ -162,6 +163,8 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
           screeningTime,
           title: status.title ?? 'Secret Cinema Club',
           walletToken: wallet_token,
+          bookingId: booking_id,
+          releaseId: release_id,
         },
       });
       if (emailError) {
@@ -209,6 +212,10 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
           screeningTime,
           title: status.title ?? 'Secret Cinema Club',
           walletToken: confirmation.walletToken ?? null,
+          bookingId: confirmation.bookingId ?? null,
+          releaseId: confirmation.releaseId,
+          forceResend: true,
+          resendReason: 'user_resend_button',
         },
       });
       toast({ title: 'Email sent', description: `Sent to ${user.email}` });
