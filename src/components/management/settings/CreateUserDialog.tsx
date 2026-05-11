@@ -195,7 +195,7 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
                   <SelectTrigger>
                     <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[100] bg-popover">
                     <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="sales">Sales</SelectItem>
                     <SelectItem value="ops">Ops</SelectItem>
