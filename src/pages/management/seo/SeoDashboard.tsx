@@ -97,6 +97,14 @@ export default function SeoDashboard() {
   const [progressDone, setProgressDone] = useState(0);
   const [progressRoute, setProgressRoute] = useState<string | null>(null);
 
+  // Auto-register every page from the CMS registry into seo_pages.
+  // Idempotent — existing rows are never overwritten.
+  useEffect(() => {
+    syncSeoPagesFromRegistry().then(() => {
+      qc.invalidateQueries({ queryKey: ['seo-pages'] });
+    });
+  }, [qc]);
+
   // Bulk AI state
   const [bulkAiBusy, setBulkAiBusy] = useState(false);
   const [bulkAiDone, setBulkAiDone] = useState(0);
