@@ -349,7 +349,7 @@ const App = () => {
                       <Route path="/set-password" element={<SetPassword />} />
 
                       {/* Members entry - the Den */}
-                      <Route path="/members" element={<Navigate to="/den" replace />} />
+                      <Route path="/members" element={<MembersGate />} />
 
                       {/* Legacy Croft entry retained for members/secret gestures */}
                       <Route path="/croft" element={<Index />} />
