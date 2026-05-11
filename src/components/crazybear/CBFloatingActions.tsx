@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useHideOnScrollDown } from '@/hooks/useHideOnScrollDown';
+import CBFlickerButton from './CBFlickerButton';
 
 // Routes where the floating Curious?/Book buttons should be HIDDEN.
 // Rule of thumb: hide on any page that is itself a form / interactive flow,
@@ -67,6 +68,7 @@ const CBFloatingActions: React.FC = () => {
 
   return (
     <>
+      <CBFlickerButton hidden={hidden} bottomClass="bottom-[23rem] md:bottom-[22rem]" />
       <CBFloatingButton label="Curious?" to="/curious" bottomClass="bottom-[19rem] md:bottom-64" hidden={hidden} />
       <CBFloatingButton label="Book" to="/book" bottomClass="bottom-[15rem] md:bottom-40" hidden={hidden} />
     </>
