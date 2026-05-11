@@ -25,51 +25,38 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+import { CMS_PAGES, topLevelOf, childrenOf, type CmsPageEntry } from '@/data/cmsPages';
+
 type Section = { name: string; path: string };
 type Page = { name: string; path: string; icon: any; sections: Section[] };
 
 const CMS_BASE = '/management/cms';
 const VISUAL = `${CMS_BASE}/visual`;
 
-const countryPages: Page[] = [
-  { name: 'Country Home', path: `${VISUAL}/country`, icon: Trees, sections: [] },
-  { name: 'Country Pub', path: `${VISUAL}/country/pub`, icon: UtensilsCrossed, sections: [
-    { name: 'Pub Food', path: `${VISUAL}/country/pub/food` },
-    { name: 'Pub Drink', path: `${VISUAL}/country/pub/drink` },
-    { name: 'Hospitality', path: `${VISUAL}/country/pub/hospitality` },
-  ]},
-  { name: 'Country Rooms', path: `${VISUAL}/country/rooms`, icon: Bed, sections: [
-    { name: 'Room Types', path: `${VISUAL}/country/rooms/types` },
-    { name: 'Gallery', path: `${VISUAL}/country/rooms/gallery` },
-  ]},
-  { name: 'Country Parties', path: `${VISUAL}/country/parties`, icon: PartyPopper, sections: [] },
-  { name: 'Country Events', path: `${VISUAL}/country/events`, icon: PartyPopper, sections: [
-    { name: 'Weddings', path: `${VISUAL}/country/events/weddings` },
-    { name: 'Birthdays', path: `${VISUAL}/country/events/birthdays` },
-    { name: 'Business', path: `${VISUAL}/country/events/business` },
-  ]},
-  { name: 'Country Culture', path: `${VISUAL}/country/culture`, icon: Music, sections: [] },
-];
+const toPage = (entry: CmsPageEntry): Page => ({
+  name: entry.title,
+  path: `${VISUAL}/${entry.slug}`,
+  icon: entry.icon,
+  sections: childrenOf(entry.slug).map((c) => ({
+    name: c.title,
+    path: `${VISUAL}/${c.slug}`,
+  })),
+});
 
-const townPages: Page[] = [
-  { name: 'Town Home', path: `${VISUAL}/town`, icon: Building2, sections: [] },
-  { name: 'Town Food', path: `${VISUAL}/town/food`, icon: UtensilsCrossed, sections: [
-    { name: 'The Black Bear', path: `${VISUAL}/town/food/black-bear` },
-    { name: 'The B&B', path: `${VISUAL}/town/food/bnb` },
-    { name: 'Hom Thai', path: `${VISUAL}/town/food/hom-thai` },
-  ]},
-  { name: 'Town Drink', path: `${VISUAL}/town/drink`, icon: Wine, sections: [
-    { name: 'Cocktails', path: `${VISUAL}/town/drink/cocktails` },
-  ]},
-  { name: 'Town Rooms', path: `${VISUAL}/town/rooms`, icon: Bed, sections: [
-    { name: 'Room Types', path: `${VISUAL}/town/rooms/types` },
-    { name: 'Gallery', path: `${VISUAL}/town/rooms/gallery` },
-  ]},
-  { name: 'Town Pool', path: `${VISUAL}/town/pool`, icon: Waves, sections: [] },
-  { name: 'Town Culture', path: `${VISUAL}/town/culture`, icon: Music, sections: [] },
-];
+const standalonePages: Page[] = topLevelOf('Standalone').map(toPage);
+const countryPages: Page[] = topLevelOf('Country').map(toPage);
+const townPages: Page[] = topLevelOf('Town').map(toPage);
 
 const globalSections = [
+  ...topLevelOf('Global').map((e) => ({
+    name: e.title,
+    path: `${VISUAL}/${e.slug}`,
+    icon: e.icon,
+  })),
+  { name: 'Modal Content', path: `${CMS_BASE}/global/modals`, icon: Eye },
+];
+
+const _legacyGlobalSections = [
   { name: 'Footer', path: `${VISUAL}/global/footer`, icon: FileText },
   { name: 'Navigation', path: `${VISUAL}/global/navigation`, icon: Globe },
   { name: 'Modal Content', path: `${CMS_BASE}/global/modals`, icon: Eye },
