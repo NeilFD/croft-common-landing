@@ -1,68 +1,39 @@
-## Two fixes to `/members`
+I checked the live email path. The email domain is verified, the queue is running, and Shane’s records show the app marked the signup, welcome email, and cinema ticket email as sent.
 
-### 1. Quiet loading state on `MembersGate` (`src/App.tsx` ~line 253)
+The problem is not the form failing to submit. The system is accepting the send and logging it as sent, but there are two serious reliability gaps that make this unsafe:
 
-Replace `if (loading) return null;` with a centred type-only loader on black:
+1. The app currently treats “accepted by the email sender” as “delivered”. That is not good enough.
+2. There are still legacy email paths in the codebase using old sender identities and older sending methods. One current function is still using the decommissioned `crazybeartest.com` domain for the welcome email sender. That must be removed.
 
-```tsx
-if (loading) {
-  return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <p className="font-cb-mono text-[10px] tracking-[0.45em] uppercase text-white/60">
-        One moment.
-      </p>
-    </div>
-  );
-}
-```
+Plan:
 
-No spinner, no icon. Stops the blank flash while `useCBMember` resolves.
+1. Standardise the remaining Bears Den email sender paths
+   - Update the welcome email function so it uses `notify.crazybear.dev` only.
+   - Remove the remaining decommissioned `crazybeartest.com` sender values from active email code.
+   - Check the relevant Bears Den email functions for any old Croft Common or third-party sender remnants that affect deliverability.
 
-### 2. Hero intro fallback (`src/pages/crazybear/Members.tsx`)
+2. Add proper delivery visibility
+   - Add clearer email log metadata for Bears Den sends so each signup, welcome, and cinema email can be traced by recipient and purpose.
+   - Keep the existing queue, but make the app distinguish between queued, accepted, failed, and blocked states instead of treating all accepted sends as final delivery.
 
-Same `section="hero"` `contentKey="intro"` field, new fallback:
+3. Add an admin resend route for member-critical emails
+   - Add a safe resend path for signup confirmation, welcome email, and cinema ticket emails.
+   - Avoid duplicate spam by checking the latest log before resending.
+   - Keep this admin-only where it touches member data.
 
-> Free to join. The bear remembers you. Quiet rates, the odd cinema night, a recipe from the kitchens. Town and Country. Both houses, one ear.
+4. Add a member-facing fallback for signup verification
+   - On `/set-password`, keep the resend button but make the state clearer when a code is resent.
+   - If the email still does not arrive, provide a non-email recovery path for staff/admin support rather than leaving the member stuck.
 
-CMS key unchanged so any existing override still wins.
+5. Deploy and verify
+   - Deploy the changed email functions.
+   - Send a real test to the affected addresses.
+   - Confirm the backend logs show the right sender domain, queue processing, and final status.
 
-### 3. "What you get" → "What's inside" with the real perks
+Technical notes:
 
-In the `section="get"` block:
-
-- Change the eyebrow `kicker` fallback from `"What you get"` to `"What's inside"`. Same CMS key.
-- Replace the 4-item array with 8 items (`perk-1` … `perk-8`), each with a bold lead phrase + descriptor. Render as a two-column grid on `md:` and up, single column on mobile. Keep the `/` slash mark and bottom border per row exactly as today.
-
-Items, in order:
-
-1. `perk-1` Roll the Dice. A pour you didn't ask for.
-2. `perk-2` Recipe of the Month. From the kitchens. Yours to cook.
-3. `perk-3` Rooms offer. A quiet rate. Town or Country.
-4. `perk-4` Pool day bed. When the sun shows up.
-5. `perk-5` Secret Cinema. Rare nights, members first.
-6. `perk-6` Moments. Your nights at Town and Country, tagged and kept.
-7. `perk-7` Takeaway. Members-only ordering. Thai, when you want it.
-8. `perk-8` The Ledger. Receipts and spend. Quiet maths.
-
-Each list item stays a single `<CMSText as="p">` with the full string (lead + descriptor) so the field remains one editable cell. The lead phrase is bolded by post-processing the rendered text: split on the first full stop and wrap the lead in a `<span className="font-semibold">` via a small inline render helper inside the map. If splitting around `CMSText` proves awkward, fall back to wrapping the whole `<CMSText>` in a `<p className="[&>span:first-child]:font-semibold">` … but the cleaner default is a tiny `BulletLine` component that calls `useCMSText`-equivalent rendering, or simply renders a `<p>` whose first sentence is bold via a custom split. Choose the cleaner path during build.
-
-Grid layout:
-
-```text
-ul: grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-0
-li: flex gap-5 border-b border-white/15 py-5
-```
-
-Container `max-w-3xl` widens to `max-w-5xl` so two columns breathe.
-
-### Out of scope
-
-- No routing, nav, sign-up form changes.
-- No swipe-gesture surface changes.
-- No Gold tease changes.
-- No new CMS infrastructure; `perk-5`…`perk-8` slot into the existing per-key store automatically.
-
-### Files touched
-
-- `src/App.tsx` — `MembersGate` loading branch only.
-- `src/pages/crazybear/Members.tsx` — hero intro fallback, `get` section kicker fallback, perks array + grid markup.
+- `auth-email-hook` is already queue-based and uses `notify.crazybear.dev`.
+- `process-email-queue` is active and currently has no waiting messages.
+- Shane’s email records show `sent` for signup, welcome, and cinema ticket entries.
+- `cb-send-welcome` still contains `SENDER_DOMAIN = notify.crazybeartest.com` and `FROM_DOMAIN = crazybeartest.com`, which conflicts with the current sender domain memory and must be fixed.
+- Earlier failures in the log include `domain_not_verified` and missing app email parameters. Those appear historic, but the code still contains legacy risk.
