@@ -35,7 +35,7 @@ const PinkDot = () => (
 const TIMELINE_SEED: CMSListSeed[] = [
   {
     heading: "A pub, a punt, a turf floor.",
-    body: "The Stadhampton local reopens. Real grass laid across the bar floor. Sheep optional, occasionally arriving anyway.",
+    body: "The Stadhampton local reopens. Real grass laid across the bar floor. Koi behind the cisterns. Sheep optional, occasionally arriving anyway.",
     meta: { year: "1993", source: "" },
   },
   {
@@ -45,18 +45,13 @@ const TIMELINE_SEED: CMSListSeed[] = [
   },
   {
     heading: "Town arrives.",
-    body: "A wonky coaching inn in Beaconsfield is taken on and rebuilt as a townhouse hotel. Glass loos. Silver leaf walls. Black on black on black.",
+    body: "A wonky coaching inn in Beaconsfield is taken on and rebuilt as a townhouse hotel. Glass loos. Mirrored ceilings. Silver leaf walls. Black on black on black.",
     meta: { year: "2002", source: "" },
   },
   {
-    heading: "Live fish in the cisterns.",
-    body: "Koi swim behind the gents' urinals at Town. Talking point. Conversation starter. Still there.",
-    meta: { year: "Town", source: "" },
-  },
-  {
-    heading: "The Thai room opens.",
-    body: "Hom Thai lands upstairs at Town. Gold leaf, lanterns, proper heat. Quietly one of the best Thai rooms in the country.",
-    meta: { year: "Town", source: "" },
+    heading: "The Thai rooms open.",
+    body: "Hom Thai lands upstairs at Town, then at Country. Gold leaf, lanterns, proper heat. Quietly one of the best Thai rooms in the country.",
+    meta: { year: "00s", source: "" },
   },
   {
     heading: "The burlesque years.",
