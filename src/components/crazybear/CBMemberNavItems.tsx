@@ -9,21 +9,19 @@ interface CBMemberNavItemsProps {
 const CBMemberNavItems = ({ linkCls, onLoginOpen }: CBMemberNavItemsProps) => {
   const { isMember, signOut } = useCBMember();
 
-  if (isMember) {
-    return (
-      <>
-        <Link to="/members" className={linkCls}>Members</Link>
+  return (
+    <>
+      <Link to="/members" className={linkCls}>Members</Link>
+      {isMember ? (
         <button onClick={() => signOut()} className={linkCls} type="button">
           Sign out
         </button>
-      </>
-    );
-  }
-
-  return (
-    <button onClick={onLoginOpen} className={linkCls} type="button">
-      Member Login
-    </button>
+      ) : (
+        <button onClick={onLoginOpen} className={linkCls} type="button">
+          Member Login
+        </button>
+      )}
+    </>
   );
 };
 

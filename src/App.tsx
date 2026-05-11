@@ -20,6 +20,8 @@ const ImagePicker = lazy(() => import("./pages/ImagePicker"));
 const PropertyLayout = lazy(() => import("./components/property/PropertyLayout"));
 const BearsDen = lazy(() => import("./pages/crazybear/BearsDen"));
 const About = lazy(() => import("./pages/crazybear/About"));
+const CBMembers = lazy(() => import("./pages/crazybear/Members"));
+import { useCBMember } from "@/hooks/useCBMember";
 const SetPassword = lazy(() => import("./pages/crazybear/SetPassword"));
 const CountryHome = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryHome })));
 const CountryPub = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryPub })));
@@ -248,6 +250,12 @@ const MemberRoutes = ({ children }: { children: ReactNode }) => (
   </Suspense>
 );
 
+const MembersGate = () => {
+  const { isMember, loading } = useCBMember();
+  if (loading) return null;
+  return isMember ? <Navigate to="/den" replace /> : <CBMembers />;
+};
+
 const App = () => {
   const { isOpen, handleLogoTap, closePanel } = useHiddenDevPanel();
   
@@ -341,7 +349,7 @@ const App = () => {
                       <Route path="/set-password" element={<SetPassword />} />
 
                       {/* Members entry - the Den */}
-                      <Route path="/members" element={<Navigate to="/den" replace />} />
+                      <Route path="/members" element={<MembersGate />} />
 
                       {/* Legacy Croft entry retained for members/secret gestures */}
                       <Route path="/croft" element={<Index />} />
