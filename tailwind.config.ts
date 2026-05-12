@@ -31,7 +31,7 @@ export default {
 				'industrial': ['Work Sans', 'Arial', 'Helvetica', 'sans-serif'],
 				'serif': ['Playfair Display', 'Georgia', 'serif'],
 				/* Crazy Bear typography - architectural, cool, irreverent */
-				'display': ['"Bricolage Grotesque"', '"Archivo Black"', 'Helvetica', 'sans-serif'],
+				'display': ['"Bungee"', '"Archivo Black"', 'Helvetica', 'sans-serif'],
 				'cb-sans': ['"Space Grotesk"', 'Inter', 'Helvetica', 'sans-serif'],
 				'cb-mono': ['"Space Mono"', 'ui-monospace', 'monospace'],
 			},
