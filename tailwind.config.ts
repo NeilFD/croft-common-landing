@@ -29,7 +29,7 @@ export default {
 			fontFamily: {
 				'brutalist': ['Oswald', 'Arial Black', 'Helvetica', 'sans-serif'],
 				'industrial': ['Work Sans', 'Arial', 'Helvetica', 'sans-serif'],
-				'serif': ['Playfair Display', 'Georgia', 'serif'],
+				'serif': ['"Bungee"', 'Georgia', 'serif'],
 				/* Crazy Bear typography - architectural, cool, irreverent */
 				'display': ['"Bungee"', '"Archivo Black"', 'Helvetica', 'sans-serif'],
 				'cb-sans': ['"Space Grotesk"', 'Inter', 'Helvetica', 'sans-serif'],
