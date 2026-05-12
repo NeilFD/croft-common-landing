@@ -73,7 +73,10 @@ RESPONSE FORMAT — STRICT JSON ONLY:
       headers: { 'Authorization': `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
-        messages: [{ role: 'system', content: prompt }, ...messages],
+        messages: [
+          { role: 'system', content: prompt },
+          ...(messages as any[]).map((m) => ({ role: m.role, content: m.content })),
+        ],
       }),
     });
 
