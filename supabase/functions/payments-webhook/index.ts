@@ -158,11 +158,12 @@ async function handleWebhook(req: Request, env: StripeEnv) {
       await upsertSubscription(event.data.object, env);
       break;
     case "customer.subscription.deleted":
+      // No env filter — gold subs are stored as 'live' regardless of which
+      // Stripe environment fired the cancel; stripe_subscription_id is unique.
       await db()
         .from("subscriptions")
         .update({ status: "canceled", updated_at: new Date().toISOString() })
-        .eq("stripe_subscription_id", event.data.object.id)
-        .eq("environment", env);
+        .eq("stripe_subscription_id", event.data.object.id);
       break;
     default:
       console.log("unhandled event", event.type);
