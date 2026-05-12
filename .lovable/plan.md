@@ -1,41 +1,51 @@
-## What it currently is
+## Goal
+Replace the single hero image on `/` with `Crazy-Bear-Hero.mp4`, looping silently, optimised for fast load.
 
-The "Crazy Bear Country" hero title uses Tailwind's `font-serif` class, which in `tailwind.config.ts` is mapped to **Playfair Display** (Georgia fallback). That's the elegant serif you're seeing on /country, /country/parties, etc.
+## 1. Encode the video (done in sandbox via ffmpeg)
 
-It is used in 5 places, all property pages:
+Source: 1920x1080, 30fps, 17.07s, H.264 4.84 Mbps, AAC stereo, 9.9 MB.
 
-- `src/components/property/PropertyPage.tsx` (the big H1 hero title)
-- `src/components/property/CBGallery.tsx` (gallery section title)
-- `src/components/property/PropertyNavShell.tsx` (nav wordmark + mobile menu title)
+Produce four files into `public/video/`:
 
-So yes, it appears consistently across both Town and Country property pages.
+| File | Purpose | Target |
+|---|---|---|
+| `crazy-bear-hero.mp4` | Desktop, Safari/iOS fallback | H.264 High, CRF 26, preset slow, no audio, +faststart, ~2.5 MB |
+| `crazy-bear-hero.webm` | Chrome/Firefox/Edge primary | VP9, CRF 33, no audio, ~1.8 MB |
+| `crazy-bear-hero-720.mp4` | Mobile (<=768px) | 1280x720, CRF 28, no audio, +faststart, ~1.2 MB |
+| `crazy-bear-hero-poster.jpg` | LCP paint + `poster` | First frame, q82, ~80 KB |
 
-## Proposed change
+All files stripped of audio (hero must be muted to autoplay) and fast-start flagged so playback begins before download completes.
 
-Repoint the `serif` font family to Bungee so every existing `font-serif` usage flips to Bungee with no per-component edits.
+## 2. New component: `HeroVideo`
 
-In `tailwind.config.ts`:
+Create `src/components/HeroVideo.tsx`:
+- `<video autoplay muted loop playsinline preload="metadata" poster="...">` with `<source>` tags for WebM, mobile MP4 (via `media="(max-width: 768px)"`), and desktop MP4 fallback.
+- Full-bleed, `object-cover`, identical positioning to current hero image.
+- Reuses existing overlay children: `MenuButton`, `CroftLogo`, `ArrowBox`, `BookFloatingButton`.
+- `prefers-reduced-motion: reduce` -> render the poster image only, no video element.
 
-```ts
-'serif': ['"Bungee"', 'Georgia', 'serif'],
-```
+## 3. Swap on `/`
 
-Bungee is already loaded from Google Fonts (added in the previous step), so no extra `<link>` work is needed.
+`src/components/HeroSection.tsx`: render `<HeroVideo />` instead of `<HeroCarousel />`. `HeroCarousel` stays in the codebase (used elsewhere).
 
-## Heads-up before I build
+## 4. CMS integration (per project rule: every new page/asset must be CMS-editable)
 
-Bungee is an all-caps, blocky, sign-painter style. Switching `font-serif` to Bungee will hit:
+Add a new CMS visual slot so the hero video can be swapped without code:
+- Page: `index`, slot: `main_hero_video`
+- Fields: `webm_url`, `mp4_url`, `mp4_mobile_url`, `poster_url`
+- `HeroVideo` reads from this slot via the existing CMS hook, falling back to the bundled files in `public/video/`.
+- Surface the slot in the CMS Visual editor (same pattern as current `main_hero` images).
 
-1. The huge "Crazy Bear Country" / "Crazy Bear Town" hero H1 (the one in your screenshot)
-2. Gallery section titles
-3. The "Crazy Bear Country" wordmark next to the bear logo in the top nav
-4. The mobile menu page-name display
+## 5. Verification
+- Render the encoded files, confirm sizes and that they are seekable / faststart.
+- Load `/` in preview, confirm autoplay + loop + no audio + poster paints first.
+- Check network tab: only one of webm/mp4 is fetched per browser, mobile variant served at narrow viewport.
 
-That's a big visual shift, especially the nav wordmark, which currently reads as a refined serif. It will become chunky block caps everywhere serif is used.
-
-If you want it on hero titles only and not the nav wordmark, I can instead replace `font-serif` with `font-display` (which is already Bungee) on just the H1s and leave the nav wordmark alone. Tell me which you prefer and I'll build it.
-
-## Files to edit (option A — repoint serif globally)
-
-- `tailwind.config.ts` — change the `serif` family to Bungee
-- No other code changes; no new font loads
+## Technical notes
+- ffmpeg commands used:
+  - MP4: `ffmpeg -i in.mp4 -an -c:v libx264 -preset slow -crf 26 -pix_fmt yuv420p -movflags +faststart out.mp4`
+  - WebM: `ffmpeg -i in.mp4 -an -c:v libvpx-vp9 -crf 33 -b:v 0 -row-mt 1 out.webm`
+  - 720: `ffmpeg -i in.mp4 -an -vf scale=1280:720 -c:v libx264 -preset slow -crf 28 -movflags +faststart out-720.mp4`
+  - Poster: `ffmpeg -i in.mp4 -frames:v 1 -q:v 3 poster.jpg`
+- No new npm dependencies.
+- No backend/DB changes beyond the CMS slot record (handled by existing CMS visual table).
