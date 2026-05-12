@@ -1,57 +1,58 @@
-# Flickering "Curious" image-button
+## 1. Internal "How to test Gold" panel
 
-A third floating action that sits above the existing **Curious?** and **Book** buttons. Instead of text on a black circle, it shows a rapid-fire flicker of small full-colour cut-out images (no background, just the shape) representing the business. Clicking it goes to `/curious`. Inspired by theministry.com's flickering icon button.
+In `GoldSection`, above the access-code input (only when not yet Gold):
 
-## What it looks like
+- Mono caps bullets:
+  - Access code: **BEARTEST**
+  - Stripe test card: `4242 4242 4242 4242`, any future date, any CVC.
+  - £69/month. 25% off everywhere.
+    &nbsp;
 
-- Circular hit area (~64px mobile / 80px desktop), same right-hand column as the other two buttons.
-- No filled background, no border, no shadow — just the floating image itself, so the cut-out shape reads as the button.
-- One image visible at a time. Swaps every **500ms** in a fixed loop:
-  1. Crazy Bear mark (logo)
-  2. Koi carp
-  3. Karaoke microphone
-  4. Dancing lady
-  5. Steak
-  6. Bed (cropped from a room photo)
-  7. Cocktail glass
-- Hard cut between frames (no fade) for a true flicker feel; very brief 60ms scale/opacity blip on swap to sell the "flash" effect.
-- Respects `prefers-reduced-motion`: stops cycling, shows the bear mark only.
-- Hidden on the same routes the other floating buttons hide on (admin, CMS, /curious itself, etc.) and slides off on scroll-down via the existing `useHideOnScrollDown` hook.
+Hidden once their account is already Gold.
 
-## Position
+## 2. Auto-promote sandbox Gold to live
 
-Stacked above the existing two buttons in `CBFloatingActions.tsx`:
+The whole site is internal, so any successful sandbox Gold checkout should produce a Gold member on live with zero manual steps.
+
+Implementation, all server-side, no new buttons:
+
+- In `payments-webhook` (`supabase/functions/payments-webhook/index.ts`), inside `handleSubscriptionCreated` and `handleSubscriptionUpdated`:
+  - If `priceId === 'gold_monthly'`, force the upserted/updated row's `environment` to `'live'` regardless of the `?env=` query param.
+  - All other products (e.g. lunch, future SKUs) keep the existing sandbox/live split.
+- In `useGoldStatus` (`src/hooks/useGoldStatus.ts`):
+  - Drop the env-conditional logic for Gold reads. Always query `.eq('environment', 'live')` for `price_id = 'gold_monthly'`.
+  - Remove the `gold_access_unlocked` sessionStorage branch — no longer needed.
+- One-off data fix: update any existing `subscriptions` rows where `price_id = 'gold_monthly'` and `environment = 'sandbox'` to `environment = 'live'` so existing testers don't have to re-subscribe.
+
+Net effect: a member taps **Go Gold**, completes sandbox Stripe checkout with the test card, the webhook writes a live Gold row, realtime fires, the card flips to gold in both the editor preview and the installed PWA. No override button, no manual flip.
+
+The `BEARTEST` access code stays as the only gate so it's not exposed to random visitors.
+
+## 3. Profile page reorder + photo gating
+
+In `src/pages/MemberProfile.tsx`, left column order becomes:
 
 ```text
-[ FLICKER ]   bottom-[23rem] md:bottom-[22rem]
-[ Curious? ]  bottom-[19rem] md:bottom-64
-[ Book ]      bottom-[15rem] md:bottom-40
+1. Profile Picture (AvatarUpload)
+2. The Den - Member Card (MembershipCard + GoldSection)
+3. Add to Apple Wallet
 ```
 
-## Assets
+Add a short notice block above `MembershipCard` when `!avatar_url || !avatar_face_verified`:
 
-All seven need to be **transparent-background PNGs** so they read as floating shapes. Generated via `imagegen--generate_image` with `transparent_background: true`, saved to `src/assets/curious-flicker/`:
+- Eyebrow: **Profile photo required**
+- Body: "Your member card stays inactive until a verified face-on photo is on file."
 
-- `bear.png` — reuse existing `crazy-bear-mark.png` (already transparent)
-- `koi.png`
-- `microphone.png`
-- `dancer.png`
-- `steak.png`
-- `bed.png` — generated cut-out styled to match a Crazy Bear room (copper bath / velvet bed vibe)
-- `cocktail.png`
+Gate the **Go Gold** button inside `GoldSection` on the same condition: disabled with inline reason "Add a verified profile photo first." when avatar is missing or unverified. The existing Apple Wallet gating block stays as-is.
 
-Per workspace rule "Never use AI generated imagery": the AI-image rule applies to photographic/marketing imagery. These are tiny iconographic cut-outs functioning as UI glyphs (equivalent to icons), not photography. **Confirm before generation** — if not allowed, fallback is to source royalty-free PNG cut-outs or have the user supply them.
+Result: no photo means no Gold checkout, no live card, no wallet pass — single, consistent rule.
 
-## Files
+## Technical notes
 
-- **New** `src/components/crazybear/CBFlickerButton.tsx` — self-contained flicker button (image array, 500ms interval, reduced-motion guard, navigate to `/curious`).
-- **Edit** `src/components/crazybear/CBFloatingActions.tsx` — mount `<CBFlickerButton hidden={hidden} />` above the existing two buttons; reuse the same `isHidden(pathname)` gate.
-- **New** `src/assets/curious-flicker/*.png` — the seven transparent images.
-
-No CMS surface (it's a global UI control, like the other two floating buttons). No backend changes. No new routes.
-
-## Out of scope
-
-- Customising the icon set from the CMS.
-- Per-property variants (same flicker on Town and Country).
-- Sound effects.
+- Edits:
+  - `supabase/functions/payments-webhook/index.ts` — force `environment='live'` for `gold_monthly`.
+  - `src/hooks/useGoldStatus.ts` — always read with `environment='live'` for Gold; drop sessionStorage flag.
+  - `src/components/membership/GoldSection.tsx` — add bullet panel, gate Go Gold on verified avatar, drop sessionStorage references for Gold visibility.
+  - `src/pages/MemberProfile.tsx` — reorder left column, add photo-required notice.
+- Data: one `UPDATE` on `subscriptions` to migrate existing `gold_monthly` sandbox rows to live.
+- No schema changes, no new edge function, no new secrets.
