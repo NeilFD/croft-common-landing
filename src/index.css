@@ -667,3 +667,9 @@ body:has([data-radix-dialog-overlay][data-state="open"]) .mobile-safe-carousel {
 /* Display font default weight (Bricolage Grotesque) - matches the visual weight Archivo Black gave us */
 .font-display { font-weight: 800; }
 
+/* H1 uses Bungee from Google Fonts */
+h1 {
+  font-family: 'Bungee', 'Bricolage Grotesque', 'Archivo Black', Helvetica, sans-serif;
+  font-weight: 400;
+}
+
