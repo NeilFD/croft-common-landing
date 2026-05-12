@@ -24,14 +24,13 @@ export function useGoldStatus(): GoldStatus & { refetch: () => Promise<void> } {
       setState({ isGold: false, status: null, currentPeriodEnd: null, cancelAtPeriodEnd: false, loading: false });
       return;
     }
-    const unlocked = typeof window !== 'undefined' &&
-      window.sessionStorage?.getItem('gold_access_unlocked') === '1';
-    const env = unlocked ? 'sandbox' : getStripeEnvironment();
+    // Gold subs are always stored as environment='live' by the webhook
+    // (internal site auto-promotes sandbox checkouts), so read live regardless.
     const { data } = await (supabase as any)
       .from("subscriptions")
       .select("status, current_period_end, cancel_at_period_end, price_id")
       .eq("user_id", user.id)
-      .eq("environment", env)
+      .eq("environment", "live")
       .eq("price_id", "gold_monthly")
       .order("created_at", { ascending: false })
       .limit(1)
