@@ -26,7 +26,12 @@ const btnGoldStyle = { borderColor: 'hsl(var(--gold-base))' } as React.CSSProper
 const btnFull =
   'w-full inline-flex items-center justify-center border-2 border-black bg-black text-white hover:bg-white hover:text-black px-4 py-3 font-mono uppercase tracking-[0.3em] text-xs transition-colors disabled:opacity-50';
 
-export const GoldSection: React.FC = () => {
+interface GoldSectionProps {
+  /** Whether the member has a verified profile photo. Gates Go Gold. */
+  avatarReady?: boolean;
+}
+
+export const GoldSection: React.FC<GoldSectionProps> = ({ avatarReady = true }) => {
   const { user } = useAuth();
   const { isGold, status, currentPeriodEnd, cancelAtPeriodEnd, loading } = useGoldStatus();
   const { code: referralCode } = useReferralCode();
@@ -217,6 +222,18 @@ export const GoldSection: React.FC = () => {
                     </ul>
                   </div>
 
+                  <div className="border-2 border-black bg-black text-white p-4 space-y-2">
+                    <p className="font-mono text-[10px] tracking-[0.4em] uppercase">
+                      Internal test
+                    </p>
+                    <ul className="font-mono text-[11px] tracking-[0.15em] uppercase space-y-1 text-white/85">
+                      <li>· Access code: BEARTEST</li>
+                      <li>· Card: 4242 4242 4242 4242</li>
+                      <li>· Any future date · Any CVC</li>
+                      <li>· Card flips to Gold automatically</li>
+                    </ul>
+                  </div>
+
                   {accessUnlocked ? (
                     <>
                       <div>
@@ -236,9 +253,10 @@ export const GoldSection: React.FC = () => {
                           setShowInfo(false);
                           setShowCheckout(true);
                         }}
+                        disabled={!avatarReady}
                         className={btnFull}
                       >
-                        Go Gold
+                        {avatarReady ? 'Go Gold' : 'Add a verified profile photo first'}
                       </button>
                     </>
                   ) : (

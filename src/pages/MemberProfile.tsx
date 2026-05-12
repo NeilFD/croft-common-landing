@@ -161,15 +161,45 @@ const MemberProfile: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-[minmax(0,360px)_1fr] gap-8">
                   {/* Left column — sticky on desktop */}
                   <aside className="md:sticky md:top-32 self-start space-y-6">
+                    <DenSection eyebrow="///" title="Profile Picture" description="Your avatar across The Den. Used for entry checks.">
+                      <AvatarUpload
+                        currentAvatarUrl={formData.avatar_url}
+                        displayName={`${formData.first_name} ${formData.last_name}`.trim()}
+                        faceVerified={formData.avatar_face_verified}
+                        onAvatarChange={(newAvatarUrl) => {
+                          setFormData((prev) => ({ ...prev, avatar_url: newAvatarUrl }));
+                          if (newAvatarUrl !== formData.avatar_url) {
+                            updateProfile({ avatar_url: newAvatarUrl, avatar_face_verified: false });
+                          }
+                        }}
+                        onVerifiedChange={(verified) => {
+                          setFormData((prev) => ({ ...prev, avatar_face_verified: verified }));
+                          updateProfile({ avatar_face_verified: verified });
+                        }}
+                      />
+                    </DenSection>
+
                     <div>
                       <p className="font-mono text-[10px] tracking-[0.4em] uppercase text-black/60 mb-2">The Den</p>
                       <h3 className="font-display uppercase text-2xl tracking-tight text-black mb-4">
                         Member Card
                       </h3>
+                      {!(formData.avatar_url && formData.avatar_face_verified) && (
+                        <div className="border-2 border-black bg-white p-4 space-y-2 mb-4">
+                          <p className="font-mono text-[10px] tracking-[0.3em] uppercase text-black">
+                            Profile photo required
+                          </p>
+                          <p className="font-sans text-xs text-black/80">
+                            Your member card stays inactive until a verified face-on photo is on file. No photo, no Gold, no wallet pass.
+                          </p>
+                        </div>
+                      )}
                       <MembershipCard />
                     </div>
 
-                    <GoldSection />
+                    <GoldSection
+                      avatarReady={!!formData.avatar_url && formData.avatar_face_verified}
+                    />
 
                     <div className="space-y-3">
                       <AddToAppleWalletButton
@@ -202,24 +232,6 @@ const MemberProfile: React.FC = () => {
                         </div>
                       )}
                     </div>
-
-                    <DenSection eyebrow="///" title="Profile Picture" description="Your avatar across The Den. Used for entry checks.">
-                      <AvatarUpload
-                        currentAvatarUrl={formData.avatar_url}
-                        displayName={`${formData.first_name} ${formData.last_name}`.trim()}
-                        faceVerified={formData.avatar_face_verified}
-                        onAvatarChange={(newAvatarUrl) => {
-                          setFormData((prev) => ({ ...prev, avatar_url: newAvatarUrl }));
-                          if (newAvatarUrl !== formData.avatar_url) {
-                            updateProfile({ avatar_url: newAvatarUrl, avatar_face_verified: false });
-                          }
-                        }}
-                        onVerifiedChange={(verified) => {
-                          setFormData((prev) => ({ ...prev, avatar_face_verified: verified }));
-                          updateProfile({ avatar_face_verified: verified });
-                        }}
-                      />
-                    </DenSection>
                   </aside>
 
                   {/* Right column — details */}
