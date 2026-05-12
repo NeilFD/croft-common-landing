@@ -30,6 +30,11 @@ async function upsertSubscription(subscription: any, env: StripeEnv) {
   const periodStart = item?.current_period_start ?? subscription.current_period_start;
   const periodEnd = item?.current_period_end ?? subscription.current_period_end;
 
+  // Internal site: Gold subs auto-promote to live so the PWA shows the gold
+  // card immediately, regardless of which Stripe environment processed the
+  // checkout. Other products keep the sandbox/live split.
+  const storedEnv: StripeEnv = priceId === "gold_monthly" ? "live" : env;
+
   await db().from("subscriptions").upsert(
     {
       user_id: userId,
@@ -41,7 +46,7 @@ async function upsertSubscription(subscription: any, env: StripeEnv) {
       current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
       current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
       cancel_at_period_end: subscription.cancel_at_period_end || false,
-      environment: env,
+      environment: storedEnv,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "stripe_subscription_id" },
