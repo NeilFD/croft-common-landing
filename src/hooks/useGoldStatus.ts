@@ -1,8 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { getStripeEnvironment } from "@/lib/stripe";
-
 export interface GoldStatus {
   isGold: boolean;
   status: string | null;
