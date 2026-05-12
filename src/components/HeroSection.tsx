@@ -1,9 +1,7 @@
-import HeroCarousel from './HeroCarousel';
+import HeroVideo from './HeroVideo';
 
 const HeroSection = () => {
-  return (
-    <HeroCarousel />
-  );
+  return <HeroVideo />;
 };
 
 export default HeroSection;
