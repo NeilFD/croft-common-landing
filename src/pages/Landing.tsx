@@ -6,7 +6,10 @@ import {
   hotelGroupSchema,
 } from "@/components/seo/CBStructuredData";
 import { Suspense, lazy, useEffect, useState } from "react";
-import heroImage from "@/assets/hero-exterior.jpg";
+const heroPoster = "/video/crazy-bear-hero-poster.jpg";
+const heroWebm = "/video/crazy-bear-hero.webm";
+const heroMp4 = "/video/crazy-bear-hero.mp4";
+const heroMp4Mobile = "/video/crazy-bear-hero-720.mp4";
 import CBTopNav from "@/components/crazybear/CBTopNav";
 const CBSubscriptionForm = lazy(() => import("@/components/crazybear/CBSubscriptionForm"));
 
