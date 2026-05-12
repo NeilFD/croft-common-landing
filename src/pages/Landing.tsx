@@ -6,7 +6,10 @@ import {
   hotelGroupSchema,
 } from "@/components/seo/CBStructuredData";
 import { Suspense, lazy, useEffect, useState } from "react";
-import heroImage from "@/assets/hero-exterior.jpg";
+const heroPoster = "/video/crazy-bear-hero-poster.jpg";
+const heroWebm = "/video/crazy-bear-hero.webm";
+const heroMp4 = "/video/crazy-bear-hero.mp4";
+const heroMp4Mobile = "/video/crazy-bear-hero-720.mp4";
 import CBTopNav from "@/components/crazybear/CBTopNav";
 const CBSubscriptionForm = lazy(() => import("@/components/crazybear/CBSubscriptionForm"));
 
@@ -30,11 +33,20 @@ const Landing = () => {
 
       <main className="bg-black text-white font-cb-sans">
         <section className="relative h-screen w-full overflow-hidden">
-          <img
-            src={heroImage}
-            alt="The Crazy Bear"
-            className="absolute inset-0 h-full w-full object-cover animate-[kenburns_22s_ease-in-out_infinite_alternate]"
-          />
+          <video
+            className="absolute inset-0 h-full w-full object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster={heroPoster}
+            aria-hidden="true"
+          >
+            <source src={heroWebm} type="video/webm" />
+            <source src={heroMp4Mobile} type="video/mp4" media="(max-width: 768px)" />
+            <source src={heroMp4} type="video/mp4" />
+          </video>
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-black/75" />
 
           <CBTopNav tone="light" />
