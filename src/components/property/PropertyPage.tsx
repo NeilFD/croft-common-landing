@@ -141,10 +141,10 @@ const PropertyPage = ({
                 contentKey="title"
                 fallback={title}
                 as="h1"
-                className="mt-3 font-serif text-5xl md:text-7xl"
+                className="mt-3 font-serif text-5xl md:text-7xl uppercase"
               />
             ) : (
-              <h1 className="mt-3 font-serif text-5xl md:text-7xl">{title}</h1>
+              <h1 className="mt-3 font-serif text-5xl md:text-7xl uppercase">{title}</h1>
             )}
           </div>
         </div>
