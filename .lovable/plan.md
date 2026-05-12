@@ -1,58 +1,41 @@
-## 1. Internal "How to test Gold" panel
+## What it currently is
 
-In `GoldSection`, above the access-code input (only when not yet Gold):
+The "Crazy Bear Country" hero title uses Tailwind's `font-serif` class, which in `tailwind.config.ts` is mapped to **Playfair Display** (Georgia fallback). That's the elegant serif you're seeing on /country, /country/parties, etc.
 
-- Mono caps bullets:
-  - Access code: **BEARTEST**
-  - Stripe test card: `4242 4242 4242 4242`, any future date, any CVC.
-  - £69/month. 25% off everywhere.
-    &nbsp;
+It is used in 5 places, all property pages:
 
-Hidden once their account is already Gold.
+- `src/components/property/PropertyPage.tsx` (the big H1 hero title)
+- `src/components/property/CBGallery.tsx` (gallery section title)
+- `src/components/property/PropertyNavShell.tsx` (nav wordmark + mobile menu title)
 
-## 2. Auto-promote sandbox Gold to live
+So yes, it appears consistently across both Town and Country property pages.
 
-The whole site is internal, so any successful sandbox Gold checkout should produce a Gold member on live with zero manual steps.
+## Proposed change
 
-Implementation, all server-side, no new buttons:
+Repoint the `serif` font family to Bungee so every existing `font-serif` usage flips to Bungee with no per-component edits.
 
-- In `payments-webhook` (`supabase/functions/payments-webhook/index.ts`), inside `handleSubscriptionCreated` and `handleSubscriptionUpdated`:
-  - If `priceId === 'gold_monthly'`, force the upserted/updated row's `environment` to `'live'` regardless of the `?env=` query param.
-  - All other products (e.g. lunch, future SKUs) keep the existing sandbox/live split.
-- In `useGoldStatus` (`src/hooks/useGoldStatus.ts`):
-  - Drop the env-conditional logic for Gold reads. Always query `.eq('environment', 'live')` for `price_id = 'gold_monthly'`.
-  - Remove the `gold_access_unlocked` sessionStorage branch — no longer needed.
-- One-off data fix: update any existing `subscriptions` rows where `price_id = 'gold_monthly'` and `environment = 'sandbox'` to `environment = 'live'` so existing testers don't have to re-subscribe.
+In `tailwind.config.ts`:
 
-Net effect: a member taps **Go Gold**, completes sandbox Stripe checkout with the test card, the webhook writes a live Gold row, realtime fires, the card flips to gold in both the editor preview and the installed PWA. No override button, no manual flip.
-
-The `BEARTEST` access code stays as the only gate so it's not exposed to random visitors.
-
-## 3. Profile page reorder + photo gating
-
-In `src/pages/MemberProfile.tsx`, left column order becomes:
-
-```text
-1. Profile Picture (AvatarUpload)
-2. The Den - Member Card (MembershipCard + GoldSection)
-3. Add to Apple Wallet
+```ts
+'serif': ['"Bungee"', 'Georgia', 'serif'],
 ```
 
-Add a short notice block above `MembershipCard` when `!avatar_url || !avatar_face_verified`:
+Bungee is already loaded from Google Fonts (added in the previous step), so no extra `<link>` work is needed.
 
-- Eyebrow: **Profile photo required**
-- Body: "Your member card stays inactive until a verified face-on photo is on file."
+## Heads-up before I build
 
-Gate the **Go Gold** button inside `GoldSection` on the same condition: disabled with inline reason "Add a verified profile photo first." when avatar is missing or unverified. The existing Apple Wallet gating block stays as-is.
+Bungee is an all-caps, blocky, sign-painter style. Switching `font-serif` to Bungee will hit:
 
-Result: no photo means no Gold checkout, no live card, no wallet pass — single, consistent rule.
+1. The huge "Crazy Bear Country" / "Crazy Bear Town" hero H1 (the one in your screenshot)
+2. Gallery section titles
+3. The "Crazy Bear Country" wordmark next to the bear logo in the top nav
+4. The mobile menu page-name display
 
-## Technical notes
+That's a big visual shift, especially the nav wordmark, which currently reads as a refined serif. It will become chunky block caps everywhere serif is used.
 
-- Edits:
-  - `supabase/functions/payments-webhook/index.ts` — force `environment='live'` for `gold_monthly`.
-  - `src/hooks/useGoldStatus.ts` — always read with `environment='live'` for Gold; drop sessionStorage flag.
-  - `src/components/membership/GoldSection.tsx` — add bullet panel, gate Go Gold on verified avatar, drop sessionStorage references for Gold visibility.
-  - `src/pages/MemberProfile.tsx` — reorder left column, add photo-required notice.
-- Data: one `UPDATE` on `subscriptions` to migrate existing `gold_monthly` sandbox rows to live.
-- No schema changes, no new edge function, no new secrets.
+If you want it on hero titles only and not the nav wordmark, I can instead replace `font-serif` with `font-display` (which is already Bungee) on just the H1s and leave the nav wordmark alone. Tell me which you prefer and I'll build it.
+
+## Files to edit (option A — repoint serif globally)
+
+- `tailwind.config.ts` — change the `serif` family to Bungee
+- No other code changes; no new font loads
