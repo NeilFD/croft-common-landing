@@ -26,7 +26,12 @@ const btnGoldStyle = { borderColor: 'hsl(var(--gold-base))' } as React.CSSProper
 const btnFull =
   'w-full inline-flex items-center justify-center border-2 border-black bg-black text-white hover:bg-white hover:text-black px-4 py-3 font-mono uppercase tracking-[0.3em] text-xs transition-colors disabled:opacity-50';
 
-export const GoldSection: React.FC = () => {
+interface GoldSectionProps {
+  /** Whether the member has a verified profile photo. Gates Go Gold. */
+  avatarReady?: boolean;
+}
+
+export const GoldSection: React.FC<GoldSectionProps> = ({ avatarReady = true }) => {
   const { user } = useAuth();
   const { isGold, status, currentPeriodEnd, cancelAtPeriodEnd, loading } = useGoldStatus();
   const { code: referralCode } = useReferralCode();
