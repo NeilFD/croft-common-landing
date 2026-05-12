@@ -29,9 +29,9 @@ export default {
 			fontFamily: {
 				'brutalist': ['Oswald', 'Arial Black', 'Helvetica', 'sans-serif'],
 				'industrial': ['Work Sans', 'Arial', 'Helvetica', 'sans-serif'],
-				'serif': ['"Righteous"', 'Georgia', 'serif'],
+				'serif': ['"Bowlby One"', 'Georgia', 'serif'],
 				/* Crazy Bear typography - architectural, cool, irreverent */
-				'display': ['"Righteous"', '"Archivo Black"', 'Helvetica', 'sans-serif'],
+				'display': ['"Bowlby One"', '"Archivo Black"', 'Helvetica', 'sans-serif'],
 				'cb-sans': ['"Space Grotesk"', 'Inter', 'Helvetica', 'sans-serif'],
 				'cb-mono': ['"Space Mono"', 'ui-monospace', 'monospace'],
 			},

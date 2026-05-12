@@ -664,12 +664,12 @@ body:has([data-radix-dialog-overlay][data-state="open"]) .mobile-safe-carousel {
 .seven-flash { animation: seven-flash 900ms ease-out forwards; }
 .seven-ring { animation: seven-ring 1100ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 
-/* Display font (Righteous) - Righteous only ships at weight 400 */
+/* Display font (Bowlby One) - Bowlby One only ships at weight 400 */
 .font-display { font-weight: 400; }
 
-/* H1 uses Righteous from Google Fonts */
+/* H1 uses Bowlby One from Google Fonts */
 h1 {
-  font-family: 'Righteous', 'Archivo Black', Helvetica, sans-serif;
+  font-family: 'Bowlby One', 'Archivo Black', Helvetica, sans-serif;
   font-weight: 400;
 }
 
