@@ -1,4 +1,4 @@
-export type MarketingStatus = 'draft' | 'in_review' | 'approved' | 'scheduled' | 'published' | 'archived';
+export type MarketingStatus = 'draft' | 'in_review' | 'changes_requested' | 'rejected' | 'approved' | 'scheduled' | 'published' | 'archived';
 
 export type PropertyTag = 'town' | 'country' | 'group';
 
@@ -56,6 +56,8 @@ export interface MarketingCampaign {
 export const STATUS_LABELS: Record<MarketingStatus, string> = {
   draft: 'Draft',
   in_review: 'In review',
+  changes_requested: 'Changes requested',
+  rejected: 'Rejected',
   approved: 'Approved',
   scheduled: 'Scheduled',
   published: 'Published',
@@ -65,6 +67,7 @@ export const STATUS_LABELS: Record<MarketingStatus, string> = {
 export const STATUS_ORDER: MarketingStatus[] = [
   'draft',
   'in_review',
+  'changes_requested',
   'approved',
   'scheduled',
   'published',

@@ -25,12 +25,19 @@ interface Props {
   onClose: () => void;
 }
 
+const AUTHORISER_EMAILS = [
+  'jen.needham@crazybear.co.uk',
+  'neil.fincham-dukes@crazybear.co.uk',
+];
+
 export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
   const { data: post } = useMarketingPost(postId);
   const upsert = useUpsertPost();
   const del = useDeletePost();
   const { managementUser } = useManagementAuth();
   const isAdmin = managementUser?.role === 'admin';
+  const isAuthoriser = !!managementUser?.user?.email
+    && AUTHORISER_EMAILS.includes(managementUser.user.email.toLowerCase());
 
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
@@ -92,7 +99,7 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
     }
   }, [channels, previewChannel]);
 
-  const handleSave = async (newStatus?: MarketingStatus) => {
+  const handleSave = async (newStatus?: MarketingStatus, opts?: { note?: string; silent?: boolean }) => {
     try {
       const newId = await upsert.mutateAsync({
         id: postId || undefined,
@@ -110,13 +117,32 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
       });
       toast.success(postId ? 'Saved' : 'Created');
       if (newStatus) setStatus(newStatus);
-      if (!postId && newId) {
-        // keep drawer open on first create so user can comment etc.
-        return;
+
+      // Fire branded email to authoriser on transitions
+      if (!opts?.silent && newStatus && (postId || newId)) {
+        const idForNotify = postId || newId;
+        if (newStatus === 'in_review') await fireNotify(idForNotify, 'review_requested');
+        if (newStatus === 'approved') await fireNotify(idForNotify, 'approved');
+        if (newStatus === 'rejected') await fireNotify(idForNotify, 'rejected', opts?.note);
+        if (newStatus === 'changes_requested')
+          await fireNotify(idForNotify, 'changes_requested', opts?.note);
       }
+
+      if (!postId && newId) return;
       onClose();
     } catch (e: any) {
       toast.error(e.message || 'Save failed');
+    }
+  };
+
+  const fireNotify = async (id: string, action: string, note?: string) => {
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      await supabase.functions.invoke('marketing-review-notify', {
+        body: { postId: id, action, note },
+      });
+    } catch (e) {
+      console.warn('notify failed', e);
     }
   };
 
@@ -266,7 +292,7 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
               </TabsContent>
 
               <TabsContent value="comments">
-                {postId && <CommentsPanel postId={postId} />}
+                {postId && <CommentsPanel postId={postId} postStatus={status} />}
               </TabsContent>
 
               <TabsContent value="history">
@@ -309,11 +335,46 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
 
         <div className="px-6 py-4 border-t border-foreground sticky bottom-0 bg-background flex items-center gap-2 flex-wrap">
           <Button onClick={() => handleSave()} disabled={upsert.isPending}>Save draft</Button>
-          {status === 'draft' && (
+          {(status === 'draft' || status === 'changes_requested' || status === 'rejected') && (
             <Button variant="outline" onClick={() => handleSave('in_review')}>Request review</Button>
           )}
-          {status === 'in_review' && isAdmin && (
-            <Button variant="outline" onClick={() => handleSave('approved')}>Approve</Button>
+          {status === 'in_review' && isAuthoriser && (
+            <>
+              <Button
+                variant="outline"
+                className="border-green-700 text-green-700 hover:bg-green-700 hover:text-white"
+                onClick={() => handleSave('approved')}
+              >
+                Approve
+              </Button>
+              <Button
+                variant="outline"
+                className="border-yellow-700 text-yellow-700 hover:bg-yellow-700 hover:text-white"
+                onClick={() => {
+                  const note = window.prompt('What needs to change? (this is sent to the author)');
+                  if (note === null) return;
+                  handleSave('changes_requested', { note });
+                }}
+              >
+                Request changes
+              </Button>
+              <Button
+                variant="outline"
+                className="border-red-700 text-red-700 hover:bg-red-700 hover:text-white"
+                onClick={() => {
+                  const note = window.prompt('Reason for rejection? (sent to the author)');
+                  if (note === null) return;
+                  handleSave('rejected', { note });
+                }}
+              >
+                Reject
+              </Button>
+            </>
+          )}
+          {status === 'in_review' && !isAuthoriser && (
+            <span className="text-xs text-muted-foreground italic ml-1">
+              Awaiting sign-off from Jen Needham (or Neil Fincham-Dukes)
+            </span>
           )}
           {status === 'approved' && (
             <Button variant="outline" onClick={() => handleSave('scheduled')}>Schedule</Button>

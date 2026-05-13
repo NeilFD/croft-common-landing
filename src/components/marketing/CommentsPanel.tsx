@@ -8,9 +8,10 @@ import { toast } from 'sonner';
 
 interface Props {
   postId: string;
+  postStatus?: string;
 }
 
-export const CommentsPanel = ({ postId }: Props) => {
+export const CommentsPanel = ({ postId, postStatus }: Props) => {
   const { data: comments = [], isLoading } = useMarketingComments(postId);
   const add = useAddComment();
   const del = useDeleteComment();
@@ -24,6 +25,18 @@ export const CommentsPanel = ({ postId }: Props) => {
     try {
       await add.mutateAsync({ post_id: postId, body: text, mentions });
       setBody('');
+      // Notify authoriser if the post is currently awaiting review
+      if (postStatus === 'in_review') {
+        const actorName = managementUser?.user?.email || 'Someone';
+        try {
+          const { supabase } = await import('@/integrations/supabase/client');
+          await supabase.functions.invoke('marketing-review-notify', {
+            body: { postId, action: 'comment_added', commentBody: text, actorName },
+          });
+        } catch (err) {
+          console.warn('comment notify failed', err);
+        }
+      }
     } catch (e: any) {
       toast.error(e.message || 'Could not post comment');
     }
