@@ -20,6 +20,7 @@ const MarketingCalendar = () => {
   const [search, setSearch] = useState('');
   const [channelFilter, setChannelFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [tovOpen, setTovOpen] = useState(false);
 
   const range = useMemo(() => ({
     from: startOfMonth(month).toISOString(),
