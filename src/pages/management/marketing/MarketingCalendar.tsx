@@ -123,9 +123,19 @@ const MarketingCalendar = () => {
             posts={filtered}
             onSelectPost={openEdit}
             onCreate={openCreate}
+            onOpenDay={(d) => setDayModalDate(d)}
           />
         )}
       </div>
+
+      <DayPostsModal
+        open={!!dayModalDate}
+        date={dayModalDate}
+        posts={filtered.filter((p) => dayModalDate && p.scheduled_at && isSameDay(new Date(p.scheduled_at), dayModalDate))}
+        onClose={() => setDayModalDate(null)}
+        onOpenPost={openEdit}
+        onCreate={openCreate}
+      />
 
       <PostDrawer
         open={drawerOpen}
