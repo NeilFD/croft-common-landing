@@ -135,6 +135,7 @@ const Chat = lazy(() => import("./pages/management/Chat"));
 const SeoDashboard = lazy(() => import("./pages/management/seo/SeoDashboard"));
 const SeoPageEditor = lazy(() => import("./pages/management/seo/SeoPageEditor"));
 const SeoSettings = lazy(() => import("./pages/management/seo/SeoSettings"));
+const MarketingCalendar = lazy(() => import("./pages/management/marketing/MarketingCalendar"));
 const BeoViewer = lazy(() => import("./pages/BeoViewer"));
 const ClientMagicLogin = lazy(() => import("./pages/ClientMagicLogin"));
 const ClientPortal = lazy(() => import("./pages/ClientPortal"));
@@ -439,6 +440,10 @@ const App = () => {
                         <Route path="/management/seo" element={<SeoDashboard />} />
                         <Route path="/management/seo/page" element={<SeoPageEditor />} />
                         <Route path="/management/seo/settings" element={<SeoSettings />} />
+
+                        {/* Marketing Calendar */}
+                        <Route path="/management/marketing" element={<Navigate to="/management/marketing/calendar" replace />} />
+                        <Route path="/management/marketing/calendar" element={<MarketingCalendar />} />
                         
                         {/* CMS under Management */}
                         <Route path="/management/cms/kitchens" element={<CMSKitchens />} />

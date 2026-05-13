@@ -64,6 +64,13 @@ const managementModules = [
     icon: Bot,
     exactMatch: false,
     badge: 'NEW'
+  },
+  {
+    name: 'Marketing Calendar',
+    path: '/management/marketing/calendar',
+    icon: CalendarDays,
+    exactMatch: false,
+    badge: 'NEW'
   }
 ];
 
