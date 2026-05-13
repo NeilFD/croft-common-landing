@@ -64,6 +64,7 @@ const managementModules = [
     icon: Bot,
     exactMatch: false,
     badge: 'NEW'
+  }
 ];
 
 const marketingSubModules = [
@@ -85,6 +86,7 @@ const marketingSubModules = [
     icon: Camera,
     exactMatch: false,
   },
+];
 
 const spacesSubModules = [
   {
