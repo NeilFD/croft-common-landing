@@ -335,11 +335,46 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
 
         <div className="px-6 py-4 border-t border-foreground sticky bottom-0 bg-background flex items-center gap-2 flex-wrap">
           <Button onClick={() => handleSave()} disabled={upsert.isPending}>Save draft</Button>
-          {status === 'draft' && (
+          {(status === 'draft' || status === 'changes_requested' || status === 'rejected') && (
             <Button variant="outline" onClick={() => handleSave('in_review')}>Request review</Button>
           )}
-          {status === 'in_review' && isAdmin && (
-            <Button variant="outline" onClick={() => handleSave('approved')}>Approve</Button>
+          {status === 'in_review' && isAuthoriser && (
+            <>
+              <Button
+                variant="outline"
+                className="border-green-700 text-green-700 hover:bg-green-700 hover:text-white"
+                onClick={() => handleSave('approved')}
+              >
+                Approve
+              </Button>
+              <Button
+                variant="outline"
+                className="border-yellow-700 text-yellow-700 hover:bg-yellow-700 hover:text-white"
+                onClick={() => {
+                  const note = window.prompt('What needs to change? (this is sent to the author)');
+                  if (note === null) return;
+                  handleSave('changes_requested', { note });
+                }}
+              >
+                Request changes
+              </Button>
+              <Button
+                variant="outline"
+                className="border-red-700 text-red-700 hover:bg-red-700 hover:text-white"
+                onClick={() => {
+                  const note = window.prompt('Reason for rejection? (sent to the author)');
+                  if (note === null) return;
+                  handleSave('rejected', { note });
+                }}
+              >
+                Reject
+              </Button>
+            </>
+          )}
+          {status === 'in_review' && !isAuthoriser && (
+            <span className="text-xs text-muted-foreground italic ml-1">
+              Awaiting sign-off from Jen Needham (or Neil Fincham-Dukes)
+            </span>
           )}
           {status === 'approved' && (
             <Button variant="outline" onClick={() => handleSave('scheduled')}>Schedule</Button>
