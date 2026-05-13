@@ -138,6 +138,7 @@ export const ManagementSidebar = () => {
     adminManagement: false,
     cms: false,
     research: false,
+    marketing: false,
   });
 
   const toggleSection = (section: string) => {
@@ -159,6 +160,7 @@ export const ManagementSidebar = () => {
   const isOnAdminRoute = currentPath.startsWith('/management/admin');
   const isOnCMSRoute = currentPath.startsWith('/management/cms');
   const isOnResearchRoute = currentPath.startsWith('/management/research');
+  const isOnMarketingRoute = currentPath.startsWith('/management/marketing');
   
   if (isOnSpacesRoute && !expandedSections.spaces) {
     setExpandedSections(prev => ({ ...prev, spaces: true }));
@@ -181,6 +183,9 @@ export const ManagementSidebar = () => {
   }
   if (isOnResearchRoute && !expandedSections.research) {
     setExpandedSections(prev => ({ ...prev, research: true }));
+  }
+  if (isOnMarketingRoute && !expandedSections.marketing) {
+    setExpandedSections(prev => ({ ...prev, marketing: true }));
   }
 
   const getNavClass = (isActiveItem: boolean) =>
