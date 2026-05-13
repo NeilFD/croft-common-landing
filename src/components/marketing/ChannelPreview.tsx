@@ -41,7 +41,14 @@ export const InstagramPreview = ({ body, hashtags = [], imageUrl }: PreviewProps
   </Frame>
 );
 
-export const TikTokPreview = ({ body, imageUrl }: PreviewProps) => (
+const Tags = ({ hashtags, className = '' }: { hashtags: string[]; className?: string }) =>
+  hashtags.length > 0 ? (
+    <div className={`text-sm text-blue-700 mt-1 ${className}`}>
+      {hashtags.map((h) => `#${h}`).join(' ')}
+    </div>
+  ) : null;
+
+export const TikTokPreview = ({ body, hashtags = [], imageUrl }: PreviewProps) => (
   <Frame label="TikTok" color={CHANNEL_META.tiktok.color}>
     <div className="max-w-[260px] mx-auto">
       <div className="aspect-[9/16] bg-foreground relative overflow-hidden">
@@ -49,13 +56,18 @@ export const TikTokPreview = ({ body, imageUrl }: PreviewProps) => (
         <div className="absolute bottom-2 left-2 right-2 text-background text-xs">
           <div className="font-medium">{FAKE_HANDLE}</div>
           <div className="line-clamp-3">{body}</div>
+          {hashtags.length > 0 && (
+            <div className="text-background/90 mt-0.5 line-clamp-1">
+              {hashtags.map((h) => `#${h}`).join(' ')}
+            </div>
+          )}
         </div>
       </div>
     </div>
   </Frame>
 );
 
-export const FacebookPreview = ({ body, imageUrl }: PreviewProps) => (
+export const FacebookPreview = ({ body, hashtags = [], imageUrl }: PreviewProps) => (
   <Frame label="Facebook" color={CHANNEL_META.facebook.color}>
     <div className="max-w-[420px]">
       <div className="flex items-center gap-2 mb-2">
@@ -66,6 +78,7 @@ export const FacebookPreview = ({ body, imageUrl }: PreviewProps) => (
         </div>
       </div>
       <div className="text-sm mb-2 whitespace-pre-wrap">{body}</div>
+      <Tags hashtags={hashtags} className="mb-2" />
       {imageUrl ? <img src={imageUrl} alt="" className="w-full" /> : placeholder}
     </div>
   </Frame>
@@ -95,7 +108,7 @@ export const XPreview = ({ body, hashtags = [] }: PreviewProps) => {
   );
 };
 
-export const LinkedInPreview = ({ body, imageUrl }: PreviewProps) => (
+export const LinkedInPreview = ({ body, hashtags = [], imageUrl }: PreviewProps) => (
   <Frame label="LinkedIn" color={CHANNEL_META.linkedin.color}>
     <div className="max-w-[420px]">
       <div className="flex items-center gap-2 mb-2">
@@ -106,12 +119,13 @@ export const LinkedInPreview = ({ body, imageUrl }: PreviewProps) => (
         </div>
       </div>
       <div className="text-sm whitespace-pre-wrap mb-2">{body}</div>
+      <Tags hashtags={hashtags} className="mb-2" />
       {imageUrl ? <img src={imageUrl} alt="" className="w-full" /> : placeholder}
     </div>
   </Frame>
 );
 
-export const EmailPreview = ({ body, ctaUrl }: PreviewProps) => (
+export const EmailPreview = ({ body, hashtags = [], ctaUrl }: PreviewProps) => (
   <Frame label="Email" color={CHANNEL_META.email.color}>
     <div className="max-w-[480px] border border-foreground/10">
       <div className="bg-foreground text-background px-4 py-3">
@@ -126,11 +140,16 @@ export const EmailPreview = ({ body, ctaUrl }: PreviewProps) => (
           </span>
         </div>
       )}
+      {hashtags.length > 0 && (
+        <div className="px-4 pb-4 text-xs text-muted-foreground">
+          {hashtags.map((h) => `#${h}`).join(' ')}
+        </div>
+      )}
     </div>
   </Frame>
 );
 
-export const WebsitePreview = ({ body, imageUrl }: PreviewProps) => (
+export const WebsitePreview = ({ body, hashtags = [], imageUrl }: PreviewProps) => (
   <Frame label="Website" color={CHANNEL_META.website.color}>
     <div className="max-w-[480px] border border-foreground">
       {imageUrl ? <img src={imageUrl} alt="" className="aspect-[16/9] w-full object-cover" /> : (
@@ -139,6 +158,15 @@ export const WebsitePreview = ({ body, imageUrl }: PreviewProps) => (
       <div className="p-3">
         <div className="font-display text-base mb-1">{body.split('\n')[0] || 'Headline'}</div>
         <div className="text-sm text-muted-foreground line-clamp-2">{body}</div>
+        {hashtags.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {hashtags.map((h) => (
+              <span key={h} className="text-[10px] font-display uppercase tracking-wider px-1.5 py-0.5 border border-foreground/20">
+                #{h}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   </Frame>
