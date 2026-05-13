@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -7,9 +8,9 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const VOICE = `You are writing for 'The Crazy Bear', voice = 'Bears Den': bold, irreverent, short, staccato, confident, minimal copy. British English only. Never use em dashes or double hyphens. Never invent prices or facts. Never use Americanisms. Currency £ only.`;
+const FALLBACK_VOICE = `You are writing for 'The Crazy Bear', voice = 'Bears Den': bold, irreverent, short, staccato, confident, minimal copy. British English only. Never use em dashes or double hyphens. Never invent prices or facts. Never use Americanisms. Currency £ only.`;
 
-const CHANNEL_HINTS: Record<string, string> = {
+const FALLBACK_HINTS: Record<string, string> = {
   instagram: "Tone: visual-led, 1-3 short lines, hashtags optional, emoji sparingly.",
   tiktok: "Tone: punchy hook in line one, casual.",
   facebook: "Tone: warm, slightly longer, conversational.",
@@ -19,17 +20,38 @@ const CHANNEL_HINTS: Record<string, string> = {
   website: "Tone: editorial, scannable, headline + 2 short paragraphs.",
 };
 
-const ACTIONS: Record<string, (body: string, channel: string) => string> = {
-  caption: (b, c) =>
-    `${VOICE}\n\nWrite a fresh ${c} caption for the post idea below. Keep it under 80 words. ${CHANNEL_HINTS[c] || ""}\n\nIdea:\n${b || "(no draft yet, invent something on-brand)"}`,
-  rewrite: (b, c) =>
-    `${VOICE}\n\nRewrite the copy below for ${c}. ${CHANNEL_HINTS[c] || ""} Return only the rewritten copy, no preamble.\n\nCopy:\n${b}`,
-  shorten: (b, c) =>
-    `${VOICE}\n\nShorten the copy below to its sharpest form for ${c}. Keep meaning. Return only the result.\n\nCopy:\n${b}`,
-  hashtags: (b) =>
-    `${VOICE}\n\nSuggest 8 to 12 hashtags for the post below. Return as a single line of space separated hashtags, no commentary.\n\nPost:\n${b}`,
-  alt_text: (b) =>
-    `${VOICE}\n\nWrite a single concise image alt text (max 120 chars) for the post below. Return only the alt text.\n\nPost:\n${b}`,
+async function loadSettings(): Promise<{ voice: string; hints: Record<string, string> }> {
+  try {
+    const url = Deno.env.get("SUPABASE_URL");
+    const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!url || !key) return { voice: FALLBACK_VOICE, hints: FALLBACK_HINTS };
+    const sb = createClient(url, key);
+    const { data } = await sb
+      .from("marketing_settings")
+      .select("voice_prompt, channel_hints")
+      .eq("key", "default")
+      .maybeSingle();
+    if (!data) return { voice: FALLBACK_VOICE, hints: FALLBACK_HINTS };
+    return {
+      voice: data.voice_prompt || FALLBACK_VOICE,
+      hints: { ...FALLBACK_HINTS, ...((data.channel_hints || {}) as Record<string, string>) },
+    };
+  } catch (_e) {
+    return { voice: FALLBACK_VOICE, hints: FALLBACK_HINTS };
+  }
+}
+
+const ACTIONS: Record<string, (voice: string, hints: Record<string, string>, body: string, channel: string) => string> = {
+  caption: (v, h, b, c) =>
+    `${v}\n\nWrite a fresh ${c} caption for the post idea below. Keep it under 80 words. ${h[c] || ""}\n\nIdea:\n${b || "(no draft yet, invent something on-brand)"}`,
+  rewrite: (v, h, b, c) =>
+    `${v}\n\nRewrite the copy below for ${c}. ${h[c] || ""} Return only the rewritten copy, no preamble.\n\nCopy:\n${b}`,
+  shorten: (v, _h, b, c) =>
+    `${v}\n\nShorten the copy below to its sharpest form for ${c}. Keep meaning. Return only the result.\n\nCopy:\n${b}`,
+  hashtags: (v, _h, b) =>
+    `${v}\n\nSuggest 8 to 12 hashtags for the post below. Return as a single line of space separated hashtags, no commentary.\n\nPost:\n${b}`,
+  alt_text: (v, _h, b) =>
+    `${v}\n\nWrite a single concise image alt text (max 120 chars) for the post below. Return only the alt text.\n\nPost:\n${b}`,
 };
 
 serve(async (req) => {
@@ -46,7 +68,8 @@ serve(async (req) => {
     const builder = ACTIONS[action];
     if (!builder) throw new Error(`Unknown action: ${action}`);
 
-    const prompt = builder(body || "", ch);
+    const { voice, hints } = await loadSettings();
+    const prompt = builder(voice, hints, body || "", ch);
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -57,7 +80,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: VOICE },
+          { role: "system", content: voice },
           { role: "user", content: prompt },
         ],
       }),
