@@ -64,14 +64,28 @@ const managementModules = [
     icon: Bot,
     exactMatch: false,
     badge: 'NEW'
-  },
+  }
+];
+
+const marketingSubModules = [
   {
-    name: 'Marketing Calendar',
+    name: 'Calendar',
     path: '/management/marketing/calendar',
     icon: CalendarDays,
     exactMatch: false,
-    badge: 'NEW'
-  }
+  },
+  {
+    name: 'Campaigns',
+    path: '/management/marketing/campaigns',
+    icon: BarChart3,
+    exactMatch: false,
+  },
+  {
+    name: 'Assets',
+    path: '/management/marketing/assets',
+    icon: Camera,
+    exactMatch: false,
+  },
 ];
 
 const spacesSubModules = [
@@ -124,6 +138,7 @@ export const ManagementSidebar = () => {
     adminManagement: false,
     cms: false,
     research: false,
+    marketing: false,
   });
 
   const toggleSection = (section: string) => {
@@ -145,6 +160,7 @@ export const ManagementSidebar = () => {
   const isOnAdminRoute = currentPath.startsWith('/management/admin');
   const isOnCMSRoute = currentPath.startsWith('/management/cms');
   const isOnResearchRoute = currentPath.startsWith('/management/research');
+  const isOnMarketingRoute = currentPath.startsWith('/management/marketing');
   
   if (isOnSpacesRoute && !expandedSections.spaces) {
     setExpandedSections(prev => ({ ...prev, spaces: true }));
@@ -167,6 +183,9 @@ export const ManagementSidebar = () => {
   }
   if (isOnResearchRoute && !expandedSections.research) {
     setExpandedSections(prev => ({ ...prev, research: true }));
+  }
+  if (isOnMarketingRoute && !expandedSections.marketing) {
+    setExpandedSections(prev => ({ ...prev, marketing: true }));
   }
 
   const getNavClass = (isActiveItem: boolean) =>
@@ -421,6 +440,52 @@ export const ManagementSidebar = () => {
                                </SidebarMenuButton>
                              </TooltipTrigger>
                              <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                              <p className="font-cb-sans">{module.name}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </SidebarMenuItem>
+                      ))}
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </CollapsibleContent>
+              </Collapsible>
+            </SidebarGroup>
+          )}
+
+          {/* Marketing Section */}
+          {showText && (
+            <SidebarGroup>
+              <Collapsible
+                open={expandedSections.marketing}
+                onOpenChange={() => toggleSection('marketing')}
+              >
+                <CollapsibleTrigger asChild>
+                  <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2 text-base">
+                    <span className="flex items-center font-display uppercase tracking-wide">
+                      <CalendarDays className="mr-2 h-5 w-5 text-[hsl(var(--accent-pink))]" />
+                      MARKETING
+                    </span>
+                    <ChevronDown className={`h-5 w-5 transition-transform ${expandedSections.marketing ? 'rotate-180' : ''}`} />
+                  </SidebarGroupLabel>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      {marketingSubModules.map((module) => (
+                        <SidebarMenuItem key={module.path}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <SidebarMenuButton
+                                asChild
+                                className={getNavClass(isActive(module.path, module.exactMatch))}
+                              >
+                                <NavLink to={module.path} className="font-cb-sans">
+                                  <module.icon className="mr-2 h-4 w-4" />
+                                  {module.name}
+                                </NavLink>
+                              </SidebarMenuButton>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
                               <p className="font-cb-sans">{module.name}</p>
                             </TooltipContent>
                           </Tooltip>

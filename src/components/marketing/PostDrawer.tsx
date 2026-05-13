@@ -6,10 +6,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { useMarketingPost, useUpsertPost, useDeletePost } from '@/hooks/useMarketing';
+import { useMarketingPost, useUpsertPost, useDeletePost, useMarketingCampaigns } from '@/hooks/useMarketing';
 import { ALL_CHANNELS, CHANNEL_META } from './channelMeta';
 import { ChannelPreview } from './ChannelPreview';
-import { STATUS_LABELS, STATUS_ORDER, PROPERTY_LABELS, type MarketingStatus, type PropertyTag } from '@/lib/marketing/types';
+import { CommentsPanel } from './CommentsPanel';
+import { StatusTimeline } from './StatusTimeline';
+import { AssetPicker } from './AssetPicker';
+import { AiAssistButton } from './AiAssistButton';
+import { STATUS_LABELS, PROPERTY_LABELS, type MarketingStatus, type PropertyTag } from '@/lib/marketing/types';
 import { toast } from 'sonner';
 import { useManagementAuth } from '@/hooks/useManagementAuth';
 import { format } from 'date-fns';
@@ -36,6 +40,13 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
   const [property, setProperty] = useState<PropertyTag | ''>('');
   const [status, setStatus] = useState<MarketingStatus>('draft');
   const [previewChannel, setPreviewChannel] = useState('instagram');
+  const [assetIds, setAssetIds] = useState<string[]>([]);
+  const [assetUrls, setAssetUrls] = useState<string[]>([]);
+  const [campaignId, setCampaignId] = useState<string>('');
+  const [ctaText, setCtaText] = useState('');
+  const [ctaUrl, setCtaUrl] = useState('');
+
+  const { data: campaigns = [] } = useMarketingCampaigns();
 
   useEffect(() => {
     if (post) {
@@ -47,6 +58,12 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
       setProperty((post.property_tag as PropertyTag) || '');
       setStatus(post.status);
       setPreviewChannel((post.channels && post.channels[0]) || 'instagram');
+      const pa: any[] = (post as any).marketing_post_assets || [];
+      setAssetIds(pa.map((a) => a.marketing_assets?.id).filter(Boolean));
+      setAssetUrls(post.asset_urls || []);
+      setCampaignId(post.campaign_id || '');
+      setCtaText(post.cta_text || '');
+      setCtaUrl(post.cta_url || '');
     } else if (initialDate) {
       setTitle('');
       setBody('');
@@ -56,6 +73,11 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
       setProperty('');
       setStatus('draft');
       setPreviewChannel('instagram');
+      setAssetIds([]);
+      setAssetUrls([]);
+      setCampaignId('');
+      setCtaText('');
+      setCtaUrl('');
     }
   }, [post, initialDate, open]);
 
@@ -64,17 +86,26 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
 
   const handleSave = async (newStatus?: MarketingStatus) => {
     try {
-      await upsert.mutateAsync({
+      const newId = await upsert.mutateAsync({
         id: postId || undefined,
         title: title || null,
         body: body || null,
         hashtags: hashtags.split(/\s+/).map((h) => h.replace(/^#/, '')).filter(Boolean),
         scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : null,
         property_tag: property || null,
+        campaign_id: campaignId || null,
+        cta_text: ctaText || null,
+        cta_url: ctaUrl || null,
         status: newStatus || status,
         channels,
+        asset_ids: assetIds,
       });
       toast.success(postId ? 'Saved' : 'Created');
+      if (newStatus) setStatus(newStatus);
+      if (!postId && newId) {
+        // keep drawer open on first create so user can comment etc.
+        return;
+      }
       onClose();
     } catch (e: any) {
       toast.error(e.message || 'Save failed');
@@ -108,11 +139,14 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-0">
           <div className="p-6 border-r border-foreground/10">
             <Tabs defaultValue="content">
-              <TabsList>
+              <TabsList className="flex-wrap h-auto">
                 <TabsTrigger value="content">Content</TabsTrigger>
+                <TabsTrigger value="media">Media</TabsTrigger>
                 <TabsTrigger value="channels">Channels</TabsTrigger>
                 <TabsTrigger value="schedule">Schedule</TabsTrigger>
                 <TabsTrigger value="audience">Audience</TabsTrigger>
+                <TabsTrigger value="comments" disabled={!postId}>Comments</TabsTrigger>
+                <TabsTrigger value="history" disabled={!postId}>History</TabsTrigger>
               </TabsList>
 
               <TabsContent value="content" className="space-y-4">
@@ -121,16 +155,48 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
                   <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Friday brunch push" />
                 </div>
                 <div>
-                  <Label>Body</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Body</Label>
+                    <AiAssistButton
+                      body={body}
+                      channel={previewChannel}
+                      onApply={(text) => setBody(text)}
+                    />
+                  </div>
                   <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={8} placeholder="Write the post body" />
                   <div className={`text-xs mt-1 ${charLimit && charCount > charLimit ? 'text-red-600' : 'text-muted-foreground'}`}>
                     {charCount}{charLimit ? ` / ${charLimit}` : ''} chars ({CHANNEL_META[previewChannel]?.label})
                   </div>
                 </div>
                 <div>
-                  <Label>Hashtags (space separated, no #)</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Hashtags (space separated, no #)</Label>
+                    <AiAssistButton
+                      body={body}
+                      channel={previewChannel}
+                      onApply={(text) => setHashtags(text.replace(/#/g, ''))}
+                    />
+                  </div>
                   <Input value={hashtags} onChange={(e) => setHashtags(e.target.value)} placeholder="brunch crazybear weekend" />
                 </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>CTA text</Label>
+                    <Input value={ctaText} onChange={(e) => setCtaText(e.target.value)} placeholder="Book now" />
+                  </div>
+                  <div>
+                    <Label>CTA URL</Label>
+                    <Input value={ctaUrl} onChange={(e) => setCtaUrl(e.target.value)} placeholder="https://" />
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="media">
+                <AssetPicker
+                  selectedIds={assetIds}
+                  selectedUrls={assetUrls}
+                  onChange={(ids, urls) => { setAssetIds(ids); setAssetUrls(urls); }}
+                />
               </TabsContent>
 
               <TabsContent value="channels" className="space-y-3">
@@ -176,6 +242,27 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
                     ))}
                   </div>
                 </div>
+                <div>
+                  <Label>Campaign</Label>
+                  <select
+                    value={campaignId}
+                    onChange={(e) => setCampaignId(e.target.value)}
+                    className="w-full border border-foreground/20 bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">No campaign</option>
+                    {campaigns.map((c) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="comments">
+                {postId && <CommentsPanel postId={postId} />}
+              </TabsContent>
+
+              <TabsContent value="history">
+                {postId && <StatusTimeline postId={postId} />}
               </TabsContent>
             </Tabs>
           </div>
@@ -198,7 +285,7 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
                 channel={previewChannel}
                 body={body}
                 hashtags={hashtags.split(/\s+/).filter(Boolean)}
-                imageUrl={post?.asset_urls?.[0]}
+                imageUrl={assetUrls[0]}
               />
             ) : (
               <div className="text-sm text-muted-foreground">Select a channel to preview</div>
