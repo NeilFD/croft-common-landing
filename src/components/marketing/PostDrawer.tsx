@@ -40,6 +40,13 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
   const [property, setProperty] = useState<PropertyTag | ''>('');
   const [status, setStatus] = useState<MarketingStatus>('draft');
   const [previewChannel, setPreviewChannel] = useState('instagram');
+  const [assetIds, setAssetIds] = useState<string[]>([]);
+  const [assetUrls, setAssetUrls] = useState<string[]>([]);
+  const [campaignId, setCampaignId] = useState<string>('');
+  const [ctaText, setCtaText] = useState('');
+  const [ctaUrl, setCtaUrl] = useState('');
+
+  const { data: campaigns = [] } = useMarketingCampaigns();
 
   useEffect(() => {
     if (post) {
@@ -51,6 +58,12 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
       setProperty((post.property_tag as PropertyTag) || '');
       setStatus(post.status);
       setPreviewChannel((post.channels && post.channels[0]) || 'instagram');
+      const pa: any[] = (post as any).marketing_post_assets || [];
+      setAssetIds(pa.map((a) => a.marketing_assets?.id).filter(Boolean));
+      setAssetUrls(post.asset_urls || []);
+      setCampaignId(post.campaign_id || '');
+      setCtaText(post.cta_text || '');
+      setCtaUrl(post.cta_url || '');
     } else if (initialDate) {
       setTitle('');
       setBody('');
@@ -60,6 +73,11 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
       setProperty('');
       setStatus('draft');
       setPreviewChannel('instagram');
+      setAssetIds([]);
+      setAssetUrls([]);
+      setCampaignId('');
+      setCtaText('');
+      setCtaUrl('');
     }
   }, [post, initialDate, open]);
 
@@ -68,17 +86,26 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
 
   const handleSave = async (newStatus?: MarketingStatus) => {
     try {
-      await upsert.mutateAsync({
+      const newId = await upsert.mutateAsync({
         id: postId || undefined,
         title: title || null,
         body: body || null,
         hashtags: hashtags.split(/\s+/).map((h) => h.replace(/^#/, '')).filter(Boolean),
         scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : null,
         property_tag: property || null,
+        campaign_id: campaignId || null,
+        cta_text: ctaText || null,
+        cta_url: ctaUrl || null,
         status: newStatus || status,
         channels,
+        asset_ids: assetIds,
       });
       toast.success(postId ? 'Saved' : 'Created');
+      if (newStatus) setStatus(newStatus);
+      if (!postId && newId) {
+        // keep drawer open on first create so user can comment etc.
+        return;
+      }
       onClose();
     } catch (e: any) {
       toast.error(e.message || 'Save failed');
