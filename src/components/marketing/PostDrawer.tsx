@@ -292,7 +292,7 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
               </TabsContent>
 
               <TabsContent value="comments">
-                {postId && <CommentsPanel postId={postId} />}
+                {postId && <CommentsPanel postId={postId} postStatus={status} />}
               </TabsContent>
 
               <TabsContent value="history">
