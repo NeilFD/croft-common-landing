@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -42,27 +42,27 @@ export const AiAssistButton = ({ body, channel, onApply }: Props) => {
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="font-display uppercase text-xs tracking-wider">
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button type="button" variant="outline" size="sm" className="font-display uppercase text-xs tracking-wider">
           AI assist
         </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-56 p-1 bg-background border border-foreground" align="end">
-        <div className="space-y-1">
-          {ACTIONS.map((a) => (
-            <button
-              key={a.key}
-              type="button"
-              disabled={!!busy}
-              onClick={() => run(a.key)}
-              className="w-full text-left text-xs px-2 py-1.5 hover:bg-foreground hover:text-background disabled:opacity-50"
-            >
-              {busy === a.key ? 'Working...' : a.label}
-            </button>
-          ))}
-        </div>
-      </PopoverContent>
-    </Popover>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="z-[100010] w-56 bg-background border border-foreground" align="end">
+        {ACTIONS.map((a) => (
+          <DropdownMenuItem
+            key={a.key}
+            disabled={!!busy}
+            onSelect={(event) => {
+              event.preventDefault();
+              void run(a.key);
+            }}
+            className="text-xs cursor-pointer focus:bg-foreground focus:text-background"
+          >
+            {busy === a.key ? 'Working...' : a.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
