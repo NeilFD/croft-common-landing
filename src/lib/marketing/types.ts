@@ -1,4 +1,4 @@
-export type MarketingStatus = 'draft' | 'in_review' | 'approved' | 'scheduled' | 'published' | 'archived';
+export type MarketingStatus = 'draft' | 'in_review' | 'changes_requested' | 'rejected' | 'approved' | 'scheduled' | 'published' | 'archived';
 
 export type PropertyTag = 'town' | 'country' | 'group';
 
