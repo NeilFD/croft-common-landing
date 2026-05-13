@@ -2,7 +2,7 @@ import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { useManagementAuth } from '@/hooks/useManagementAuth';
 import { useRoleBasedAccess } from '@/hooks/useRoleBasedAccess';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, BarChart3, Shield, Layout, MessageSquare, Settings as SettingsIcon } from 'lucide-react';
+import { Building2, BarChart3, Shield, Layout, MessageSquare, Settings as SettingsIcon, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { PushDiagnostics } from '@/components/PushDiagnostics';
@@ -23,6 +23,14 @@ const ManagementDashboard = () => {
       href: '/management/spaces',
       color: 'text-[hsl(var(--accent-pink))]',
       show: true
+    },
+    {
+      title: 'MARKETING',
+      description: 'Calendar, campaigns, assets',
+      icon: CalendarDays,
+      href: '/management/marketing/calendar',
+      color: 'text-[hsl(var(--accent-pink))]',
+      show: canAccessCMS()
     },
     {
       title: 'CMS',
