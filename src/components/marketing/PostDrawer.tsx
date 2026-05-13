@@ -84,6 +84,14 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
   const toggleChannel = (k: string) =>
     setChannels((prev) => (prev.includes(k) ? prev.filter((c) => c !== k) : [...prev, k]));
 
+  // Keep previewChannel in sync with selected channels
+  useEffect(() => {
+    if (channels.length === 0) return;
+    if (!channels.includes(previewChannel)) {
+      setPreviewChannel(channels[0]);
+    }
+  }, [channels, previewChannel]);
+
   const handleSave = async (newStatus?: MarketingStatus) => {
     try {
       const newId = await upsert.mutateAsync({
