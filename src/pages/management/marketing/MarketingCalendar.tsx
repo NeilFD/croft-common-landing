@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
-import { addMonths, endOfMonth, format, startOfMonth } from 'date-fns';
+import { addMonths, endOfMonth, format, isSameDay, startOfMonth } from 'date-fns';
 import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CalendarGrid } from '@/components/marketing/CalendarGrid';
 import { PostDrawer } from '@/components/marketing/PostDrawer';
+import { DayPostsModal } from '@/components/marketing/DayPostsModal';
 import { useMarketingPosts } from '@/hooks/useMarketing';
 import { ALL_CHANNELS, CHANNEL_META } from '@/components/marketing/channelMeta';
 import { STATUS_LABELS, STATUS_ORDER } from '@/lib/marketing/types';
