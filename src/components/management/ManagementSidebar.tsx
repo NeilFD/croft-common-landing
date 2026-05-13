@@ -64,15 +64,27 @@ const managementModules = [
     icon: Bot,
     exactMatch: false,
     badge: 'NEW'
-  },
+];
+
+const marketingSubModules = [
   {
-    name: 'Marketing Calendar',
+    name: 'Calendar',
     path: '/management/marketing/calendar',
     icon: CalendarDays,
     exactMatch: false,
-    badge: 'NEW'
-  }
-];
+  },
+  {
+    name: 'Campaigns',
+    path: '/management/marketing/campaigns',
+    icon: BarChart3,
+    exactMatch: false,
+  },
+  {
+    name: 'Assets',
+    path: '/management/marketing/assets',
+    icon: Camera,
+    exactMatch: false,
+  },
 
 const spacesSubModules = [
   {
