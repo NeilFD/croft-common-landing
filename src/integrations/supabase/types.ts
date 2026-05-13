@@ -4720,6 +4720,7 @@ export type Database = {
       is_admin: { Args: { uid: string }; Returns: boolean }
       is_gold: { Args: { check_user_id: string }; Returns: boolean }
       is_management_user: { Args: { _uid: string }; Returns: boolean }
+      is_marketing_authoriser: { Args: { _uid: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
           dlq_name: string
