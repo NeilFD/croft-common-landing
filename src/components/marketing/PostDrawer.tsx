@@ -25,12 +25,19 @@ interface Props {
   onClose: () => void;
 }
 
+const AUTHORISER_EMAILS = [
+  'jen.needham@crazybear.co.uk',
+  'neil.fincham-dukes@crazybear.co.uk',
+];
+
 export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
   const { data: post } = useMarketingPost(postId);
   const upsert = useUpsertPost();
   const del = useDeletePost();
   const { managementUser } = useManagementAuth();
   const isAdmin = managementUser?.role === 'admin';
+  const isAuthoriser = !!managementUser?.user?.email
+    && AUTHORISER_EMAILS.includes(managementUser.user.email.toLowerCase());
 
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
