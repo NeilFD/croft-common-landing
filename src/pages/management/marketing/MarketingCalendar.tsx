@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { CalendarGrid } from '@/components/marketing/CalendarGrid';
 import { PostDrawer } from '@/components/marketing/PostDrawer';
 import { DayPostsModal } from '@/components/marketing/DayPostsModal';
+import { ToneOfVoiceDialog } from '@/components/marketing/ToneOfVoiceDialog';
 import { useMarketingPosts } from '@/hooks/useMarketing';
 import { ALL_CHANNELS, CHANNEL_META } from '@/components/marketing/channelMeta';
 import { STATUS_LABELS, STATUS_ORDER } from '@/lib/marketing/types';
@@ -19,6 +20,7 @@ const MarketingCalendar = () => {
   const [search, setSearch] = useState('');
   const [channelFilter, setChannelFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [tovOpen, setTovOpen] = useState(false);
 
   const range = useMemo(() => ({
     from: startOfMonth(month).toISOString(),
@@ -63,6 +65,7 @@ const MarketingCalendar = () => {
               {format(month, 'MMMM yyyy')}
             </div>
             <Button variant="outline" onClick={() => setMonth(addMonths(month, 1))}>{'>'}</Button>
+            <Button variant="outline" onClick={() => setTovOpen(true)}>Tone of voice</Button>
             <Button onClick={() => openCreate(new Date())}>+ New post</Button>
           </div>
         </div>
@@ -137,6 +140,7 @@ const MarketingCalendar = () => {
         onCreate={openCreate}
       />
 
+      <ToneOfVoiceDialog open={tovOpen} onOpenChange={setTovOpen} />
       <PostDrawer
         open={drawerOpen}
         postId={editingId}

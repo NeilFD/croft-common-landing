@@ -2814,6 +2814,33 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_settings: {
+        Row: {
+          channel_hints: Json
+          created_at: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+          voice_prompt: string
+        }
+        Insert: {
+          channel_hints?: Json
+          created_at?: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          voice_prompt: string
+        }
+        Update: {
+          channel_hints?: Json
+          created_at?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          voice_prompt?: string
+        }
+        Relationships: []
+      }
       marketing_status_log: {
         Row: {
           author_id: string | null
