@@ -17,9 +17,10 @@ interface Props {
   posts: MarketingPost[];
   onSelectPost: (id: string) => void;
   onCreate: (date: Date) => void;
+  onOpenDay: (date: Date) => void;
 }
 
-export const CalendarGrid = ({ month, posts, onSelectPost, onCreate }: Props) => {
+export const CalendarGrid = ({ month, posts, onSelectPost, onCreate, onOpenDay }: Props) => {
   const days = useMemo(() => {
     const start = startOfWeek(startOfMonth(month), { weekStartsOn: 1 });
     const end = endOfWeek(endOfMonth(month), { weekStartsOn: 1 });
@@ -47,29 +48,28 @@ export const CalendarGrid = ({ month, posts, onSelectPost, onCreate }: Props) =>
           return (
             <div
               key={day.toISOString()}
-              className={`min-h-[120px] bg-background p-1.5 flex flex-col gap-1 ${inMonth ? '' : 'opacity-40'}`}
+              onClick={() => onOpenDay(day)}
+              className={`min-h-[120px] bg-background p-1.5 flex flex-col gap-1 cursor-pointer hover:bg-foreground/5 transition-colors ${inMonth ? '' : 'opacity-40'}`}
             >
               <div className="flex items-center justify-between">
-                <button
-                  type="button"
-                  onClick={() => onCreate(day)}
+                <span
                   className={`text-xs font-display ${isToday ? 'bg-foreground text-background px-1.5' : ''}`}
-                  title="Create post"
                 >
                   {format(day, 'd')}
+                </span>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); onCreate(day); }}
+                  className="opacity-0 group-hover:opacity-100 hover:opacity-100 text-xs text-muted-foreground hover:text-foreground"
+                  title="Create post"
+                >
+                  +
                 </button>
-                {dayPosts.length === 0 && (
-                  <button
-                    type="button"
-                    onClick={() => onCreate(day)}
-                    className="opacity-0 hover:opacity-100 text-xs text-muted-foreground"
-                  >
-                    +
-                  </button>
-                )}
               </div>
               {dayPosts.slice(0, 4).map((p) => (
-                <PostCell key={p.id} post={p} onClick={() => onSelectPost(p.id)} />
+                <div key={p.id} onClick={(e) => e.stopPropagation()}>
+                  <PostCell post={p} onClick={() => onSelectPost(p.id)} />
+                </div>
               ))}
               {dayPosts.length > 4 && (
                 <div className="text-[10px] text-muted-foreground">+{dayPosts.length - 4} more</div>
