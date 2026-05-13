@@ -65,6 +65,7 @@ const MarketingCalendar = () => {
               {format(month, 'MMMM yyyy')}
             </div>
             <Button variant="outline" onClick={() => setMonth(addMonths(month, 1))}>{'>'}</Button>
+            <Button variant="outline" onClick={() => setTovOpen(true)}>Tone of voice</Button>
             <Button onClick={() => openCreate(new Date())}>+ New post</Button>
           </div>
         </div>
