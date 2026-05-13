@@ -8,9 +8,10 @@ import { toast } from 'sonner';
 
 interface Props {
   postId: string;
+  postStatus?: string;
 }
 
-export const CommentsPanel = ({ postId }: Props) => {
+export const CommentsPanel = ({ postId, postStatus }: Props) => {
   const { data: comments = [], isLoading } = useMarketingComments(postId);
   const add = useAddComment();
   const del = useDeleteComment();
