@@ -140,6 +140,7 @@ const MarketingCalendar = () => {
         onCreate={openCreate}
       />
 
+      <ToneOfVoiceDialog open={tovOpen} onOpenChange={setTovOpen} />
       <PostDrawer
         open={drawerOpen}
         postId={editingId}
