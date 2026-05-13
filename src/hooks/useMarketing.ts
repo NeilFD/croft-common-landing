@@ -88,16 +88,19 @@ export const useUpsertPost = () => {
       cta_url?: string | null;
       content_pillar?: string | null;
       channels?: string[];
+      asset_ids?: string[];
     }) => {
-      const { channels, id, ...rest } = payload;
+      const { channels, asset_ids, id, ...rest } = payload;
       let postId = id;
       if (postId) {
         const { error } = await (supabase as any).from('marketing_posts').update(rest).eq('id', postId);
         if (error) throw error;
       } else {
+        const { data: { user } } = await supabase.auth.getUser();
+        const insertRow = { ...rest, owner_id: user?.id || null };
         const { data, error } = await (supabase as any)
           .from('marketing_posts')
-          .insert(rest)
+          .insert(insertRow)
           .select('id')
           .single();
         if (error) throw error;
@@ -108,6 +111,14 @@ export const useUpsertPost = () => {
         if (channels.length) {
           const rows = channels.map((c) => ({ post_id: postId, channel_key: c }));
           const { error } = await (supabase as any).from('marketing_post_channels').insert(rows);
+          if (error) throw error;
+        }
+      }
+      if (asset_ids) {
+        await (supabase as any).from('marketing_post_assets').delete().eq('post_id', postId);
+        if (asset_ids.length) {
+          const rows = asset_ids.map((aid, i) => ({ post_id: postId, asset_id: aid, sort_order: i }));
+          const { error } = await (supabase as any).from('marketing_post_assets').insert(rows);
           if (error) throw error;
         }
       }
