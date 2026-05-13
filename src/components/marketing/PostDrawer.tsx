@@ -276,28 +276,34 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
           </div>
 
           <div className="p-6 bg-foreground/5">
+            <div className="text-[10px] font-display uppercase tracking-wider text-muted-foreground mb-2">
+              Preview as
+            </div>
             <div className="flex items-center gap-2 mb-3 flex-wrap">
+              {channels.length === 0 && (
+                <div className="text-xs text-muted-foreground">Select a channel on the Channels tab</div>
+              )}
               {channels.map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setPreviewChannel(c)}
-                  className={`text-[10px] font-display uppercase tracking-wider px-2 py-1 ${previewChannel === c ? 'bg-foreground text-background' : 'bg-background border border-foreground/20'}`}
+                  className={`text-[10px] font-display uppercase tracking-wider px-2 py-1 border-2 transition-all ${previewChannel === c ? 'bg-foreground text-background border-foreground' : 'bg-background border-foreground/20 hover:border-foreground'}`}
                 >
+                  <span className="inline-block w-2 h-2 rounded-full mr-1.5" style={{ background: CHANNEL_META[c]?.color }} />
                   {CHANNEL_META[c]?.label}
                 </button>
               ))}
             </div>
-            {channels.length > 0 ? (
+            {channels.length > 0 && channels.includes(previewChannel) ? (
               <ChannelPreview
                 channel={previewChannel}
                 body={body}
                 hashtags={hashtags.split(/\s+/).filter(Boolean)}
                 imageUrl={assetUrls[0]}
+                ctaUrl={ctaUrl}
               />
-            ) : (
-              <div className="text-sm text-muted-foreground">Select a channel to preview</div>
-            )}
+            ) : null}
           </div>
         </div>
 
