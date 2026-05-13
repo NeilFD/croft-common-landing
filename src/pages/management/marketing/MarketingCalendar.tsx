@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
-import { addMonths, endOfMonth, format, startOfMonth } from 'date-fns';
+import { addMonths, endOfMonth, format, isSameDay, startOfMonth } from 'date-fns';
 import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CalendarGrid } from '@/components/marketing/CalendarGrid';
 import { PostDrawer } from '@/components/marketing/PostDrawer';
+import { DayPostsModal } from '@/components/marketing/DayPostsModal';
 import { useMarketingPosts } from '@/hooks/useMarketing';
 import { ALL_CHANNELS, CHANNEL_META } from '@/components/marketing/channelMeta';
 import { STATUS_LABELS, STATUS_ORDER } from '@/lib/marketing/types';
@@ -14,6 +15,7 @@ const MarketingCalendar = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [initialDate, setInitialDate] = useState<Date | null>(null);
+  const [dayModalDate, setDayModalDate] = useState<Date | null>(null);
   const [search, setSearch] = useState('');
   const [channelFilter, setChannelFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
@@ -121,9 +123,19 @@ const MarketingCalendar = () => {
             posts={filtered}
             onSelectPost={openEdit}
             onCreate={openCreate}
+            onOpenDay={(d) => setDayModalDate(d)}
           />
         )}
       </div>
+
+      <DayPostsModal
+        open={!!dayModalDate}
+        date={dayModalDate}
+        posts={filtered.filter((p) => dayModalDate && p.scheduled_at && isSameDay(new Date(p.scheduled_at), dayModalDate))}
+        onClose={() => setDayModalDate(null)}
+        onOpenPost={openEdit}
+        onCreate={openCreate}
+      />
 
       <PostDrawer
         open={drawerOpen}
