@@ -99,7 +99,19 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
     }
   }, [channels, previewChannel]);
 
-  const handleSave = async (newStatus?: MarketingStatus) => {
+  const notify = async (action: string, extra?: { note?: string }) => {
+    if (!postId) return;
+    try {
+      await (await import('@/integrations/supabase/client')).supabase.functions.invoke(
+        'marketing-review-notify',
+        { body: { postId, action, note: extra?.note } },
+      );
+    } catch (e) {
+      console.warn('notify failed', e);
+    }
+  };
+
+  const handleSave = async (newStatus?: MarketingStatus, opts?: { note?: string; silent?: boolean }) => {
     try {
       const newId = await upsert.mutateAsync({
         id: postId || undefined,
@@ -117,13 +129,32 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
       });
       toast.success(postId ? 'Saved' : 'Created');
       if (newStatus) setStatus(newStatus);
-      if (!postId && newId) {
-        // keep drawer open on first create so user can comment etc.
-        return;
+
+      // Fire branded email to authoriser on transitions
+      if (!opts?.silent && newStatus && (postId || newId)) {
+        const idForNotify = postId || newId;
+        if (newStatus === 'in_review') await fireNotify(idForNotify, 'review_requested');
+        if (newStatus === 'approved') await fireNotify(idForNotify, 'approved');
+        if (newStatus === 'rejected') await fireNotify(idForNotify, 'rejected', opts?.note);
+        if (newStatus === 'changes_requested')
+          await fireNotify(idForNotify, 'changes_requested', opts?.note);
       }
+
+      if (!postId && newId) return;
       onClose();
     } catch (e: any) {
       toast.error(e.message || 'Save failed');
+    }
+  };
+
+  const fireNotify = async (id: string, action: string, note?: string) => {
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      await supabase.functions.invoke('marketing-review-notify', {
+        body: { postId: id, action, note },
+      });
+    } catch (e) {
+      console.warn('notify failed', e);
     }
   };
 
