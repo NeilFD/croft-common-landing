@@ -452,6 +452,52 @@ export const ManagementSidebar = () => {
             </SidebarGroup>
           )}
 
+          {/* Marketing Section */}
+          {showText && (
+            <SidebarGroup>
+              <Collapsible
+                open={expandedSections.marketing}
+                onOpenChange={() => toggleSection('marketing')}
+              >
+                <CollapsibleTrigger asChild>
+                  <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2 text-base">
+                    <span className="flex items-center font-display uppercase tracking-wide">
+                      <CalendarDays className="mr-2 h-5 w-5 text-[hsl(var(--accent-pink))]" />
+                      MARKETING
+                    </span>
+                    <ChevronDown className={`h-5 w-5 transition-transform ${expandedSections.marketing ? 'rotate-180' : ''}`} />
+                  </SidebarGroupLabel>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      {marketingSubModules.map((module) => (
+                        <SidebarMenuItem key={module.path}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <SidebarMenuButton
+                                asChild
+                                className={getNavClass(isActive(module.path, module.exactMatch))}
+                              >
+                                <NavLink to={module.path} className="font-cb-sans">
+                                  <module.icon className="mr-2 h-4 w-4" />
+                                  {module.name}
+                                </NavLink>
+                              </SidebarMenuButton>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                              <p className="font-cb-sans">{module.name}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </SidebarMenuItem>
+                      ))}
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </CollapsibleContent>
+              </Collapsible>
+            </SidebarGroup>
+          )}
+
           {/* CMS Section */}
           {showText && canAccessCMS() && (
             <SidebarGroup>
