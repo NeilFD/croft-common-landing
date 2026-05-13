@@ -106,7 +106,7 @@ const MarketingCalendar = () => {
               );
             })}
           </div>
-          {(search || channelFilter.length || statusFilter.length) > 0 && (
+          {(search.length > 0 || channelFilter.length > 0 || statusFilter.length > 0) && (
             <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setChannelFilter([]); setStatusFilter([]); }}>
               Clear
             </Button>
