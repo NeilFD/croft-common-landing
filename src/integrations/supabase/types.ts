@@ -2385,6 +2385,473 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_assets: {
+        Row: {
+          alt_text: string | null
+          created_at: string
+          created_by: string | null
+          height: number | null
+          id: string
+          kind: string
+          tags: string[] | null
+          url: string
+          width: number | null
+        }
+        Insert: {
+          alt_text?: string | null
+          created_at?: string
+          created_by?: string | null
+          height?: number | null
+          id?: string
+          kind?: string
+          tags?: string[] | null
+          url: string
+          width?: number | null
+        }
+        Update: {
+          alt_text?: string | null
+          created_at?: string
+          created_by?: string | null
+          height?: number | null
+          id?: string
+          kind?: string
+          tags?: string[] | null
+          url?: string
+          width?: number | null
+        }
+        Relationships: []
+      }
+      marketing_campaigns: {
+        Row: {
+          budget: number | null
+          colour: string | null
+          created_at: string
+          end_date: string | null
+          goal: string | null
+          hero_asset_id: string | null
+          id: string
+          kpi: string | null
+          name: string
+          owner_id: string | null
+          slug: string | null
+          start_date: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          budget?: number | null
+          colour?: string | null
+          created_at?: string
+          end_date?: string | null
+          goal?: string | null
+          hero_asset_id?: string | null
+          id?: string
+          kpi?: string | null
+          name: string
+          owner_id?: string | null
+          slug?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          budget?: number | null
+          colour?: string | null
+          created_at?: string
+          end_date?: string | null
+          goal?: string | null
+          hero_asset_id?: string | null
+          id?: string
+          kpi?: string | null
+          name?: string
+          owner_id?: string | null
+          slug?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      marketing_channels: {
+        Row: {
+          accent_color: string | null
+          active: boolean
+          character_limit: number | null
+          created_at: string
+          id: string
+          image_aspects: string[] | null
+          key: string
+          label: string
+          sort_order: number
+          type: string
+        }
+        Insert: {
+          accent_color?: string | null
+          active?: boolean
+          character_limit?: number | null
+          created_at?: string
+          id?: string
+          image_aspects?: string[] | null
+          key: string
+          label: string
+          sort_order?: number
+          type?: string
+        }
+        Update: {
+          accent_color?: string | null
+          active?: boolean
+          character_limit?: number | null
+          created_at?: string
+          id?: string
+          image_aspects?: string[] | null
+          key?: string
+          label?: string
+          sort_order?: number
+          type?: string
+        }
+        Relationships: []
+      }
+      marketing_comments: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          mentions: string[] | null
+          parent_id: string | null
+          pin: Json | null
+          post_id: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          mentions?: string[] | null
+          parent_id?: string | null
+          pin?: Json | null
+          post_id: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          mentions?: string[] | null
+          parent_id?: string | null
+          pin?: Json | null
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketing_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_hashtag_sets: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          tags: string[]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          tags?: string[]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          tags?: string[]
+        }
+        Relationships: []
+      }
+      marketing_holidays: {
+        Row: {
+          country: string
+          created_at: string
+          date: string
+          id: string
+          label: string
+        }
+        Insert: {
+          country?: string
+          created_at?: string
+          date: string
+          id?: string
+          label: string
+        }
+        Update: {
+          country?: string
+          created_at?: string
+          date?: string
+          id?: string
+          label?: string
+        }
+        Relationships: []
+      }
+      marketing_post_assets: {
+        Row: {
+          asset_id: string
+          channel_key: string | null
+          created_at: string
+          id: string
+          post_id: string
+          sort_order: number
+        }
+        Insert: {
+          asset_id: string
+          channel_key?: string | null
+          created_at?: string
+          id?: string
+          post_id: string
+          sort_order?: number
+        }
+        Update: {
+          asset_id?: string
+          channel_key?: string | null
+          created_at?: string
+          id?: string
+          post_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_post_assets_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketing_post_assets_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_post_channels: {
+        Row: {
+          body_override: string | null
+          channel_key: string
+          created_at: string
+          id: string
+          media_override: Json | null
+          post_id: string
+          status_override: string | null
+        }
+        Insert: {
+          body_override?: string | null
+          channel_key: string
+          created_at?: string
+          id?: string
+          media_override?: Json | null
+          post_id: string
+          status_override?: string | null
+        }
+        Update: {
+          body_override?: string | null
+          channel_key?: string
+          created_at?: string
+          id?: string
+          media_override?: Json | null
+          post_id?: string
+          status_override?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_post_channels_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_post_versions: {
+        Row: {
+          author_id: string | null
+          created_at: string
+          id: string
+          post_id: string
+          snapshot: Json
+        }
+        Insert: {
+          author_id?: string | null
+          created_at?: string
+          id?: string
+          post_id: string
+          snapshot: Json
+        }
+        Update: {
+          author_id?: string | null
+          created_at?: string
+          id?: string
+          post_id?: string
+          snapshot?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_post_versions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_posts: {
+        Row: {
+          body: string | null
+          campaign_id: string | null
+          content_pillar: string | null
+          created_at: string
+          cta_text: string | null
+          cta_url: string | null
+          hashtags: string[] | null
+          id: string
+          locale: string
+          meta: Json
+          owner_id: string | null
+          property_tag: string | null
+          scheduled_at: string | null
+          search_tsv: unknown
+          status: string
+          timezone: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          campaign_id?: string | null
+          content_pillar?: string | null
+          created_at?: string
+          cta_text?: string | null
+          cta_url?: string | null
+          hashtags?: string[] | null
+          id?: string
+          locale?: string
+          meta?: Json
+          owner_id?: string | null
+          property_tag?: string | null
+          scheduled_at?: string | null
+          search_tsv?: unknown
+          status?: string
+          timezone?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          campaign_id?: string | null
+          content_pillar?: string | null
+          created_at?: string
+          cta_text?: string | null
+          cta_url?: string | null
+          hashtags?: string[] | null
+          id?: string
+          locale?: string
+          meta?: Json
+          owner_id?: string | null
+          property_tag?: string | null
+          scheduled_at?: string | null
+          search_tsv?: unknown
+          status?: string
+          timezone?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_posts_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_saved_views: {
+        Row: {
+          created_at: string
+          filters: Json
+          id: string
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          created_at?: string
+          filters?: Json
+          id?: string
+          name: string
+          owner_id: string
+        }
+        Update: {
+          created_at?: string
+          filters?: Json
+          id?: string
+          name?: string
+          owner_id?: string
+        }
+        Relationships: []
+      }
+      marketing_status_log: {
+        Row: {
+          author_id: string | null
+          created_at: string
+          from_status: string | null
+          id: string
+          note: string | null
+          post_id: string
+          to_status: string
+        }
+        Insert: {
+          author_id?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          post_id: string
+          to_status: string
+        }
+        Update: {
+          author_id?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          post_id?: string
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_status_log_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       member_check_ins: {
         Row: {
           check_in_date: string
@@ -4162,6 +4629,7 @@ export type Database = {
         Args: { lead_id_param: string; note_body: string }
         Returns: string
       }
+      can_edit_marketing: { Args: { _uid: string }; Returns: boolean }
       check_secret_kitchen_access_status: {
         Args: { user_email: string }
         Returns: {
@@ -4251,6 +4719,7 @@ export type Database = {
       }
       is_admin: { Args: { uid: string }; Returns: boolean }
       is_gold: { Args: { check_user_id: string }; Returns: boolean }
+      is_management_user: { Args: { _uid: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
           dlq_name: string
