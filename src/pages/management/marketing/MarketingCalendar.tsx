@@ -15,6 +15,7 @@ const MarketingCalendar = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [initialDate, setInitialDate] = useState<Date | null>(null);
+  const [dayModalDate, setDayModalDate] = useState<Date | null>(null);
   const [search, setSearch] = useState('');
   const [channelFilter, setChannelFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
