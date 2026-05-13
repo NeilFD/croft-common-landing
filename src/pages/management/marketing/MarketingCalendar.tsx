@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { CalendarGrid } from '@/components/marketing/CalendarGrid';
 import { PostDrawer } from '@/components/marketing/PostDrawer';
 import { DayPostsModal } from '@/components/marketing/DayPostsModal';
+import { ToneOfVoiceDialog } from '@/components/marketing/ToneOfVoiceDialog';
 import { useMarketingPosts } from '@/hooks/useMarketing';
 import { ALL_CHANNELS, CHANNEL_META } from '@/components/marketing/channelMeta';
 import { STATUS_LABELS, STATUS_ORDER } from '@/lib/marketing/types';
