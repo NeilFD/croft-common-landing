@@ -99,18 +99,6 @@ export const PostDrawer = ({ postId, open, initialDate, onClose }: Props) => {
     }
   }, [channels, previewChannel]);
 
-  const notify = async (action: string, extra?: { note?: string }) => {
-    if (!postId) return;
-    try {
-      await (await import('@/integrations/supabase/client')).supabase.functions.invoke(
-        'marketing-review-notify',
-        { body: { postId, action, note: extra?.note } },
-      );
-    } catch (e) {
-      console.warn('notify failed', e);
-    }
-  };
-
   const handleSave = async (newStatus?: MarketingStatus, opts?: { note?: string; silent?: boolean }) => {
     try {
       const newId = await upsert.mutateAsync({
