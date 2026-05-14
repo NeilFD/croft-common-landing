@@ -235,7 +235,7 @@ const CulturePage = ({ site }: Props) => {
       <article className="bg-background text-foreground font-cb-sans">
         {/* Hero */}
         <section className="relative h-[82vh] min-h-[520px] w-full overflow-hidden bg-black text-white">
-          <img src={hero} alt={`${site === "town" ? "Town" : "Country"} culture`} className="absolute inset-0 h-full w-full object-cover" />
+          <img src={hero} alt={`${site === "town" ? "Town" : "Country"} culture`} width={1920} height={1280} className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/30 to-black/85" />
           <div className="relative z-10 flex h-full flex-col items-start justify-end px-6 pb-20 md:px-16 md:pb-24 max-w-5xl">
             <CMSText
