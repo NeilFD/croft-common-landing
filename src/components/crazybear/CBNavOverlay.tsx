@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
-import { SITE_MAP, PRIMARY_CTAS, PROPERTY_PICKER, LEGAL_LINKS } from "@/data/cbSiteMap";
+import { SITE_MAP, PRIMARY_CTAS, PROPERTY_PICKER, LEGAL_LINKS, MEMBERS_ENTRY } from "@/data/cbSiteMap";
 
 interface CBNavOverlayProps {
   open: boolean;
