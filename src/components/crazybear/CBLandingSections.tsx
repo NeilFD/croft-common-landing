@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { SITE_MAP, PRIMARY_CTAS } from "@/data/cbSiteMap";
+import { SITE_MAP, PRIMARY_CTAS, MEMBERS_ENTRY } from "@/data/cbSiteMap";
 
 /**
  * Homepage content sections that mirror the global nav order.
@@ -166,6 +166,24 @@ const CBLandingSections = () => {
               </div>
             </article>
           </div>
+        </div>
+      </section>
+
+      {/* Quiet Bear's Den entry. Subscribers get in. Gold gets extras. */}
+      <section
+        aria-label="Bear's Den"
+        className="border-t border-white/15 bg-black px-6 md:px-12 py-12"
+      >
+        <div className="mx-auto max-w-6xl flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <p className="font-cb-sans text-base md:text-lg opacity-90">
+            Subscribe for the Bear's Den. Gold for 25% off, everywhere.
+          </p>
+          <Link
+            to={MEMBERS_ENTRY.path}
+            className="inline-flex items-center self-start md:self-auto border border-white/70 font-cb-mono text-[10px] tracking-[0.4em] uppercase px-4 py-2 hover:bg-white hover:text-black transition-colors"
+          >
+            {MEMBERS_ENTRY.label} &rarr;
+          </Link>
         </div>
       </section>
     </div>

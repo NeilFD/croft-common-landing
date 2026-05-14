@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
-import { SITE_MAP, PRIMARY_CTAS, PROPERTY_PICKER, LEGAL_LINKS } from "@/data/cbSiteMap";
+import { SITE_MAP, PRIMARY_CTAS, PROPERTY_PICKER, LEGAL_LINKS, MEMBERS_ENTRY } from "@/data/cbSiteMap";
 
 interface CBNavOverlayProps {
   open: boolean;
@@ -109,6 +109,15 @@ const CBNavOverlay = ({ open, onClose }: CBNavOverlayProps) => {
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link
+                  to={MEMBERS_ENTRY.path}
+                  onClick={onClose}
+                  className="font-cb-mono text-xs tracking-[0.3em] uppercase opacity-80 hover:opacity-100"
+                >
+                  {MEMBERS_ENTRY.label}
+                </Link>
+              </li>
               <li>
                 <Link
                   to={PRIMARY_CTAS.enquire.path}

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import bearMark from '@/assets/crazy-bear-mark.png';
 import CBSubscriptionForm from './CBSubscriptionForm';
-import { SITE_MAP, LEGAL_LINKS, PRIMARY_CTAS } from '@/data/cbSiteMap';
+import { SITE_MAP, LEGAL_LINKS, PRIMARY_CTAS, MEMBERS_ENTRY } from '@/data/cbSiteMap';
 
 import GestureOverlay from '@/components/GestureOverlay';
 import BiometricUnlockModal from '@/components/BiometricUnlockModal';
@@ -48,7 +48,7 @@ const CBFooter = () => {
         {/* Site map */}
         <nav
           aria-label="Site map"
-          className="mt-20 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-12 border-t border-white/15 pt-12"
+          className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12 border-t border-white/15 pt-12"
         >
           {SITE_MAP.map((group) => (
             <div key={group.id}>
@@ -126,12 +126,18 @@ const CBFooter = () => {
               Management
             </Link>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-6 flex-wrap">
             <Link
               to="/about"
               className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60 hover:opacity-100"
             >
               About
+            </Link>
+            <Link
+              to={MEMBERS_ENTRY.path}
+              className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60 hover:opacity-100"
+            >
+              {MEMBERS_ENTRY.label}
             </Link>
             <Link
               to="/privacy"
