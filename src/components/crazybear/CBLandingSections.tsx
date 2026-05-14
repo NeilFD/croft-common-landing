@@ -35,7 +35,7 @@ const CBLandingSections = () => {
             >
               {group.label}
             </h2>
-            <p className="mt-6 max-w-2xl font-cb-sans text-lg md:text-xl leading-relaxed opacity-80">
+            <p className="mt-6 max-w-2xl font-cb-sans text-lg md:text-xl leading-relaxed opacity-80 whitespace-pre-line">
               {group.intro}
             </p>
 
