@@ -111,6 +111,15 @@ const CBNavOverlay = ({ open, onClose }: CBNavOverlayProps) => {
               ))}
               <li>
                 <Link
+                  to={MEMBERS_ENTRY.path}
+                  onClick={onClose}
+                  className="font-cb-mono text-xs tracking-[0.3em] uppercase opacity-80 hover:opacity-100"
+                >
+                  {MEMBERS_ENTRY.label}
+                </Link>
+              </li>
+              <li>
+                <Link
                   to={PRIMARY_CTAS.enquire.path}
                   onClick={onClose}
                   className="font-cb-mono text-xs tracking-[0.3em] uppercase opacity-80 hover:opacity-100"
