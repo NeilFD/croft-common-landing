@@ -235,7 +235,7 @@ const CulturePage = ({ site }: Props) => {
       <article className="bg-background text-foreground font-cb-sans">
         {/* Hero */}
         <section className="relative h-[82vh] min-h-[520px] w-full overflow-hidden bg-black text-white">
-          <img src={hero} alt={`${site === "town" ? "Town" : "Country"} culture`} className="absolute inset-0 h-full w-full object-cover" />
+          <img src={hero} alt={`${site === "town" ? "Town" : "Country"} culture`} width={1920} height={1280} className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/30 to-black/85" />
           <div className="relative z-10 flex h-full flex-col items-start justify-end px-6 pb-20 md:px-16 md:pb-24 max-w-5xl">
             <CMSText
@@ -443,7 +443,7 @@ const CollageCard = ({
     <figure className="relative group">
       <div className="aspect-[3/4] w-full overflow-hidden bg-foreground/10">
         {img ? (
-          <img src={img} alt={item.heading} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+          <img src={img} alt={item.heading} width={900} height={1200} loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
         ) : (
           <div className="h-full w-full grid place-items-center font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-50">
             Add image

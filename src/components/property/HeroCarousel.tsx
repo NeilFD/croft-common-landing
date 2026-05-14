@@ -79,6 +79,8 @@ const HeroCarousel = ({ images, intervalMs = 6500, alt = "" }: Props) => {
                 <img
                   src={src}
                   alt={alt}
+                  width={1920}
+                  height={1280}
                   className="h-full w-full object-cover select-none"
                   draggable={false}
                   loading={i === 0 ? "eager" : i <= 2 ? "eager" : "lazy"}
