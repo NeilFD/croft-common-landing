@@ -175,8 +175,8 @@ const CBLandingSections = () => {
         className="border-t border-white/15 bg-black px-6 md:px-12 py-12"
       >
         <div className="mx-auto max-w-6xl flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <p className="font-cb-sans text-base md:text-lg opacity-90">
-            Subscribe for the Bear's Den. Gold for 25% off, everywhere.
+          <p className="font-cb-sans text-base md:text-lg opacity-90 whitespace-pre-line">
+            Subscribe for the Bear's Den. Free membership for all. {"\n"}Gold Membership available for 25% off, everywhere.
           </p>
           <Link
             to={MEMBERS_ENTRY.path}
