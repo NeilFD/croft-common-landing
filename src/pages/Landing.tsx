@@ -104,7 +104,7 @@ const Landing = () => {
               </span>
             </h1>
             <p className="mt-7 font-cb-mono text-[10px] md:text-xs tracking-[0.55em] uppercase opacity-85">
-              Boutique Hotels &nbsp;/&nbsp; Beaconsfield &nbsp;&amp;&nbsp; Stadhampton
+              Hotels with history | TOWN & COUNTRY
             </p>
             <div className="mt-10">
               <Link
