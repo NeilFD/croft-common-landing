@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import bearMark from '@/assets/crazy-bear-mark.png';
 import CBSubscriptionForm from './CBSubscriptionForm';
+import { SITE_MAP, LEGAL_LINKS, PRIMARY_CTAS } from '@/data/cbSiteMap';
 
 import GestureOverlay from '@/components/GestureOverlay';
 import BiometricUnlockModal from '@/components/BiometricUnlockModal';
@@ -44,8 +45,34 @@ const CBFooter = () => {
         {/* Subscription */}
         <CBSubscriptionForm />
 
+        {/* Site map */}
+        <nav
+          aria-label="Site map"
+          className="mt-20 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-12 border-t border-white/15 pt-12"
+        >
+          {SITE_MAP.map((group) => (
+            <div key={group.id}>
+              <p className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60 mb-4">
+                {group.label}
+              </p>
+              <ul className="space-y-2">
+                {group.links.map((link) => (
+                  <li key={link.path}>
+                    <Link
+                      to={link.path}
+                      className="font-cb-sans text-sm opacity-80 hover:opacity-100 hover:underline underline-offset-4"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </nav>
+
         {/* Info grid */}
-        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-12 border-t border-white/15 pt-12">
+        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-12 border-t border-white/15 pt-12">
           <div>
             <p className="font-display uppercase text-3xl tracking-tight">Crazy Bear</p>
             <p className="mt-3 font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60">

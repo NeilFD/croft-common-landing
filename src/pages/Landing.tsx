@@ -4,6 +4,9 @@ import {
   organizationSchema,
   websiteSchema,
   hotelGroupSchema,
+  hotelSchema,
+  faqSchema,
+  breadcrumbSchema,
 } from "@/components/seo/CBStructuredData";
 import { Suspense, lazy, useEffect, useState } from "react";
 const heroPoster = "/video/crazy-bear-hero-poster.jpg";
@@ -11,8 +14,37 @@ const heroWebm = "/video/crazy-bear-hero.webm";
 const heroMp4 = "/video/crazy-bear-hero.mp4";
 const heroMp4Mobile = "/video/crazy-bear-hero-720.mp4";
 import CBTopNav from "@/components/crazybear/CBTopNav";
-const CBSubscriptionForm = lazy(() => import("@/components/crazybear/CBSubscriptionForm"));
+import CBLandingSections from "@/components/crazybear/CBLandingSections";
+import CBFooter from "@/components/crazybear/CBFooter";
+import { PRIMARY_CTAS } from "@/data/cbSiteMap";
 
+const HOMEPAGE_FAQS = [
+  {
+    question: "Where is The Crazy Bear?",
+    answer:
+      "Two hotels. Crazy Bear Country sits on Bear Lane, Stadhampton, Oxfordshire OX44 7UR. Crazy Bear Town is at 75 Wycombe End, Beaconsfield HP9 1LX.",
+  },
+  {
+    question: "Can I book a room at The Crazy Bear?",
+    answer:
+      "Yes. Book direct for the best rate at either property. Country has signature country bedrooms in a 16th century inn. Town has townhouse-glamour rooms with a hidden pool.",
+  },
+  {
+    question: "Do you host weddings at The Crazy Bear?",
+    answer:
+      "We do. Weddings, parties, birthdays and business events at Country in Stadhampton. Tell us what you have in mind and we will tailor the day.",
+  },
+  {
+    question: "Where can I eat at The Crazy Bear?",
+    answer:
+      "Town has The Black Bear, B&B and Hom Thai, plus a cocktail bar. Country has the pub and pub food. All ours, all bookable.",
+  },
+  {
+    question: "What is The Bear's Den?",
+    answer:
+      "Our members' room. Twenty-five percent off everywhere, in-app and in-venue, for £69 a month.",
+  },
+];
 
 const Landing = () => {
   const [introDone, setIntroDone] = useState(false);
@@ -25,10 +57,18 @@ const Landing = () => {
   return (
     <>
       <CBSeo
-        title="The Crazy Bear | Country & Town"
-        description="The Crazy Bear. Two hotels, one spirit. Country in Stadhampton, Town in Beaconsfield."
+        title="Crazy Bear, Boutique Hotels in Beaconsfield and Stadhampton"
+        description="The Crazy Bear. Boutique hotels, restaurants and bars in Beaconsfield and Stadhampton. Rooms, dining, weddings and a members' room called The Bear's Den."
         path="/"
-        jsonLd={[organizationSchema(), websiteSchema(), hotelGroupSchema()]}
+        jsonLd={[
+          organizationSchema(),
+          websiteSchema(),
+          hotelGroupSchema(),
+          hotelSchema("country"),
+          hotelSchema("town"),
+          breadcrumbSchema("/"),
+          faqSchema(HOMEPAGE_FAQS),
+        ]}
       />
 
       <main className="bg-black text-white font-cb-sans">
@@ -59,10 +99,21 @@ const Landing = () => {
           >
             <h1 className="mt-7 font-display text-6xl md:text-8xl lg:text-9xl uppercase leading-[0.85] tracking-tight">
               Crazy Bear
+              <span className="sr-only">
+                , Boutique Hotels in Beaconsfield and Stadhampton
+              </span>
             </h1>
             <p className="mt-7 font-cb-mono text-[10px] md:text-xs tracking-[0.55em] uppercase opacity-85">
-              Town &nbsp; / &nbsp; Country
+              Boutique Hotels &nbsp;/&nbsp; Beaconsfield &nbsp;&amp;&nbsp; Stadhampton
             </p>
+            <div className="mt-10">
+              <Link
+                to={PRIMARY_CTAS.book.path}
+                className="inline-flex items-center bg-white text-black font-cb-mono text-xs tracking-[0.4em] uppercase px-6 py-3 hover:opacity-90 transition-opacity"
+              >
+                Book a room
+              </Link>
+            </div>
           </div>
 
           {/* Bottom entry chooser */}
@@ -108,28 +159,45 @@ const Landing = () => {
           </div>
         </section>
 
-        <section className="relative border-t border-white/15 bg-black px-6 py-20 md:py-28">
-          <Link
-            to="/management/login"
-            className="absolute bottom-3 left-4 z-20 font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-40 hover:opacity-100 transition-opacity"
-          >
-            Management
-          </Link>
-          <div className="mx-auto max-w-6xl">
-            <Suspense fallback={null}>
-              <CBSubscriptionForm />
-            </Suspense>
+        {/* Editorial sections that mirror the global nav */}
+        <CBLandingSections />
+
+        {/* FAQ — visible on page; matches FAQPage JSON-LD above */}
+        <section
+          id="faq"
+          aria-labelledby="faq-heading"
+          className="border-t border-white/15 bg-black text-white px-6 md:px-12 py-20 md:py-28"
+        >
+          <div className="mx-auto max-w-4xl">
+            <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase opacity-70">
+              Questions
+            </p>
+            <h2
+              id="faq-heading"
+              className="mt-4 font-display text-5xl md:text-7xl uppercase leading-[0.9] tracking-tight"
+            >
+              Frequently asked
+            </h2>
+            <dl className="mt-10 space-y-8">
+              {HOMEPAGE_FAQS.map((f) => (
+                <div
+                  key={f.question}
+                  className="border-t border-white/15 pt-6"
+                >
+                  <dt className="font-cb-sans text-lg md:text-xl">
+                    <h3 className="inline">{f.question}</h3>
+                  </dt>
+                  <dd className="mt-3 font-cb-sans text-base leading-relaxed opacity-80">
+                    {f.answer}
+                  </dd>
+                </div>
+              ))}
+            </dl>
           </div>
         </section>
+
+        <CBFooter />
       </main>
-
-
-      <style>{`
-        @keyframes kenburns {
-          0%   { transform: scale(1)    translate(0, 0); }
-          100% { transform: scale(1.08) translate(-1%, -1%); }
-        }
-      `}</style>
     </>
   );
 };
