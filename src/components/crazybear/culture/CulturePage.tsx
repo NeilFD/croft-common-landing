@@ -443,7 +443,7 @@ const CollageCard = ({
     <figure className="relative group">
       <div className="aspect-[3/4] w-full overflow-hidden bg-foreground/10">
         {img ? (
-          <img src={img} alt={item.heading} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+          <img src={img} alt={item.heading} width={900} height={1200} loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
         ) : (
           <div className="h-full w-full grid place-items-center font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-50">
             Add image
