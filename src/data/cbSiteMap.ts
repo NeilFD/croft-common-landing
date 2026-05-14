@@ -23,7 +23,7 @@ export const SITE_MAP: SiteMapGroup[] = [
   {
     id: "stay",
     label: "Stay",
-    intro: "Two hotels. One spirit. Country in Stadhampton, Town in Beaconsfield.",
+    intro: "Two hotels. One spirit.\nCrazy Bear Country in Stadhampton,\nCrazy Bear Town in Beaconsfield.",
     links: [
       { label: "Country Rooms", path: "/country/rooms" },
       { label: "Country Room Types", path: "/country/rooms/types" },
