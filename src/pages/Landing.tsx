@@ -57,7 +57,7 @@ const Landing = () => {
   return (
     <>
       <CBSeo
-        title="Hotels with history | TOWN & COUNTRY | Crazy Bear"
+        title="HOTELS WITH A HISTORY | TOWN & COUNTRY | Crazy Bear"
         description="The Crazy Bear. Boutique hotels, restaurants and bars in Beaconsfield and Stadhampton. Rooms, dining, weddings and a members' room called The Bear's Den."
         path="/"
         jsonLd={[
@@ -100,11 +100,11 @@ const Landing = () => {
             <h1 className="mt-7 font-display text-6xl md:text-8xl lg:text-9xl uppercase leading-[0.85] tracking-tight">
               Crazy Bear
               <span className="sr-only">
-                , Hotels with history | TOWN & COUNTRY
+                , HOTELS WITH A HISTORY | TOWN & COUNTRY
               </span>
             </h1>
             <p className="mt-7 font-cb-mono text-[10px] md:text-xs tracking-[0.55em] uppercase opacity-85">
-              Hotels with history | TOWN & COUNTRY
+              HOTELS WITH A HISTORY | TOWN & COUNTRY
             </p>
             <div className="mt-10">
               <Link
