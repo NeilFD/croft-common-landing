@@ -110,6 +110,8 @@ const PropertyPage = ({
             <img
               src={hero}
               alt={title}
+              width={1920}
+              height={1280}
               loading="eager"
               decoding="sync"
               fetchPriority="high"
