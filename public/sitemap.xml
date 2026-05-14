@@ -1,42 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://www.crazybear.dev/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://crazybear.dev/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
 
-  <url><loc>https://www.crazybear.dev/town</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://www.crazybear.dev/town/food</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.crazybear.dev/town/food/black-bear</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.crazybear.dev/town/food/bnb</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.crazybear.dev/town/food/hom-thai</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.crazybear.dev/town/drink</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.crazybear.dev/town/drink/cocktails</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.crazybear.dev/town/rooms</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://www.crazybear.dev/town/rooms/types</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.crazybear.dev/town/rooms/gallery</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.crazybear.dev/town/pool</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://crazybear.dev/town</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://crazybear.dev/town/food</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://crazybear.dev/town/food/black-bear</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://crazybear.dev/town/food/bnb</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://crazybear.dev/town/food/hom-thai</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://crazybear.dev/town/drink</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://crazybear.dev/town/drink/cocktails</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://crazybear.dev/town/rooms</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://crazybear.dev/town/rooms/types</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://crazybear.dev/town/rooms/gallery</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://crazybear.dev/town/pool</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
 
-  <url><loc>https://www.crazybear.dev/country</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://www.crazybear.dev/country/pub</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.crazybear.dev/country/pub/food</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.crazybear.dev/country/pub/drink</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.crazybear.dev/country/pub/hospitality</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://www.crazybear.dev/country/rooms</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://www.crazybear.dev/country/rooms/types</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.crazybear.dev/country/rooms/gallery</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.crazybear.dev/country/parties</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.crazybear.dev/country/events</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.crazybear.dev/country/events/weddings</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.crazybear.dev/country/events/birthdays</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.crazybear.dev/country/events/business</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.crazybear.dev/country/culture</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://crazybear.dev/country</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://crazybear.dev/country/pub</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://crazybear.dev/country/pub/food</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://crazybear.dev/country/pub/drink</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://crazybear.dev/country/pub/hospitality</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://crazybear.dev/country/rooms</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://crazybear.dev/country/rooms/types</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://crazybear.dev/country/rooms/gallery</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://crazybear.dev/country/parties</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://crazybear.dev/country/events</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://crazybear.dev/country/events/weddings</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://crazybear.dev/country/events/birthdays</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://crazybear.dev/country/events/business</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://crazybear.dev/country/culture</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
 
-  <url><loc>https://www.crazybear.dev/town/culture</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://crazybear.dev/town/culture</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
 
-  <url><loc>https://www.crazybear.dev/about</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.crazybear.dev/house-rules</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://www.crazybear.dev/bears-den</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.crazybear.dev/curious</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://crazybear.dev/about</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://crazybear.dev/house-rules</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://crazybear.dev/bears-den</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://crazybear.dev/curious</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   
-  <url><loc>https://www.crazybear.dev/book</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://www.crazybear.dev/enquire</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.crazybear.dev/privacy</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
+  <url><loc>https://crazybear.dev/book</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://crazybear.dev/enquire</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://crazybear.dev/privacy</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
 </urlset>

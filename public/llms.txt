@@ -1,0 +1,56 @@
+# The Crazy Bear
+
+> Two boutique hotels with history. Crazy Bear Country in Stadhampton, Oxfordshire and Crazy Bear Town in Beaconsfield, Buckinghamshire. Rooms, restaurants, bars, weddings, parties and a members' room called The Bear's Den.
+
+## Pages
+
+- [Home](/): Two hotels, one spirit. Town and Country.
+- [About](/about): Where we came from. How we behave.
+- [House Rules](/house-rules): How to behave at The Crazy Bear.
+
+## Crazy Bear Country, Stadhampton
+
+- [Country](/country): 16th century inn in Stadhampton, Oxfordshire.
+- [Country Pub](/country/pub): Real ale, proper food, fires lit.
+- [Country Pub Food](/country/pub/food): Pub food, properly done.
+- [Country Pub Drink](/country/pub/drink): Real ale, proper wine, cocktails that bite back.
+- [Country Pub Hospitality](/country/pub/hospitality): Fires lit. Doors open.
+- [Country Rooms](/country/rooms): Theatrical, indulgent, never the same twice.
+- [Country Room Types](/country/rooms/types): Pick your character. Sleep accordingly.
+- [Country Bedroom Gallery](/country/rooms/gallery): A look behind the bedroom doors.
+- [Country Parties](/country/parties): Loud, long, late.
+- [Country Events](/country/events): Private rooms. Whole house. Whatever you need.
+- [Weddings](/country/events/weddings): Vows, dinner, dancing. Done properly.
+- [Birthdays](/country/events/birthdays): Another year. Worth marking.
+- [Business Events](/country/events/business): Meetings that don't feel like meetings.
+- [Country Culture](/country/culture): The story and spirit of Country.
+
+## Crazy Bear Town, Beaconsfield
+
+- [Town](/town): Townhouse glamour, almost in London.
+- [Town Food](/town/food): Two kitchens. One appetite.
+- [The Black Bear](/town/food/black-bear): Modern British plates, charcoal and fire.
+- [The B&B](/town/food/bnb): All day kitchen. Breakfast, brunch and into the night.
+- [Hom Thai](/town/food/hom-thai): Bangkok by way of Beaconsfield.
+- [Town Drink](/town/drink): Mirrored bars. Mischievous pours.
+- [Town Cocktails](/town/drink/cocktails): Stirred with intent. Served without apology.
+- [Town Rooms](/town/rooms): Velvet, mirror, marble.
+- [Town Room Types](/town/rooms/types): Each one its own world.
+- [Town Bedroom Gallery](/town/rooms/gallery): Step inside.
+- [Town Pool](/town/pool): Hidden, heated, daytime, hotel guests only.
+- [Town Culture](/town/culture): The story and spirit of Town.
+
+## Members
+
+- [The Bear's Den](/bears-den): Members' room. Twenty-five percent off everywhere.
+- [Join the Bear's Den](/curious): Free membership for all. Gold for 25% off.
+
+## Book and enquire
+
+- [Book a room](/book): Book direct for the best rate.
+- [Enquire](/enquire): Tell us what you have in mind.
+
+## Optional
+
+- [Privacy](/privacy): Privacy policy.
+- [Unsubscribe](/unsubscribe): Manage email preferences.
