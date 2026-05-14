@@ -100,7 +100,7 @@ const Landing = () => {
             <h1 className="mt-7 font-display text-6xl md:text-8xl lg:text-9xl uppercase leading-[0.85] tracking-tight">
               Crazy Bear
               <span className="sr-only">
-                , Boutique Hotels in Beaconsfield and Stadhampton
+                , Hotels with history | TOWN & COUNTRY
               </span>
             </h1>
             <p className="mt-7 font-cb-mono text-[10px] md:text-xs tracking-[0.55em] uppercase opacity-85">
