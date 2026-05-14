@@ -38,10 +38,10 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
             className={`h-14 w-14 md:h-16 md:w-16 ${markFilter}`}
           />
         </Link>
-        <nav className="flex items-center gap-4 sm:gap-6 md:gap-8">
+        <nav className="flex items-center gap-3 sm:gap-5 md:gap-7">
           <Link
             to={PRIMARY_CTAS.book.path}
-            className={`hidden sm:inline-flex items-center font-cb-mono text-[10px] tracking-[0.4em] uppercase px-4 py-2 transition-colors ${bookBtnCls}`}
+            className={`inline-flex items-center font-cb-mono text-[9px] sm:text-[10px] tracking-[0.35em] sm:tracking-[0.4em] uppercase px-3 sm:px-4 py-1.5 sm:py-2 transition-colors ${bookBtnCls}`}
           >
             {PRIMARY_CTAS.book.label}
           </Link>
@@ -58,15 +58,6 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
           </button>
         </nav>
       </header>
-
-      {/* Mobile-only bottom-of-header Book button when sm hidden */}
-      <Link
-        to={PRIMARY_CTAS.book.path}
-        className={`sm:hidden fixed top-4 right-20 z-30 font-cb-mono text-[10px] tracking-[0.4em] uppercase px-3 py-2 ${bookBtnCls}`}
-        style={{ marginTop: "env(safe-area-inset-top)" }}
-      >
-        {PRIMARY_CTAS.book.label}
-      </Link>
 
       <CBNavOverlay open={menuOpen} onClose={() => setMenuOpen(false)} />
 
