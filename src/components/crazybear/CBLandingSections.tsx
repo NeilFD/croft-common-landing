@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { SITE_MAP, PRIMARY_CTAS } from "@/data/cbSiteMap";
+import { SITE_MAP, PRIMARY_CTAS, MEMBERS_ENTRY } from "@/data/cbSiteMap";
 
 /**
  * Homepage content sections that mirror the global nav order.
