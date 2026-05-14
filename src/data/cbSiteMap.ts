@@ -110,6 +110,8 @@ export const allPublicPaths = (): string[] => {
   for (const link of LEGAL_LINKS) paths.add(link.path);
   paths.add(PRIMARY_CTAS.book.path);
   paths.add(PRIMARY_CTAS.enquire.path);
+  paths.add("/bears-den");
+  paths.add("/curious");
   // Property landing pages (sub-routes under PropertyLayout).
   paths.add("/country/pub");
   paths.add("/country/rooms");
