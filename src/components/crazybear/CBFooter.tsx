@@ -48,7 +48,7 @@ const CBFooter = () => {
         {/* Site map */}
         <nav
           aria-label="Site map"
-          className="mt-20 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-12 border-t border-white/15 pt-12"
+          className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12 border-t border-white/15 pt-12"
         >
           {SITE_MAP.map((group) => (
             <div key={group.id}>
