@@ -25,11 +25,24 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
     ? "border border-white/70 bg-transparent hover:bg-white hover:text-black"
     : "border border-foreground/70 bg-transparent hover:bg-foreground hover:text-background";
 
+  const scrim = isLight
+    ? "bg-gradient-to-b from-black/55 via-black/25 to-transparent"
+    : "bg-gradient-to-b from-white/70 via-white/30 to-transparent";
+
   return (
     <>
+      {/* Legibility scrim behind the absolute nav so logo + links stay readable on any hero */}
+      <div
+        aria-hidden="true"
+        className={`pointer-events-none absolute top-0 left-0 right-0 z-20 ${scrim}`}
+        style={{ height: "calc(env(safe-area-inset-top) + 120px)" }}
+      />
       <header
         className={`absolute top-0 left-0 right-0 z-30 px-6 md:px-12 flex items-center justify-between ${text}`}
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 28px)" }}
+        style={{
+          paddingTop: "calc(env(safe-area-inset-top) + 28px)",
+          textShadow: isLight ? "0 1px 12px rgba(0,0,0,0.45)" : "none",
+        }}
       >
         <Link to="/" className="flex items-center group" aria-label="Crazy Bear home">
           <img
