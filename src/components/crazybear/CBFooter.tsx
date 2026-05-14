@@ -145,12 +145,6 @@ const CBFooter = () => {
             >
               Privacy
             </Link>
-            <button
-              onClick={() => setLinkModalOpen(true)}
-              className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60 hover:opacity-100"
-            >
-              Link Membership
-            </button>
           </div>
         </div>
 
