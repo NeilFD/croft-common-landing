@@ -37,7 +37,7 @@ export const SITE_MAP: SiteMapGroup[] = [
   {
     id: "eat-drink",
     label: "Eat & Drink",
-    intro: "Three kitchens, two pubs, one cocktail bar. All ours.",
+    intro: "Three kitchens, one pub, one cocktail bar. A pool and a party venue. All ours.",
     links: [
       { label: "The Black Bear", path: "/town/food/black-bear" },
       { label: "B&B", path: "/town/food/bnb" },
