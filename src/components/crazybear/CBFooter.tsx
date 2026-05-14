@@ -126,12 +126,18 @@ const CBFooter = () => {
               Management
             </Link>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-6 flex-wrap">
             <Link
               to="/about"
               className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60 hover:opacity-100"
             >
               About
+            </Link>
+            <Link
+              to={MEMBERS_ENTRY.path}
+              className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60 hover:opacity-100"
+            >
+              {MEMBERS_ENTRY.label}
             </Link>
             <Link
               to="/privacy"
