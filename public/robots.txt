@@ -46,4 +46,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://www.crazybear.dev/sitemap.xml
+Sitemap: https://crazybear.dev/sitemap.xml
