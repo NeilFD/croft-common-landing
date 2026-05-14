@@ -57,7 +57,7 @@ const Landing = () => {
   return (
     <>
       <CBSeo
-        title="Crazy Bear, Boutique Hotels in Beaconsfield and Stadhampton"
+        title="Hotels with history | TOWN & COUNTRY | Crazy Bear"
         description="The Crazy Bear. Boutique hotels, restaurants and bars in Beaconsfield and Stadhampton. Rooms, dining, weddings and a members' room called The Bear's Den."
         path="/"
         jsonLd={[
