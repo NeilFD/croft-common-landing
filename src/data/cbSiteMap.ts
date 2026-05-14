@@ -71,17 +71,17 @@ export const SITE_MAP: SiteMapGroup[] = [
       { label: "Town Culture", path: "/town/culture" },
     ],
   },
-  {
-    id: "bears-den",
-    label: "The Bear's Den",
-    intro: "Our members' room. Twenty-five percent off, everywhere.",
-    links: [
-      { label: "Bear's Den", path: "/bears-den" },
-      { label: "Curious", path: "/curious" },
-      { label: "Members", path: "/members" },
-    ],
-  },
 ];
+
+/**
+ * Single public entry point to the Bear's Den.
+ * The Bear's Den is a subscriber area, not a public content pillar.
+ * All subscribers get in. Gold subscribers get extras (25% off, everywhere).
+ */
+export const MEMBERS_ENTRY: SiteMapLink = {
+  label: "Join the Bear's Den",
+  path: "/curious",
+};
 
 export const PRIMARY_CTAS = {
   book: { label: "Book", path: "/book" },
