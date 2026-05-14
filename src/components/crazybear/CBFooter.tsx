@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import bearMark from '@/assets/crazy-bear-mark.png';
 import CBSubscriptionForm from './CBSubscriptionForm';
-import { SITE_MAP, LEGAL_LINKS, PRIMARY_CTAS } from '@/data/cbSiteMap';
+import { SITE_MAP, LEGAL_LINKS, PRIMARY_CTAS, MEMBERS_ENTRY } from '@/data/cbSiteMap';
 
 import GestureOverlay from '@/components/GestureOverlay';
 import BiometricUnlockModal from '@/components/BiometricUnlockModal';
