@@ -71,7 +71,7 @@ export const FAQSection = ({
               </AccordionTrigger>
               <AccordionContent className="px-6 pb-6 pt-0">
                 <div className="max-w-4xl mx-auto">
-                  <Accordion type="multiple" className="space-y-4 mt-6">
+                  <Accordion type="single" collapsible className="space-y-4 mt-6">
                     {faqs.map((faq, index) => (
                       <AccordionItem 
                         key={index} 
