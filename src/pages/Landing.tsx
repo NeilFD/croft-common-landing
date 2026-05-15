@@ -106,14 +106,6 @@ const Landing = () => {
             <p className="mt-7 font-cb-mono text-[10px] md:text-xs tracking-[0.55em] uppercase opacity-85">
               HOTELS WITH A HISTORY | TOWN & COUNTRY
             </p>
-            <div className="mt-10">
-              <Link
-                to={PRIMARY_CTAS.book.path}
-                className="inline-flex items-center bg-white text-black font-cb-mono text-xs tracking-[0.4em] uppercase px-6 py-3 hover:opacity-90 transition-opacity"
-              >
-                Book a room
-              </Link>
-            </div>
           </div>
 
           {/* Bottom entry chooser */}
