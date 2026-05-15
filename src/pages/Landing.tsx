@@ -170,21 +170,29 @@ const Landing = () => {
             >
               Frequently asked
             </h2>
-            <dl className="mt-10 space-y-8">
+            <div className="mt-10">
               {HOMEPAGE_FAQS.map((f) => (
-                <div
+                <details
                   key={f.question}
-                  className="border-t border-white/15 pt-6"
+                  className="group border-t border-white/15 py-6 [&_summary::-webkit-details-marker]:hidden"
                 >
-                  <dt className="font-cb-sans text-lg md:text-xl">
-                    <h3 className="inline">{f.question}</h3>
-                  </dt>
-                  <dd className="mt-3 font-cb-sans text-base leading-relaxed opacity-80">
+                  <summary className="flex items-center justify-between gap-6 cursor-pointer list-none">
+                    <h3 className="font-cb-sans text-lg md:text-xl">
+                      {f.question}
+                    </h3>
+                    <span
+                      aria-hidden="true"
+                      className="font-cb-mono text-2xl leading-none opacity-70 transition-transform duration-200 group-open:rotate-45"
+                    >
+                      +
+                    </span>
+                  </summary>
+                  <p className="mt-4 font-cb-sans text-base leading-relaxed opacity-80">
                     {f.answer}
-                  </dd>
-                </div>
+                  </p>
+                </details>
               ))}
-            </dl>
+            </div>
           </div>
         </section>
 
