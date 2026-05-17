@@ -385,6 +385,10 @@ const App = () => {
                         <Route path="food/afternoon-tea" element={<CountryAfternoonTea />} />
                         <Route path="terraces-and-gardens" element={<CountryTerracesAndGardens />} />
                         <Route path="playlist" element={<CountryPlaylist />} />
+                        <Route path="dogs" element={<CountryDogs />} />
+                        <Route path="pub-quiz" element={<CountryPubQuiz />} />
+                        <Route path="cinema-nights" element={<CountryCinemaNights />} />
+                        <Route path="outdoor-feasts" element={<CountryOutdoorFeasts />} />
                       </Route>
 
                       {/* Crazy Bear Town */}
