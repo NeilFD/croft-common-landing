@@ -1,21 +1,25 @@
 import CBStaticPage from "@/components/crazybear/CBStaticPage";
+import { CMSText } from "@/components/cms/CMSText";
+
+const PAGE = "merch";
 
 interface Item {
+  id: string;
   name: string;
   price: string;
   blurb: string;
 }
 
 const MERCH: Item[] = [
-  { name: "Bear Tee", price: "£35", blurb: "Heavyweight cotton. Mark on the chest, mischief on the back." },
-  { name: "Hoodie", price: "£75", blurb: "Brushed back. Bear print. The one you'll never give back." },
-  { name: "Tote", price: "£18", blurb: "Carry your books, your wine, your secrets." },
-  { name: "Enamel Mug", price: "£14", blurb: "Camp-fire ready. Crazy Bear stamped." },
-  { name: "Candle", price: "£32", blurb: "Smoke, cedar, late nights. Burns for forty hours." },
-  { name: "House Gin", price: "£42", blurb: "Distilled for the bar. Bottled for you." },
-  { name: "Cap", price: "£28", blurb: "Six-panel, washed cotton. Bear patch front and centre." },
-  { name: "Robe", price: "£120", blurb: "The bedroom robe. Wear it home." },
-  { name: "Print Set", price: "£45", blurb: "Three signed prints. Pulled in small runs." },
+  { id: "tee", name: "Bear Tee", price: "£35", blurb: "Heavyweight cotton. Mark on the chest, mischief on the back." },
+  { id: "hoodie", name: "Hoodie", price: "£75", blurb: "Brushed back. Bear print. The one you'll never give back." },
+  { id: "tote", name: "Tote", price: "£18", blurb: "Carry your books, your wine, your secrets." },
+  { id: "mug", name: "Enamel Mug", price: "£14", blurb: "Camp-fire ready. Crazy Bear stamped." },
+  { id: "candle", name: "Candle", price: "£32", blurb: "Smoke, cedar, late nights. Burns for forty hours." },
+  { id: "gin", name: "House Gin", price: "£42", blurb: "Distilled for the bar. Bottled for you." },
+  { id: "cap", name: "Cap", price: "£28", blurb: "Six-panel, washed cotton. Bear patch front and centre." },
+  { id: "robe", name: "Robe", price: "£120", blurb: "The bedroom robe. Wear it home." },
+  { id: "prints", name: "Print Set", price: "£45", blurb: "Three signed prints. Pulled in small runs." },
 ];
 
 const Merch = () => (
@@ -24,15 +28,30 @@ const Merch = () => (
     intro={"Bits and pieces you'll want at home.\nGrab them in venue, or enquire to ship."}
     seoDescription="Crazy Bear merch. Tees, hoodies, candles, mugs and house spirits. Available in venue at Town and Country."
     path="/merch"
+    cmsPage={PAGE}
   >
     <ul className="grid grid-cols-2 md:grid-cols-3 gap-6">
       {MERCH.map((item) => (
-        <li key={item.name} className="border border-foreground/15 p-5 flex flex-col">
+        <li key={item.id} className="border border-foreground/15 p-5 flex flex-col">
           <div className="aspect-square bg-foreground/5 mb-4" aria-hidden="true" />
-          <p className="font-serif text-xl uppercase">{item.name}</p>
-          <p className="mt-1 font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-70">{item.price}</p>
-          <p className="mt-3 font-cb-sans text-sm opacity-80 flex-1">{item.blurb}</p>
-          <p className="mt-4 font-cb-mono text-[9px] tracking-[0.4em] uppercase opacity-60">Available in venue</p>
+          <CMSText page={PAGE} section={`item-${item.id}`} contentKey="name" fallback={item.name} as="p" className="font-serif text-xl uppercase" />
+          <CMSText page={PAGE} section={`item-${item.id}`} contentKey="price" fallback={item.price} as="p" className="mt-1 font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-70" />
+          <CMSText
+            page={PAGE}
+            section={`item-${item.id}`}
+            contentKey="blurb"
+            fallback={item.blurb}
+            as="p"
+            className="mt-3 font-cb-sans text-sm opacity-80 flex-1"
+          />
+          <CMSText
+            page={PAGE}
+            section={`item-${item.id}`}
+            contentKey="availability"
+            fallback="Available in venue"
+            as="p"
+            className="mt-4 font-cb-mono text-[9px] tracking-[0.4em] uppercase opacity-60"
+          />
         </li>
       ))}
     </ul>
@@ -41,7 +60,7 @@ const Merch = () => (
         href="/enquire"
         className="inline-block border border-foreground px-8 py-4 font-cb-mono text-[10px] tracking-[0.4em] uppercase hover:bg-foreground hover:text-background transition-colors"
       >
-        Enquire to ship
+        <CMSText page={PAGE} section="cta" contentKey="button" fallback="Enquire to ship" as="span" />
       </a>
     </div>
   </CBStaticPage>
