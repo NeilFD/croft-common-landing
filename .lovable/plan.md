@@ -1,153 +1,93 @@
+## What you're looking at
 
-# Build plan — site map round one
+The screenshot is the full-screen **menu overlay** (`CBNavOverlay`). It currently dumps every public route into four flat columns (Stay / Eat & Drink / Celebrate / Discover). It's long because Rooms alone contributes 14 lines (Types + 4 categories + Gallery × 2 sites).
 
-Based on your answers. Every new route is added to `src/App.tsx`, registered in `src/data/cmsPages.ts`, linked from `src/data/navigation.ts` + `src/data/cbSiteMap.ts`, and added to `public/sitemap.xml` and `public/llms.txt`.
+The cleanest fix is to flip the model from **"by topic"** to **"by site"** (Town / Country) and use **concertinas** for the deep groups. Topic-mixed lists are why every line reads "Town/Country X" — once you nest under the site, the label noise vanishes.
 
----
+## New structure
 
-## 1. Rooms — category pages (Town + Country)
-
-Four character pages per site, each with image carousel + Book CTA. Linked from the existing Rooms landing and from Room Gallery.
-
-New routes:
-- `/town/rooms/snug`, `/town/rooms/cosy`, `/town/rooms/boujee`, `/town/rooms/decadent`
-- `/country/rooms/snug`, `/country/rooms/cosy`, `/country/rooms/boujee`, `/country/rooms/decadent`
-
-One shared `RoomCategoryPage` component, driven by `{site, category}` so all eight pages share layout and CMS keys.
-
----
-
-## 2. Food landing pages with video
-
-- `/town/food` — already exists, retrofit with a hero video slot (CMS asset).
-- `/country/food` — **new**. Sits above the pub. Video hero, intro, tiles to: Pub, Restaurant (TBC), Thai (TBC), Terraces & Gardens, Afternoon Tea, Sunday Feasts.
-
-(Existing `/country/pub/*` stays. `/country/food` becomes the parent hub.)
-
-### Dinner / Lunch / Breakfast / Sunday — best practice
-
-You said: no separate Lunch pages; menus shown somewhere. Recommendation:
-
-- Keep one page per **venue** (Black Bear, B&B, Pub, plus the future Country Restaurant / Thai).
-- On each venue page, expose **all relevant menus as tabs**: Breakfast · Lunch · Dinner · Sunday. Tabs only render if a menu exists; placeholder copy "Coming soon" otherwise. Menus already drive off `src/data/menus.ts` + CMS, so this is a tab wrapper, not new routes.
-- Add a single **`/town/food/menus`** and **`/country/food/menus`** index page listing every menu PDF/HTML in one place for guests who just want the menu.
-
-Net new routes: `/country/food`, `/town/food/menus`, `/country/food/menus`. No `/lunch` or `/breakfast` routes.
-
----
-
-## 3. Afternoon Tea
-
-- `/town/food/afternoon-tea` — new
-- `/country/food/afternoon-tea` — new
-
-Text + opening times + images + menu + Book CTA. Shared `AfternoonTeaPage` component.
-
----
-
-## 4. Terraces & Gardens (Country only)
-
-- `/country/terraces-and-gardens` — new, one page, four anchored sections:
-  - The Fishpond
-  - Secret Garden
-  - Garden Terrace
-  - Woodland
-
-Each section: hero image, short copy, gallery strip, "Book a table" / "Enquire" CTA. In-page nav (sticky chip row) jumps between the four.
-
----
-
-## 5. Karaoke Room (Town/Beaconsfield)
-
-- `/town/karaoke` — new, own look-and-feel (per the spreadsheet). Branded page, text, imagery, "Book a slot" CTA. Sits under Town events grouping.
-
----
-
-## 6. What's Happening (single page, both sites)
-
-- `/whats-on` — new. One page, clever split: a top toggle pill ("Town · Country · Both") filters a unified events grid below. Default "Both" with each card tagged by site colour. Cards are CMS-driven (event poster, title, date, site, link).
-
-Add a new `events` table (or extend existing one) — see Technical section.
-
----
-
-## 7. Playlists (both sites, linked from Culture)
-
-- `/town/playlist` — new
-- `/country/playlist` — new
-
-Reuses `SpotifyPlaylistEmbed`. Each Culture page (`/town/culture`, `/country/culture`) gets a "Playlist" link added to its in-page nav.
-
----
-
-## 8. Stories from the Bear
-
-- `/stories` — new index of wild stories from the past, simple list view.
-- `/stories/:slug` — new story detail.
-
-Linked from both Culture pages.
-
----
-
-## 9. Gift Vouchers
-
-- `/gift-vouchers` — new. Info, denominations, "Buy" CTA (placeholder until commerce wired up).
-
----
-
-## Routes summary
-
-13 new pages + 8 room-category pages = **21 new routes**.
+Two big columns, mirrored:
 
 ```text
-Rooms        /town/rooms/{snug,cosy,boujee,decadent}
-             /country/rooms/{snug,cosy,boujee,decadent}
-Food         /country/food
-             /town/food/menus
-             /country/food/menus
-             /town/food/afternoon-tea
-             /country/food/afternoon-tea
-Country      /country/terraces-and-gardens
-Town         /town/karaoke
-Site-wide    /whats-on
-             /town/playlist
-             /country/playlist
-             /stories
-             /stories/:slug
-             /gift-vouchers
+┌─ CRAZY BEAR TOWN ──────────┐   ┌─ CRAZY BEAR COUNTRY ───────┐
+│  Town home                 │   │  Country home              │
+│  ▸ Food            [+]     │   │  ▸ Food            [+]     │
+│  ▸ Drink           [+]     │   │  ▸ Pub             [+]     │
+│  ▸ Rooms           [+]     │   │  ▸ Rooms           [+]     │
+│    Pool                    │   │    Terraces & Gardens      │
+│    Karaoke                 │   │    Parties                 │
+│    Culture                 │   │  ▸ Events          [+]     │
+│    Playlist                │   │    Culture                 │
+│                            │   │    Playlist                │
+└────────────────────────────┘   └────────────────────────────┘
+
+┌─ ACROSS BOTH ──────────────────────────────────────────────┐
+│  What's Happening · Stories from the Bear · Gift Vouchers  │
+│  About · House Rules · The Bear's Den                      │
+└────────────────────────────────────────────────────────────┘
+
+[ BOOK ]   [ ENQUIRE ]      Privacy · Unsubscribe · Switch site
 ```
 
----
+Concertinas (`<details>`) expand to reveal sub-pages, e.g.:
 
-## Out of scope this round (parked from earlier audit)
+- **Town → Rooms** → Snug · Cosy · Boujee · Decadent · Room Types · Gallery
+- **Town → Food** → Menus · The Black Bear · B&B · Hom Thai · Afternoon Tea
+- **Country → Rooms** → Snug · Cosy · Boujee · Decadent · Room Types · Gallery
+- **Country → Food** → Menus · Afternoon Tea
+- **Country → Pub** → Food · Drink · Hospitality
+- **Country → Events** → Weddings · Birthdays · Business
 
-So you can decide on them next: Country Restaurant + Country Thai (naming TBC), Weddings hub (Town vs unified), Meetings & Celebrations hub, Dogs page, Treatments, Merch, Journal/blog, Social Gallery, Neighbourhood, Cocktail comic, Terms, FAQ hub, Cookies, Press, Contact, Careers, Pub Quiz, Cinema Nights, Outdoor Feasts, Friday Nights.
+That collapses the menu from ~45 visible links to **~16 lines closed**, with everything one tap away.
 
----
+## Why this is best practice
 
-## Technical section (for reference)
+**UX**
+- **Mental model matches the brand.** Town and Country are the two products. Topic-bucketing forces every label to disambiguate ("Town Cocktails", "Country Pub Drink"); site-bucketing lets labels be short ("Cocktails", "Drink").
+- **Progressive disclosure.** ~7±2 visible items per column is the comfortable scan limit; concertinas hide depth without losing it.
+- **One scroll, one screen.** On a laptop the whole menu fits without scrolling once concertinas are closed.
+- **Single source of truth.** `Open` defaults differ by viewport — on mobile everything starts collapsed, on desktop the two `Rooms` groups can default open since that's the most-clicked area.
 
-- **CMS registration:** every new route added to `src/data/cmsPages.ts` (`CMS_PAGES` array) with parent grouping. Build-time `scripts/check-cms-registry.ts` enforces this; missing entries fail the build.
-- **Shared components:** `RoomCategoryPage`, `AfternoonTeaPage`, `MenusIndexPage`, `VenueMenuTabs`. Keeps page files thin and lets the CMS drive content.
-- **Events data:** `whats-on` needs a `cb_events` table — fields: title, slug, site (`town`|`country`|`both`), starts_at, ends_at, poster_url, body, external_url, published. RLS: public select where published; admin all. CMS list page under `/management/cms/events` to add/remove.
-- **Stories data:** `cb_stories` table — title, slug, body (markdown), hero_url, published, published_at. Same RLS pattern.
-- **Navigation updates:** `src/data/navigation.ts` gets new entries under Town (Karaoke, Afternoon Tea, Playlist, Menus) and Country (Terraces & Gardens, Afternoon Tea, Playlist, Menus, Food).
-- **Sitemap + llms.txt + cbSiteMap.ts** updated in lockstep.
-- **SEO:** each new page wired through existing `CBSeo` + structured data helpers (Restaurant / Event / WebPage as appropriate).
+**SEO**
+- Use semantic `<details>/<summary>` so collapsed links **stay in the DOM** — Google indexes hidden-by-default content as long as it's in the rendered HTML, which `<details>` guarantees.
+- Keep every `<a href>` (no JS-only reveal). Crawlers follow them regardless of open state.
+- Add `aria-label="Site menu"` (already there) and `aria-expanded` on `<summary>` (browser handles for `<details>`).
+- No change to `sitemap.xml` / `llms.txt` — those already enumerate everything.
+- Avoid duplicating links in multiple columns; one link per route prevents internal-link dilution.
 
----
+## Build steps
 
-## Build order
+1. **Extend `src/data/cbSiteMap.ts`** with a new `SITE_TREE` export that groups by site:
+   ```ts
+   export const SITE_TREE = {
+     town:    { label, home: "/town",    sections: [ {label, path?, links?}, ... ] },
+     country: { label, home: "/country", sections: [ ... ] },
+     both:    [ {label, path}, ... ]   // What's Happening, Stories, Gift Vouchers, About, House Rules, Bear's Den
+   }
+   ```
+   Keep the old `SITE_MAP` export untouched so `CBFooter` and `CBLandingSections` don't break — they can be migrated in a follow-up if you want.
 
-1. Scaffolding: shared components, CMS registry entries, route stubs.
-2. Rooms category pages (8) — pure UI/CMS, fastest win.
-3. Food landings + menu tabs + `/menus` indexes.
-4. Afternoon Tea (both sites).
-5. Terraces & Gardens.
-6. Karaoke.
-7. Playlists.
-8. Gift Vouchers.
-9. DB migrations + admin UI for **What's Happening** and **Stories**, then their public pages.
-10. Update sitemap.xml, llms.txt, navigation, cbSiteMap.
+2. **Rewrite `CBNavOverlay.tsx`**:
+   - Top bar unchanged.
+   - Body becomes a `grid-cols-1 md:grid-cols-2` for Town / Country, with a third "Across both" row below.
+   - Use a small `<NavGroup>` component that renders `<details>` when `links` exist, otherwise a flat `<Link>`.
+   - Defaults: closed on mobile (`<details>` no `open`), `open` on `md:` and up for Rooms only (via a CSS-only `md:[&]:open` trick or a tiny `useMediaQuery`).
+   - Keep Book / Enquire / property switch / legal in the footer row, but slim them into one line.
 
-Confirm and I'll start at step 1.
+3. **Style**:
+   - `<summary>` styled to look like the current section H2 but one size smaller (`text-2xl md:text-3xl font-display uppercase`), with a `+` / `–` indicator using `::after` and `[open]:` variant.
+   - Removes the redundant "Town"/"Country" prefix from every child label.
+   - No focus rings on the summary (per project rule) — use underline-on-focus instead.
+
+4. **Telemetry-friendly**: each `<summary>` gets `data-nav-section="town/rooms"` etc., so analytics can see which concertinas users open.
+
+5. **No DB, no route, no sitemap changes.** Pure presentation refactor of one component plus an additive data export.
+
+## Out of scope (flag for later)
+
+- Migrating `CBFooter` and `CBLandingSections` to the same Town/Country structure — they currently use the topic columns. Worth doing for consistency, but it's a separate visual change.
+- Adding a search input at the top of the menu (often useful on sites this deep).
+
+## Open question before I build
+
+The "Across both" row currently lists 6 links flat. If you'd prefer those split into **Visit** (What's Happening, Stories, Gift Vouchers) and **About** (About, House Rules, The Bear's Den) — say the word, otherwise I'll keep them as one tidy row.
