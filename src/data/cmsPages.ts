@@ -446,6 +446,12 @@ export const CMS_PAGES: CmsPageEntry[] = [
     seo: { include: true, defaultTitle: 'Afternoon Tea | Crazy Bear Town', defaultDescription: 'Afternoon tea at Crazy Bear Town.' } },
   { slug: 'town/karaoke', route: '/town/karaoke', title: 'Karaoke', description: 'Private karaoke room', group: 'Town', icon: Music, component: TownKaraokePage, parentSlug: 'town', property: 'town',
     seo: { include: true, defaultTitle: 'Karaoke | Crazy Bear Town', defaultDescription: 'Private karaoke room at Crazy Bear Town.' } },
+  { slug: 'town/parties', route: '/town/parties', title: 'Town Parties', description: 'Private parties at Town', group: 'Town', icon: Music, component: TownPartiesPage, parentSlug: 'town', property: 'town',
+    seo: { include: true, defaultTitle: 'Parties | Crazy Bear Town', defaultDescription: 'Private parties at Crazy Bear Town, Beaconsfield.' } },
+  { slug: 'town/birthdays', route: '/town/birthdays', title: 'Town Birthdays', description: 'Birthday parties at Town', group: 'Town', icon: Music, component: TownBirthdaysPage, parentSlug: 'town', property: 'town',
+    seo: { include: true, defaultTitle: 'Birthdays | Crazy Bear Town', defaultDescription: 'Birthday parties at Crazy Bear Town, Beaconsfield.' } },
+  { slug: 'town/pool-party', route: '/town/pool-party', title: 'Town Pool Party', description: 'Private pool party hire', group: 'Town', icon: Waves, component: TownPoolPartyPage, parentSlug: 'town/pool', property: 'town',
+    seo: { include: true, defaultTitle: 'Pool Party | Crazy Bear Town', defaultDescription: 'Private pool parties at Crazy Bear Town, Beaconsfield.' } },
   { slug: 'town/playlist', route: '/town/playlist', title: 'Town Playlist', description: 'What\'s on the Town speakers', group: 'Town', icon: Music, component: TownPlaylistPage, parentSlug: 'town/culture', property: 'town',
     seo: { include: true, defaultTitle: 'Playlist | Crazy Bear Town', defaultDescription: 'The Crazy Bear Town playlist.' } },
 
