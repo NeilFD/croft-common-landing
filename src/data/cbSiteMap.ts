@@ -8,6 +8,17 @@ export type SiteMapLink = {
   external?: boolean;
 };
 
+export type SiteMapColumn = {
+  /** Column heading eyebrow, e.g. "Country / Stadhampton". */
+  eyebrow: string;
+  /** Primary curated links for this column on the homepage. */
+  links: SiteMapLink[];
+  /** Optional row of small "chip" links rendered below the primary links. */
+  chips?: SiteMapLink[];
+  /** Optional "see all" link rendered at the foot of the column. */
+  seeAll?: SiteMapLink;
+};
+
 export type SiteMapGroup = {
   /** Stable id, used as anchor on the homepage and CMS key. */
   id: string;
@@ -15,83 +26,154 @@ export type SiteMapGroup = {
   label: string;
   /** Short editorial intro shown in the homepage section. */
   intro: string;
-  /** All routes that belong to this group, flat list. */
+  /** Country column for the homepage section. */
+  country: SiteMapColumn;
+  /** Town column for the homepage section. */
+  town: SiteMapColumn;
+  /** Optional cross-site links rendered full-width beneath the two columns. */
+  bothBelow?: SiteMapLink[];
+  /** Flat list of every route in this group — used by footer + sitemap. */
   links: SiteMapLink[];
 };
 
+const flatten = (g: Omit<SiteMapGroup, "links">): SiteMapLink[] => {
+  const seen = new Set<string>();
+  const out: SiteMapLink[] = [];
+  const push = (l?: SiteMapLink) => {
+    if (!l) return;
+    if (seen.has(l.path)) return;
+    seen.add(l.path);
+    out.push(l);
+  };
+  for (const col of [g.country, g.town]) {
+    col.links.forEach(push);
+    col.chips?.forEach(push);
+    push(col.seeAll);
+  }
+  g.bothBelow?.forEach(push);
+  return out;
+};
+
+const group = (g: Omit<SiteMapGroup, "links">): SiteMapGroup => ({
+  ...g,
+  links: flatten(g),
+});
+
 export const SITE_MAP: SiteMapGroup[] = [
-  {
+  group({
     id: "stay",
     label: "Stay",
     intro: "Two hotels. One spirit.\nCrazy Bear Country in Stadhampton,\nCrazy Bear Town in Beaconsfield.",
-    links: [
-      { label: "Country Rooms", path: "/country/rooms" },
-      { label: "Country Room Types", path: "/country/rooms/types" },
-      { label: "Country Snug", path: "/country/rooms/snug" },
-      { label: "Country Cosy", path: "/country/rooms/cosy" },
-      { label: "Country Boujee", path: "/country/rooms/boujee" },
-      { label: "Country Decadent", path: "/country/rooms/decadent" },
-      { label: "Country Room Gallery", path: "/country/rooms/gallery" },
-      { label: "Town Rooms", path: "/town/rooms" },
-      { label: "Town Room Types", path: "/town/rooms/types" },
-      { label: "Town Snug", path: "/town/rooms/snug" },
-      { label: "Town Cosy", path: "/town/rooms/cosy" },
-      { label: "Town Boujee", path: "/town/rooms/boujee" },
-      { label: "Town Decadent", path: "/town/rooms/decadent" },
-      { label: "Town Room Gallery", path: "/town/rooms/gallery" },
-      { label: "Town Pool", path: "/town/pool" },
-    ],
-  },
-  {
+    country: {
+      eyebrow: "Country / Stadhampton",
+      links: [
+        { label: "Rooms", path: "/country/rooms" },
+        { label: "Room Types", path: "/country/rooms/types" },
+        { label: "Gallery", path: "/country/rooms/gallery" },
+      ],
+      chips: [
+        { label: "Snug", path: "/country/rooms/snug" },
+        { label: "Cosy", path: "/country/rooms/cosy" },
+        { label: "Boujee", path: "/country/rooms/boujee" },
+        { label: "Decadent", path: "/country/rooms/decadent" },
+      ],
+      seeAll: { label: "All Country rooms", path: "/country/rooms" },
+    },
+    town: {
+      eyebrow: "Town / Beaconsfield",
+      links: [
+        { label: "Rooms", path: "/town/rooms" },
+        { label: "Room Types", path: "/town/rooms/types" },
+        { label: "Gallery", path: "/town/rooms/gallery" },
+        { label: "Pool", path: "/town/pool" },
+      ],
+      chips: [
+        { label: "Snug", path: "/town/rooms/snug" },
+        { label: "Cosy", path: "/town/rooms/cosy" },
+        { label: "Boujee", path: "/town/rooms/boujee" },
+        { label: "Decadent", path: "/town/rooms/decadent" },
+      ],
+      seeAll: { label: "All Town rooms", path: "/town/rooms" },
+    },
+  }),
+  group({
     id: "eat-drink",
     label: "Eat & Drink",
     intro: "Three kitchens, one pub, one cocktail bar. A pool and a party venue. All ours.",
-    links: [
-      { label: "Town Food", path: "/town/food" },
-      { label: "Town Menus", path: "/town/food/menus" },
-      { label: "The Black Bear", path: "/town/food/black-bear" },
-      { label: "B&B", path: "/town/food/bnb" },
-      { label: "Hom Thai", path: "/town/food/hom-thai" },
-      { label: "Town Afternoon Tea", path: "/town/food/afternoon-tea" },
-      { label: "Town Cocktails", path: "/town/drink/cocktails" },
-      { label: "Country Food", path: "/country/food" },
-      { label: "Country Menus", path: "/country/food/menus" },
-      { label: "Country Afternoon Tea", path: "/country/food/afternoon-tea" },
-      { label: "Country Pub Food", path: "/country/pub/food" },
-      { label: "Country Pub Drink", path: "/country/pub/drink" },
-      { label: "Country Pub Hospitality", path: "/country/pub/hospitality" },
-    ],
-  },
-  {
+    country: {
+      eyebrow: "Country / Stadhampton",
+      links: [
+        { label: "Pub Food", path: "/country/pub/food" },
+        { label: "Pub Drink", path: "/country/pub/drink" },
+        { label: "Pub Hospitality", path: "/country/pub/hospitality" },
+        { label: "Afternoon Tea", path: "/country/food/afternoon-tea" },
+        { label: "Menus", path: "/country/food/menus" },
+      ],
+      seeAll: { label: "All Country food & drink", path: "/country/food" },
+    },
+    town: {
+      eyebrow: "Town / Beaconsfield",
+      links: [
+        { label: "The Black Bear", path: "/town/food/black-bear" },
+        { label: "B&B", path: "/town/food/bnb" },
+        { label: "Hom Thai", path: "/town/food/hom-thai" },
+        { label: "Afternoon Tea", path: "/town/food/afternoon-tea" },
+        { label: "Cocktails", path: "/town/drink/cocktails" },
+        { label: "Menus", path: "/town/food/menus" },
+      ],
+      seeAll: { label: "All Town food & drink", path: "/town/food" },
+    },
+  }),
+  group({
     id: "celebrate",
     label: "Celebrate",
     intro: "Weddings. Parties. Birthdays. Business done well. Karaoke optional.",
-    links: [
-      { label: "Weddings", path: "/country/events/weddings" },
-      { label: "Parties", path: "/country/parties" },
-      { label: "Birthdays", path: "/country/events/birthdays" },
-      { label: "Business Events", path: "/country/events/business" },
-      { label: "All Country Events", path: "/country/events" },
-      { label: "Terraces & Gardens", path: "/country/terraces-and-gardens" },
-      { label: "Karaoke", path: "/town/karaoke" },
+    country: {
+      eyebrow: "Country / Stadhampton",
+      links: [
+        { label: "Weddings", path: "/country/events/weddings" },
+        { label: "Parties", path: "/country/parties" },
+        { label: "Birthdays", path: "/country/events/birthdays" },
+        { label: "Business Events", path: "/country/events/business" },
+        { label: "Terraces & Gardens", path: "/country/terraces-and-gardens" },
+      ],
+      seeAll: { label: "All Country events", path: "/country/events" },
+    },
+    town: {
+      eyebrow: "Town / Beaconsfield",
+      links: [
+        { label: "Karaoke", path: "/town/karaoke" },
+      ],
+    },
+    bothBelow: [
       { label: "What's Happening", path: "/whats-on" },
       { label: "Gift Vouchers", path: "/gift-vouchers" },
     ],
-  },
-  {
+  }),
+  group({
     id: "discover",
     label: "Discover",
     intro: "Where we came from. How we behave. What we read. What we play.",
-    links: [
+    country: {
+      eyebrow: "Country / Stadhampton",
+      links: [
+        { label: "Culture", path: "/country/culture" },
+        { label: "Playlist", path: "/country/playlist" },
+      ],
+    },
+    town: {
+      eyebrow: "Town / Beaconsfield",
+      links: [
+        { label: "Culture", path: "/town/culture" },
+        { label: "Playlist", path: "/town/playlist" },
+      ],
+    },
+    bothBelow: [
       { label: "About", path: "/about" },
       { label: "House Rules", path: "/house-rules" },
-      { label: "Country Culture", path: "/country/culture" },
-      { label: "Country Playlist", path: "/country/playlist" },
-      { label: "Town Culture", path: "/town/culture" },
-      { label: "Town Playlist", path: "/town/playlist" },
       { label: "Stories from the Bear", path: "/stories" },
     ],
-  },
+  }),
 ];
 
 /**
