@@ -96,6 +96,28 @@ const TownRoomGallery = lazy(() => import('@/pages/property').then(m => ({ defau
 const TownPool = lazy(() => import('@/pages/property').then(m => ({ default: m.TownPool })));
 const TownCulture = lazy(() => import('@/pages/property/TownCulture'));
 
+// Round-1 site-map additions (room categories, food landings, terraces, karaoke, playlists, etc.)
+const CountryRoomSnug = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryRoomSnug })));
+const CountryRoomCosy = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryRoomCosy })));
+const CountryRoomBoujee = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryRoomBoujee })));
+const CountryRoomDecadent = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryRoomDecadent })));
+const TownRoomSnug = lazy(() => import('@/pages/property').then(m => ({ default: m.TownRoomSnug })));
+const TownRoomCosy = lazy(() => import('@/pages/property').then(m => ({ default: m.TownRoomCosy })));
+const TownRoomBoujee = lazy(() => import('@/pages/property').then(m => ({ default: m.TownRoomBoujee })));
+const TownRoomDecadent = lazy(() => import('@/pages/property').then(m => ({ default: m.TownRoomDecadent })));
+const CountryFoodPage = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryFood })));
+const CountryMenusPage = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryMenus })));
+const CountryAfternoonTeaPage = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryAfternoonTea })));
+const CountryTerracesPage = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryTerracesAndGardens })));
+const CountryPlaylistPage = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryPlaylist })));
+const TownMenusPage = lazy(() => import('@/pages/property').then(m => ({ default: m.TownMenus })));
+const TownAfternoonTeaPage = lazy(() => import('@/pages/property').then(m => ({ default: m.TownAfternoonTea })));
+const TownKaraokePage = lazy(() => import('@/pages/property').then(m => ({ default: m.TownKaraoke })));
+const TownPlaylistPage = lazy(() => import('@/pages/property').then(m => ({ default: m.TownPlaylist })));
+const WhatsOnPage = lazy(() => import('@/pages/crazybear/WhatsOn'));
+const StoriesPage = lazy(() => import('@/pages/crazybear/Stories'));
+const GiftVouchersPage = lazy(() => import('@/pages/crazybear/GiftVouchers'));
+
 const CMSFooterPreview = lazy(() => import('@/pages/CMSFooterPreview'));
 const CMSNavigationPreview = lazy(() => import('@/pages/CMSNavigationPreview'));
 const CMSEmailTemplates = lazy(() => import('@/pages/CMSEmailTemplates'));
@@ -383,6 +405,55 @@ export const CMS_PAGES: CmsPageEntry[] = [
   { slug: 'town/culture', route: '/town/culture', title: 'Town Culture', description: 'Stories, playlist, House Rules', group: 'Town', icon: Music, component: TownCulture, parentSlug: 'town', property: 'town',
     seo: { include: true, defaultTitle: 'Culture | Crazy Bear Town', defaultDescription: 'Culture at Crazy Bear Town.' } },
 
+  // ─── Round-1 site-map additions ───────────────────────────────
+  // Country room categories
+  { slug: 'country/rooms/snug', route: '/country/rooms/snug', title: 'Snug Rooms', description: 'Country Snug bedrooms', group: 'Country', icon: Bed, component: CountryRoomSnug, parentSlug: 'country/rooms', property: 'country',
+    seo: { include: true, defaultTitle: 'Snug Rooms | Crazy Bear Country', defaultDescription: 'Snug bedrooms at Crazy Bear Country.' } },
+  { slug: 'country/rooms/cosy', route: '/country/rooms/cosy', title: 'Cosy Rooms', description: 'Country Cosy bedrooms', group: 'Country', icon: Bed, component: CountryRoomCosy, parentSlug: 'country/rooms', property: 'country',
+    seo: { include: true, defaultTitle: 'Cosy Rooms | Crazy Bear Country', defaultDescription: 'Cosy bedrooms at Crazy Bear Country.' } },
+  { slug: 'country/rooms/boujee', route: '/country/rooms/boujee', title: 'Boujee Rooms', description: 'Country Boujee bedrooms', group: 'Country', icon: Bed, component: CountryRoomBoujee, parentSlug: 'country/rooms', property: 'country',
+    seo: { include: true, defaultTitle: 'Boujee Rooms | Crazy Bear Country', defaultDescription: 'Boujee bedrooms at Crazy Bear Country.' } },
+  { slug: 'country/rooms/decadent', route: '/country/rooms/decadent', title: 'Decadent Rooms', description: 'Country Decadent bedrooms', group: 'Country', icon: Bed, component: CountryRoomDecadent, parentSlug: 'country/rooms', property: 'country',
+    seo: { include: true, defaultTitle: 'Decadent Rooms | Crazy Bear Country', defaultDescription: 'Decadent bedrooms at Crazy Bear Country.' } },
+  // Country food + menus + afternoon tea + terraces + playlist
+  { slug: 'country/food', route: '/country/food', title: 'Country Food', description: 'Food landing at Country', group: 'Country', icon: UtensilsCrossed, component: CountryFoodPage, parentSlug: 'country', property: 'country',
+    seo: { include: true, defaultTitle: 'Food | Crazy Bear Country', defaultDescription: 'Food at Crazy Bear Country.' } },
+  { slug: 'country/food/menus', route: '/country/food/menus', title: 'Country Menus', description: 'All menus, one place', group: 'Country', icon: UtensilsCrossed, component: CountryMenusPage, parentSlug: 'country/food', property: 'country',
+    seo: { include: true, defaultTitle: 'Menus | Crazy Bear Country', defaultDescription: 'Every menu across Crazy Bear Country.' } },
+  { slug: 'country/food/afternoon-tea', route: '/country/food/afternoon-tea', title: 'Afternoon Tea', description: 'Country afternoon tea', group: 'Country', icon: Coffee, component: CountryAfternoonTeaPage, parentSlug: 'country/food', property: 'country',
+    seo: { include: true, defaultTitle: 'Afternoon Tea | Crazy Bear Country', defaultDescription: 'Afternoon tea at Crazy Bear Country.' } },
+  { slug: 'country/terraces-and-gardens', route: '/country/terraces-and-gardens', title: 'Terraces & Gardens', description: 'Fishpond, Secret Garden, Garden Terrace, Woodland', group: 'Country', icon: Trees, component: CountryTerracesPage, parentSlug: 'country', property: 'country',
+    seo: { include: true, defaultTitle: 'Terraces & Gardens | Crazy Bear Country', defaultDescription: 'Terraces and gardens at Crazy Bear Country.' } },
+  { slug: 'country/playlist', route: '/country/playlist', title: 'Country Playlist', description: 'What\'s on the Country speakers', group: 'Country', icon: Music, component: CountryPlaylistPage, parentSlug: 'country/culture', property: 'country',
+    seo: { include: true, defaultTitle: 'Playlist | Crazy Bear Country', defaultDescription: 'The Crazy Bear Country playlist.' } },
+
+  // Town room categories
+  { slug: 'town/rooms/snug', route: '/town/rooms/snug', title: 'Snug Rooms', description: 'Town Snug bedrooms', group: 'Town', icon: Bed, component: TownRoomSnug, parentSlug: 'town/rooms', property: 'town',
+    seo: { include: true, defaultTitle: 'Snug Rooms | Crazy Bear Town', defaultDescription: 'Snug bedrooms at Crazy Bear Town.' } },
+  { slug: 'town/rooms/cosy', route: '/town/rooms/cosy', title: 'Cosy Rooms', description: 'Town Cosy bedrooms', group: 'Town', icon: Bed, component: TownRoomCosy, parentSlug: 'town/rooms', property: 'town',
+    seo: { include: true, defaultTitle: 'Cosy Rooms | Crazy Bear Town', defaultDescription: 'Cosy bedrooms at Crazy Bear Town.' } },
+  { slug: 'town/rooms/boujee', route: '/town/rooms/boujee', title: 'Boujee Rooms', description: 'Town Boujee bedrooms', group: 'Town', icon: Bed, component: TownRoomBoujee, parentSlug: 'town/rooms', property: 'town',
+    seo: { include: true, defaultTitle: 'Boujee Rooms | Crazy Bear Town', defaultDescription: 'Boujee bedrooms at Crazy Bear Town.' } },
+  { slug: 'town/rooms/decadent', route: '/town/rooms/decadent', title: 'Decadent Rooms', description: 'Town Decadent bedrooms', group: 'Town', icon: Bed, component: TownRoomDecadent, parentSlug: 'town/rooms', property: 'town',
+    seo: { include: true, defaultTitle: 'Decadent Rooms | Crazy Bear Town', defaultDescription: 'Decadent bedrooms at Crazy Bear Town.' } },
+  // Town menus + afternoon tea + karaoke + playlist
+  { slug: 'town/food/menus', route: '/town/food/menus', title: 'Town Menus', description: 'All menus, one place', group: 'Town', icon: UtensilsCrossed, component: TownMenusPage, parentSlug: 'town/food', property: 'town',
+    seo: { include: true, defaultTitle: 'Menus | Crazy Bear Town', defaultDescription: 'Every menu across Crazy Bear Town.' } },
+  { slug: 'town/food/afternoon-tea', route: '/town/food/afternoon-tea', title: 'Afternoon Tea', description: 'Town afternoon tea', group: 'Town', icon: Coffee, component: TownAfternoonTeaPage, parentSlug: 'town/food', property: 'town',
+    seo: { include: true, defaultTitle: 'Afternoon Tea | Crazy Bear Town', defaultDescription: 'Afternoon tea at Crazy Bear Town.' } },
+  { slug: 'town/karaoke', route: '/town/karaoke', title: 'Karaoke', description: 'Private karaoke room', group: 'Town', icon: Music, component: TownKaraokePage, parentSlug: 'town', property: 'town',
+    seo: { include: true, defaultTitle: 'Karaoke | Crazy Bear Town', defaultDescription: 'Private karaoke room at Crazy Bear Town.' } },
+  { slug: 'town/playlist', route: '/town/playlist', title: 'Town Playlist', description: 'What\'s on the Town speakers', group: 'Town', icon: Music, component: TownPlaylistPage, parentSlug: 'town/culture', property: 'town',
+    seo: { include: true, defaultTitle: 'Playlist | Crazy Bear Town', defaultDescription: 'The Crazy Bear Town playlist.' } },
+
+  // Site-wide
+  { slug: 'whats-on', route: '/whats-on', title: "What's Happening", description: 'Events across Town and Country', group: 'Standalone', icon: Calendar, component: WhatsOnPage,
+    seo: { include: true, defaultTitle: "What's Happening | Crazy Bear", defaultDescription: 'Events, parties, karaoke, cinema and feasts at Crazy Bear.' } },
+  { slug: 'stories', route: '/stories', title: 'Stories', description: 'Stories from the Bear', group: 'Standalone', icon: BookOpen, component: StoriesPage,
+    seo: { include: true, defaultTitle: 'Stories from the Bear | Crazy Bear', defaultDescription: 'Wild nights and near-misses from Crazy Bear.' } },
+  { slug: 'gift-vouchers', route: '/gift-vouchers', title: 'Gift Vouchers', description: 'Buy a Crazy Bear gift voucher', group: 'Standalone', icon: Heart, component: GiftVouchersPage,
+    seo: { include: true, defaultTitle: 'Gift Vouchers | Crazy Bear', defaultDescription: 'Gift vouchers for Crazy Bear Town and Country.' } },
+
   // ─── Global content (no public route, edited in CMS only) ─────
   { slug: 'global/footer', route: '__global/footer', title: 'Footer', description: 'Site-wide footer', group: 'Global', icon: FileText, component: CMSFooterPreview,
     seo: { include: false, defaultTitle: '', defaultDescription: '' } },
@@ -449,6 +520,7 @@ export const CMS_EXCLUDED_ROUTES: string[] = [
   // Country/Town nested members redirects
   '/country/members',
   '/town/members',
+  '/stories/:slug',
 ];
 
 export const CMS_PAGES_BY_SLUG: Record<string, CmsPageEntry> = Object.fromEntries(
