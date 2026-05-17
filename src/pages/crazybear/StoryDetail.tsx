@@ -3,6 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { CBSeo } from "@/components/seo/CBSeo";
 import { breadcrumbSchema } from "@/components/seo/CBStructuredData";
+import CBTopNav from "@/components/crazybear/CBTopNav";
+import CBFooter from "@/components/crazybear/CBFooter";
 
 interface Story {
   id: string;
@@ -35,18 +37,22 @@ const StoryDetail = () => {
 
   if (notFound) {
     return (
-      <section className="min-h-screen grid place-items-center bg-background text-foreground px-6">
-        <div className="text-center">
-          <p className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60">Lost in the woods</p>
-          <h1 className="mt-4 font-serif text-4xl uppercase">Story not found</h1>
-          <Link
-            to="/stories"
-            className="mt-8 inline-block font-cb-mono text-[10px] tracking-[0.5em] uppercase border border-foreground px-6 py-3 hover:bg-foreground hover:text-background transition-colors"
-          >
-            Back to stories
-          </Link>
-        </div>
-      </section>
+      <>
+        <section className="relative min-h-screen grid place-items-center bg-black text-white px-6">
+          <CBTopNav tone="light" />
+          <div className="text-center">
+            <p className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60">Lost in the woods</p>
+            <h1 className="mt-4 font-serif text-4xl uppercase">Story not found</h1>
+            <Link
+              to="/stories"
+              className="mt-8 inline-block font-cb-mono text-[10px] tracking-[0.5em] uppercase border border-white px-6 py-3 hover:bg-white hover:text-black transition-colors"
+            >
+              Back to stories
+            </Link>
+          </div>
+        </section>
+        <CBFooter />
+      </>
     );
   }
 
@@ -60,10 +66,15 @@ const StoryDetail = () => {
         path={`/stories/${story.slug}`}
         jsonLd={[breadcrumbSchema(`/stories/${story.slug}`)]}
       />
-      {story.hero_url && (
+      {story.hero_url ? (
         <section className="relative h-[60vh] min-h-[400px] w-full overflow-hidden bg-black text-white">
           <img src={story.hero_url} alt={story.title} width={1920} height={1080} className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+          <CBTopNav tone="light" />
+        </section>
+      ) : (
+        <section className="relative bg-black text-white pt-40 md:pt-48 pb-12 px-6">
+          <CBTopNav tone="light" />
         </section>
       )}
       <article className="mx-auto max-w-3xl px-6 py-16 text-foreground">
@@ -88,6 +99,7 @@ const StoryDetail = () => {
           More stories
         </Link>
       </article>
+      <CBFooter />
     </>
   );
 };

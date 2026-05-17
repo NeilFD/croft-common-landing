@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { CBSeo } from "@/components/seo/CBSeo";
 import { breadcrumbSchema } from "@/components/seo/CBStructuredData";
+import CBTopNav from "@/components/crazybear/CBTopNav";
+import CBFooter from "@/components/crazybear/CBFooter";
 
 interface Story {
   id: string;
@@ -37,7 +39,8 @@ const Stories = () => {
         path="/stories"
         jsonLd={[breadcrumbSchema("/stories")]}
       />
-      <section className="relative bg-black text-white py-24 md:py-32 px-6">
+      <section className="relative bg-black text-white pt-40 md:pt-48 pb-24 md:pb-32 px-6">
+        <CBTopNav tone="light" />
         <div className="mx-auto max-w-4xl text-center">
           <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase opacity-70">Crazy Bear</p>
           <h1 className="mt-4 font-serif text-5xl md:text-7xl uppercase">Stories from the Bear</h1>
@@ -88,6 +91,7 @@ const Stories = () => {
           </ul>
         </div>
       </section>
+      <CBFooter />
     </>
   );
 };
