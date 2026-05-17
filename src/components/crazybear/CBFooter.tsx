@@ -105,6 +105,30 @@ const CBFooter = () => {
                 </li>
               ))}
               <li>
+                <Link to="/journal" className="font-cb-sans text-sm opacity-80 hover:opacity-100 hover:underline underline-offset-4">Journal</Link>
+              </li>
+              <li>
+                <Link to="/gallery" className="font-cb-sans text-sm opacity-80 hover:opacity-100 hover:underline underline-offset-4">Gallery</Link>
+              </li>
+              <li>
+                <Link to="/treatments" className="font-cb-sans text-sm opacity-80 hover:opacity-100 hover:underline underline-offset-4">Treatments</Link>
+              </li>
+              <li>
+                <Link to="/merch" className="font-cb-sans text-sm opacity-80 hover:opacity-100 hover:underline underline-offset-4">Merch</Link>
+              </li>
+              <li>
+                <Link to="/faq" className="font-cb-sans text-sm opacity-80 hover:opacity-100 hover:underline underline-offset-4">FAQ</Link>
+              </li>
+              <li>
+                <Link to="/contact" className="font-cb-sans text-sm opacity-80 hover:opacity-100 hover:underline underline-offset-4">Contact</Link>
+              </li>
+              <li>
+                <Link to="/press" className="font-cb-sans text-sm opacity-80 hover:opacity-100 hover:underline underline-offset-4">Press</Link>
+              </li>
+              <li>
+                <Link to="/careers" className="font-cb-sans text-sm opacity-80 hover:opacity-100 hover:underline underline-offset-4">Careers</Link>
+              </li>
+              <li>
                 <Link
                   to={PRIMARY_CTAS.book.path}
                   className="font-cb-sans text-sm opacity-80 hover:opacity-100 hover:underline underline-offset-4"
@@ -121,6 +145,33 @@ const CBFooter = () => {
                 </Link>
               </li>
             </ul>
+
+            {/* Social */}
+            <div className="mt-8">
+              <p className="font-cb-mono text-[9px] tracking-[0.4em] uppercase opacity-50 mb-3">
+                Follow
+              </p>
+              <div className="flex items-center gap-4">
+                <a
+                  href={IG_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Crazy Bear on Instagram"
+                  className="opacity-80 hover:opacity-100"
+                >
+                  <InstagramIcon className="h-6 w-6" />
+                </a>
+                <a
+                  href={TIKTOK_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Crazy Bear on TikTok"
+                  className="opacity-80 hover:opacity-100"
+                >
+                  <TikTokIcon className="h-6 w-6" />
+                </a>
+              </div>
+            </div>
           </div>
         </nav>
 
