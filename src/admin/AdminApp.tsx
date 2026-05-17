@@ -12,6 +12,7 @@ import { CinemaPage } from './pages/CinemaPage';
 import EmailDeliveryPage from './pages/EmailDeliveryPage';
 import { EventsPage } from './pages/EventsPage';
 import { StoriesPage } from './pages/StoriesPage';
+import { JournalPage } from './pages/JournalPage';
 import LeadsList from '../pages/management/LeadsList';
 import LeadDetail from '../pages/management/LeadDetail';
 import AdminMemberAnalytics from '../pages/AdminMemberAnalytics';
