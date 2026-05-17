@@ -59,6 +59,8 @@ const navigationItems = [
       { title: 'Subscribers', url: '/admin/management/subscribers', icon: UserCheck },
       { title: 'Moments Moderation', url: '/admin/management/moments', icon: Camera },
       { title: 'Cinema Management', url: '/admin/management/cinema', icon: Film },
+      { title: "What's Happening", url: '/admin/management/events', icon: BarChart3 },
+      { title: 'Stories', url: '/admin/management/stories', icon: History },
       { title: 'Email Delivery', url: '/admin/management/email-delivery', icon: Mail },
       { title: 'Member Database', url: '/admin/member-analytics', icon: Database },
     ],
