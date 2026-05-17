@@ -49,6 +49,27 @@ const TownRoomGallery = lazy(() => import("./pages/property").then((m) => ({ def
 const TownPool = lazy(() => import("./pages/property").then((m) => ({ default: m.TownPool })));
 const TownCulture = lazy(() => import("./pages/property/TownCulture"));
 const CountryCulture = lazy(() => import("./pages/property/CountryCulture"));
+const CountryRoomSnug = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRoomSnug })));
+const CountryRoomCosy = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRoomCosy })));
+const CountryRoomBoujee = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRoomBoujee })));
+const CountryRoomDecadent = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRoomDecadent })));
+const TownRoomSnug = lazy(() => import("./pages/property").then((m) => ({ default: m.TownRoomSnug })));
+const TownRoomCosy = lazy(() => import("./pages/property").then((m) => ({ default: m.TownRoomCosy })));
+const TownRoomBoujee = lazy(() => import("./pages/property").then((m) => ({ default: m.TownRoomBoujee })));
+const TownRoomDecadent = lazy(() => import("./pages/property").then((m) => ({ default: m.TownRoomDecadent })));
+const CountryFood = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryFood })));
+const CountryMenus = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryMenus })));
+const CountryAfternoonTea = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryAfternoonTea })));
+const CountryTerracesAndGardens = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryTerracesAndGardens })));
+const CountryPlaylist = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryPlaylist })));
+const TownMenus = lazy(() => import("./pages/property").then((m) => ({ default: m.TownMenus })));
+const TownAfternoonTea = lazy(() => import("./pages/property").then((m) => ({ default: m.TownAfternoonTea })));
+const TownKaraoke = lazy(() => import("./pages/property").then((m) => ({ default: m.TownKaraoke })));
+const TownPlaylist = lazy(() => import("./pages/property").then((m) => ({ default: m.TownPlaylist })));
+const WhatsOn = lazy(() => import("./pages/crazybear/WhatsOn"));
+const Stories = lazy(() => import("./pages/crazybear/Stories"));
+const StoryDetail = lazy(() => import("./pages/crazybear/StoryDetail"));
+const GiftVouchers = lazy(() => import("./pages/crazybear/GiftVouchers"));
 const Cafe = lazy(() => import("./pages/Cafe"));
 const Cocktails = lazy(() => import("./pages/Cocktails"));
 const Beer = lazy(() => import("./pages/Beer"));
@@ -336,6 +357,15 @@ const App = () => {
                         <Route path="events/business" element={<CountryBusiness />} />
                         <Route path="members" element={<Navigate to="/members" replace />} />
                         <Route path="culture" element={<CountryCulture />} />
+                        <Route path="rooms/snug" element={<CountryRoomSnug />} />
+                        <Route path="rooms/cosy" element={<CountryRoomCosy />} />
+                        <Route path="rooms/boujee" element={<CountryRoomBoujee />} />
+                        <Route path="rooms/decadent" element={<CountryRoomDecadent />} />
+                        <Route path="food" element={<CountryFood />} />
+                        <Route path="food/menus" element={<CountryMenus />} />
+                        <Route path="food/afternoon-tea" element={<CountryAfternoonTea />} />
+                        <Route path="terraces-and-gardens" element={<CountryTerracesAndGardens />} />
+                        <Route path="playlist" element={<CountryPlaylist />} />
                       </Route>
 
                       {/* Crazy Bear Town */}
@@ -353,7 +383,21 @@ const App = () => {
                         <Route path="pool" element={<TownPool />} />
                         <Route path="culture" element={<TownCulture />} />
                         <Route path="members" element={<Navigate to="/members" replace />} />
+                        <Route path="rooms/snug" element={<TownRoomSnug />} />
+                        <Route path="rooms/cosy" element={<TownRoomCosy />} />
+                        <Route path="rooms/boujee" element={<TownRoomBoujee />} />
+                        <Route path="rooms/decadent" element={<TownRoomDecadent />} />
+                        <Route path="food/menus" element={<TownMenus />} />
+                        <Route path="food/afternoon-tea" element={<TownAfternoonTea />} />
+                        <Route path="karaoke" element={<TownKaraoke />} />
+                        <Route path="playlist" element={<TownPlaylist />} />
                       </Route>
+
+                      {/* Site-wide */}
+                      <Route path="/whats-on" element={<WhatsOn />} />
+                      <Route path="/stories" element={<Stories />} />
+                      <Route path="/stories/:slug" element={<StoryDetail />} />
+                      <Route path="/gift-vouchers" element={<GiftVouchers />} />
 
                       {/* Crazy Bear members entry */}
                       <Route path="/bears-den" element={<BearsDen />} />

@@ -341,3 +341,253 @@ export const TownPool = () =>
       cmsPage="town/pool"
     />
   );
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Room category pages — Snug / Cosy / Boujee / Decadent (Town + Country)
+ * One shared shape, driven by PropertyPage. Editors fill carousel + copy
+ * via the CMS visual editor using the cmsPage slug as a content namespace.
+ * ────────────────────────────────────────────────────────────────────── */
+
+interface RoomCategoryProps {
+  site: "town" | "country";
+  category: "snug" | "cosy" | "boujee" | "decadent";
+}
+
+const ROOM_CATEGORY_COPY: Record<RoomCategoryProps["category"], { title: string; body: string }> = {
+  snug:     { title: "Snug",     body: "Tucked away. Smaller footprint, full character. Made for one big sleep." },
+  cosy:     { title: "Cosy",     body: "Warm. Layered. The kind of room that swallows you whole." },
+  boujee:   { title: "Boujee",   body: "Velvet. Mirror. A bit much, on purpose." },
+  decadent: { title: "Decadent", body: "Top of the bill. Roll-top bath, theatrical bedhead, late checkout strongly advised." },
+};
+
+const RoomCategoryRoute = ({ site, category }: RoomCategoryProps) => {
+  const copy = ROOM_CATEGORY_COPY[category];
+  const propName = site === "town" ? "Crazy Bear Town" : "Crazy Bear Country";
+  return (
+    <PropertyPage
+      title={copy.title}
+      eyebrow="Rooms"
+      body={copy.body}
+      seoDescription={`${copy.title} bedrooms at ${propName}. ${copy.body}`}
+      schemaKind="hotel"
+      faqKey={`/${site}/rooms`}
+      cmsPage={`${site}/rooms/${category}`}
+    />
+  );
+};
+
+export const TownRoomSnug     = () => <RoomCategoryRoute site="town"    category="snug" />;
+export const TownRoomCosy     = () => <RoomCategoryRoute site="town"    category="cosy" />;
+export const TownRoomBoujee   = () => <RoomCategoryRoute site="town"    category="boujee" />;
+export const TownRoomDecadent = () => <RoomCategoryRoute site="town"    category="decadent" />;
+export const CountryRoomSnug     = () => <RoomCategoryRoute site="country" category="snug" />;
+export const CountryRoomCosy     = () => <RoomCategoryRoute site="country" category="cosy" />;
+export const CountryRoomBoujee   = () => <RoomCategoryRoute site="country" category="boujee" />;
+export const CountryRoomDecadent = () => <RoomCategoryRoute site="country" category="decadent" />;
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Country Food landing — sits above /country/pub. Hub for everything
+ * eat-and-drink at Stadhampton.
+ * ────────────────────────────────────────────────────────────────────── */
+export const CountryFood = () => (
+  <PropertyPage
+    title="Food"
+    body="Two kitchens, one pub. The Restaurant, Thai upstairs, the Pub downstairs. Long lunches and longer Sundays."
+    seoDescription="Food at Crazy Bear Country, Stadhampton. The Restaurant, Thai upstairs, the Pub, afternoon tea, Sunday feasts."
+    faqKey="/country/pub"
+    cmsPage="country/food"
+  />
+);
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Afternoon Tea (both sites)
+ * ────────────────────────────────────────────────────────────────────── */
+export const TownAfternoonTea = () => (
+  <PropertyPage
+    title="Afternoon Tea"
+    eyebrow="Food"
+    body="Three tiers. Proper tea. Champagne if you're behaving badly."
+    seoDescription="Afternoon tea at Crazy Bear Town, Beaconsfield. Sandwiches, scones, pastries, proper tea. Champagne on request."
+    schemaKind="restaurant"
+    cuisine={["British", "Afternoon Tea"]}
+    cmsPage="town/food/afternoon-tea"
+  />
+);
+export const CountryAfternoonTea = () => (
+  <PropertyPage
+    title="Afternoon Tea"
+    eyebrow="Food"
+    body="By the fire or out on the terrace. Scones, sandwiches, cake. The works."
+    seoDescription="Afternoon tea at Crazy Bear Country, Stadhampton. By the fire or on the terrace."
+    schemaKind="restaurant"
+    cuisine={["British", "Afternoon Tea"]}
+    cmsPage="country/food/afternoon-tea"
+  />
+);
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Menus indexes (both sites) — everything in one place.
+ * ────────────────────────────────────────────────────────────────────── */
+const TOWN_MENUS = [
+  {
+    name: "The Black Bear",
+    href: "/town/food/black-bear",
+    blurb: "Modern British plates. Charcoal and fire.",
+    menus: [
+      { label: "Dinner", href: "/town/food/black-bear", status: "live" as const },
+      { label: "Lunch", status: "coming-soon" as const },
+      { label: "Sunday", status: "coming-soon" as const },
+      { label: "Wine", status: "coming-soon" as const },
+    ],
+  },
+  {
+    name: "The B&B",
+    href: "/town/food/bnb",
+    blurb: "All day kitchen. Breakfast, brunch and into the night.",
+    menus: [
+      { label: "All Day", href: "/town/food/bnb", status: "live" as const },
+      { label: "Breakfast", status: "coming-soon" as const },
+      { label: "Lunch", status: "coming-soon" as const },
+      { label: "Sunday", status: "coming-soon" as const },
+    ],
+  },
+  {
+    name: "Hom Thai",
+    href: "/town/food/hom-thai",
+    blurb: "Bangkok by way of Beaconsfield. Sharp, fragrant, fierce.",
+    menus: [
+      { label: "Dinner", status: "coming-soon" as const },
+      { label: "Lunch", status: "coming-soon" as const },
+    ],
+  },
+];
+
+const COUNTRY_MENUS = [
+  {
+    name: "The Pub",
+    href: "/country/pub",
+    blurb: "Real ale, proper food, fires lit.",
+    menus: [
+      { label: "Lunch & Dinner", href: "/country/pub/food", status: "live" as const },
+      { label: "Drink", href: "/country/pub/drink", status: "live" as const },
+      { label: "Sunday", status: "coming-soon" as const },
+      { label: "Breakfast", status: "coming-soon" as const },
+    ],
+  },
+];
+
+import CBMenusIndex from "@/components/property/CBMenusIndex";
+
+export const TownMenus = () => (
+  <PropertyPage
+    title="Menus"
+    eyebrow="Food"
+    body="Every menu. One place."
+    seoDescription="Every menu across Crazy Bear Town, Beaconsfield. The Black Bear, the B&B, Hom Thai."
+    cmsPage="town/food/menus"
+  >
+    <CBMenusIndex venues={TOWN_MENUS} />
+  </PropertyPage>
+);
+export const CountryMenus = () => (
+  <PropertyPage
+    title="Menus"
+    eyebrow="Food"
+    body="Every menu. One place."
+    seoDescription="Every menu across Crazy Bear Country, Stadhampton. The Pub, Restaurant and Thai."
+    cmsPage="country/food/menus"
+  >
+    <CBMenusIndex venues={COUNTRY_MENUS} />
+  </PropertyPage>
+);
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Country — Terraces & Gardens (one page, four areas)
+ * ────────────────────────────────────────────────────────────────────── */
+import CBSectionedPage from "@/components/property/CBSectionedPage";
+
+export const CountryTerracesAndGardens = () => (
+  <PropertyPage
+    title="Terraces & Gardens"
+    eyebrow="Country"
+    body="Four corners of the garden. Fish, secrets, terrace, woodland. All ours, all yours for an afternoon."
+    seoDescription="Terraces and gardens at Crazy Bear Country, Stadhampton. The Fishpond, Secret Garden, Garden Terrace and Woodland."
+    cmsPage="country/terraces-and-gardens"
+  >
+    <CBSectionedPage
+      sections={[
+        {
+          id: "fishpond",
+          title: "The Fishpond",
+          body: "Top terrace. Koi gliding under the boards, lanterns strung overhead, a long table built for slow lunches.",
+          cta: { label: "Enquire", href: "/enquire" },
+        },
+        {
+          id: "secret-garden",
+          title: "Secret Garden",
+          body: "Tucked behind the inn. Walled, private, a little wild. The garden you find by accident and never want to leave.",
+          cta: { label: "Enquire", href: "/enquire" },
+        },
+        {
+          id: "garden-terrace",
+          title: "Garden Terrace",
+          body: "Where afternoon tea, long brunches and pre-dinner drinks happen. Heaters in winter, parasols in summer.",
+          cta: { label: "Book a table", href: "/book" },
+        },
+        {
+          id: "woodland",
+          title: "Woodland",
+          body: "Edge of the property. Fire pits, fairy lights, somewhere to disappear after dinner.",
+          cta: { label: "Enquire", href: "/enquire" },
+        },
+      ]}
+    />
+  </PropertyPage>
+);
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Town — Karaoke
+ * ────────────────────────────────────────────────────────────────────── */
+export const TownKaraoke = () => (
+  <PropertyPage
+    title="Karaoke"
+    eyebrow="Town"
+    body="Private room. Loud system. Bad decisions encouraged. Book a slot, bring your worst song."
+    seoDescription="Private karaoke room at Crazy Bear Town, Beaconsfield. Book a slot. Loud, late, recommended."
+    cmsPage="town/karaoke"
+  />
+);
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Playlist pages (both sites)
+ * ────────────────────────────────────────────────────────────────────── */
+import SpotifyPlaylistEmbed from "@/components/crazybear/culture/SpotifyPlaylistEmbed";
+
+const PlaylistBody = ({ url, label }: { url: string; label: string }) => (
+  <section className="mx-auto max-w-4xl px-6 pb-24 text-foreground">
+    <SpotifyPlaylistEmbed url={url} title={label} />
+  </section>
+);
+
+export const TownPlaylist = () => (
+  <PropertyPage
+    title="Playlist"
+    eyebrow="Town"
+    body="What's on the Town speakers right now. Britpop, lounge, late nights."
+    seoDescription="The Crazy Bear Town playlist. Britpop, lounge, late nights at Beaconsfield."
+    cmsPage="town/playlist"
+  >
+    <PlaylistBody url="https://open.spotify.com/playlist/7jx5ZtdeZmTP4PfSk6oRL1" label="Town playlist" />
+  </PropertyPage>
+);
+export const CountryPlaylist = () => (
+  <PropertyPage
+    title="Playlist"
+    eyebrow="Country"
+    body="What's on the Country speakers right now. Britpop, folk, long Sundays."
+    seoDescription="The Crazy Bear Country playlist. Britpop, folk, long Sundays at Stadhampton."
+    cmsPage="country/playlist"
+  >
+    <PlaylistBody url="https://open.spotify.com/playlist/4KCZQ5fOj3UauK3pTWDZo7" label="Country playlist" />
+  </PropertyPage>
+);
