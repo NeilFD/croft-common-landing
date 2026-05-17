@@ -425,6 +425,19 @@ const App = () => {
                       <Route path="/stories/:slug" element={<StoryDetail />} />
                       <Route path="/gift-vouchers" element={<GiftVouchers />} />
 
+                      {/* Root-level cross-site pages */}
+                      <Route path="/treatments" element={<Treatments />} />
+                      <Route path="/merch" element={<Merch />} />
+                      <Route path="/gallery" element={<Gallery />} />
+                      <Route path="/faq" element={<FAQHub />} />
+                      <Route path="/press" element={<Press />} />
+                      <Route path="/contact" element={<Contact />} />
+                      <Route path="/careers" element={<Careers />} />
+                      <Route path="/terms" element={<Terms />} />
+                      <Route path="/cookies" element={<Cookies />} />
+                      <Route path="/journal" element={<Journal />} />
+                      <Route path="/journal/:slug" element={<JournalPost />} />
+
                       {/* Crazy Bear members entry */}
                       <Route path="/bears-den" element={<BearsDen />} />
                       <Route path="/set-password" element={<SetPassword />} />
