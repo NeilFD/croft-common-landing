@@ -624,3 +624,46 @@ export const TownPoolParty = () => (
     cmsPage="town/pool-party"
   />
 );
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Country — Dogs + What's Happening (Pub Quiz / Cinema Nights / Outdoor Feasts)
+ * ────────────────────────────────────────────────────────────────────── */
+export const CountryDogs = () => (
+  <PropertyPage
+    title="Dogs"
+    eyebrow="Country"
+    body={"Dogs welcome. Beds, bowls, biscuits.\n\nWalks from the door. Mud encouraged. Tail-wags rewarded at the bar."}
+    seoDescription="Dog-friendly rooms, walks and pub at Crazy Bear Country, Stadhampton. Beds, bowls, biscuits, and walks from the door."
+    cmsPage="country/dogs"
+  />
+);
+
+export const CountryPubQuiz = () => (
+  <PropertyPage
+    title="Pub Quiz"
+    eyebrow="Country"
+    body={"Sharp questions. Sharper opinions.\n\nTeams of six. Prizes at stake. Booking essential."}
+    seoDescription="Pub Quiz nights at Crazy Bear Country, Stadhampton. Teams of six, real prizes, regular dates."
+    cmsPage="country/pub-quiz"
+  />
+);
+
+export const CountryCinemaNights = () => (
+  <PropertyPage
+    title="Cinema Nights"
+    eyebrow="Country"
+    body={"Classics, cults, curveballs.\n\nThe big screen in the barn. Popcorn, cocktails, the occasional pyjama."}
+    seoDescription="Cinema Nights at Crazy Bear Country, Stadhampton. Classic films in the barn with cocktails and popcorn."
+    cmsPage="country/cinema-nights"
+  />
+);
+
+export const CountryOutdoorFeasts = () => (
+  <PropertyPage
+    title="Outdoor Feasts"
+    eyebrow="Country"
+    body={"Long tables, open fires, food cooked outside.\n\nSummer evenings the way they should be."}
+    seoDescription="Outdoor Feasts at Crazy Bear Country, Stadhampton. Long tables, open-fire cooking, long summer evenings."
+    cmsPage="country/outdoor-feasts"
+  />
+);
