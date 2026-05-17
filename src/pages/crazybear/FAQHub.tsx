@@ -4,8 +4,8 @@ import CBStaticPage from "@/components/crazybear/CBStaticPage";
 import { cbFaqs } from "@/data/cbFaqs";
 
 interface FaqRow {
-  q: string;
-  a: string;
+  question: string;
+  answer: string;
   source: string; // page slug like "/country/rooms"
 }
 
