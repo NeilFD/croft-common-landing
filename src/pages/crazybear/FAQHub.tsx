@@ -27,12 +27,11 @@ const FAQHub = () => {
   const grouped = useMemo(() => {
     const rows: FaqRow[] = [];
     for (const [source, entry] of Object.entries(cbFaqs)) {
-      for (const f of entry.faqs) rows.push({ q: f.q, a: f.a, source });
+      for (const f of entry.faqs) rows.push({ question: f.question, answer: f.answer, source });
     }
-    const filtered = q.trim()
-      ? rows.filter(
-          (r) => r.q.toLowerCase().includes(q.toLowerCase()) || r.a.toLowerCase().includes(q.toLowerCase())
-        )
+    const needle = q.trim().toLowerCase();
+    const filtered = needle
+      ? rows.filter((r) => r.question.toLowerCase().includes(needle) || r.answer.toLowerCase().includes(needle))
       : rows;
     const groups: Record<string, FaqRow[]> = {};
     for (const r of filtered) {
