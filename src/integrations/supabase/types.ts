@@ -391,6 +391,54 @@ export type Database = {
         }
         Relationships: []
       }
+      cb_events: {
+        Row: {
+          body: string | null
+          created_at: string
+          ends_at: string | null
+          external_url: string | null
+          id: string
+          poster_url: string | null
+          published: boolean
+          site: string
+          slug: string
+          sort_order: number
+          starts_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          ends_at?: string | null
+          external_url?: string | null
+          id?: string
+          poster_url?: string | null
+          published?: boolean
+          site?: string
+          slug: string
+          sort_order?: number
+          starts_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          ends_at?: string | null
+          external_url?: string | null
+          id?: string
+          poster_url?: string | null
+          published?: boolean
+          site?: string
+          slug?: string
+          sort_order?: number
+          starts_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cb_members: {
         Row: {
           birthday_day: number | null
@@ -448,6 +496,48 @@ export type Database = {
           wallet_pass_last_issued_at?: string | null
           wallet_pass_revoked?: boolean
           wallet_pass_serial_number?: string | null
+        }
+        Relationships: []
+      }
+      cb_stories: {
+        Row: {
+          body: string | null
+          created_at: string
+          excerpt: string | null
+          hero_url: string | null
+          id: string
+          published: boolean
+          published_at: string | null
+          slug: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          excerpt?: string | null
+          hero_url?: string | null
+          id?: string
+          published?: boolean
+          published_at?: string | null
+          slug: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          excerpt?: string | null
+          hero_url?: string | null
+          id?: string
+          published?: boolean
+          published_at?: string | null
+          slug?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
