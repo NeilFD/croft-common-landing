@@ -249,6 +249,18 @@ const CBFooter = () => {
             >
               Privacy
             </Link>
+            <Link
+              to="/cookies"
+              className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60 hover:opacity-100"
+            >
+              Cookies
+            </Link>
+            <Link
+              to="/terms"
+              className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60 hover:opacity-100"
+            >
+              Terms
+            </Link>
           </div>
         </div>
 
