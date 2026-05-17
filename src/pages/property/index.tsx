@@ -552,7 +552,7 @@ export const TownKaraoke = () => (
   <PropertyPage
     title="Karaoke"
     eyebrow="Town"
-    body="Private room. Loud system. Bad decisions encouraged. Book a slot, bring your worst song."
+    body={"Private room. Loud system. Bad decisions encouraged. Book a slot, bring your worst song.\n\nTonight you are Celine."}
     seoDescription="Private karaoke room at Crazy Bear Town, Beaconsfield. Book a slot. Loud, late, recommended."
     cmsPage="town/karaoke"
   />
