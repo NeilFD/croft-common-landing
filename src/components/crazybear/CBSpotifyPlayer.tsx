@@ -193,16 +193,22 @@ const CBSpotifyPlayer = () => {
 
   const hidden = useHideOnScrollDown();
   const shouldAutoMinimise = AUTO_MINIMISE_ROUTES.some((p) => location.pathname.startsWith(p));
-  const [collapsed, setCollapsed] = useState<boolean>(shouldAutoMinimise);
+  // Default collapsed everywhere. Users opt-in to the full widget.
+  const [collapsed, setCollapsed] = useState<boolean>(true);
   const lastPathRef = useRef(location.pathname);
   useEffect(() => {
     if (lastPathRef.current !== location.pathname) {
       lastPathRef.current = location.pathname;
-      setCollapsed(shouldAutoMinimise);
+      if (shouldAutoMinimise) setCollapsed(true);
     }
   }, [location.pathname, shouldAutoMinimise]);
 
   const activePlaylistUrl = playlistUrl(activePlaylistId);
+  const tooltipEyebrow = failed
+    ? "Open in Spotify"
+    : ready
+      ? (isPlaying ? "Now Playing" : "Press Play")
+      : "Loading";
 
   return (
     <div
@@ -211,7 +217,29 @@ const CBSpotifyPlayer = () => {
       }`}
       aria-hidden={hidden}
     >
-      <div className="group inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/85 pl-2 pr-2 py-2 text-white shadow-2xl backdrop-blur-md">
+      <div className="group relative inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/85 pl-2 pr-2 py-2 text-white shadow-2xl backdrop-blur-md">
+        {collapsed && (
+          <div
+            role="tooltip"
+            className="pointer-events-none absolute bottom-full right-0 mb-3 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 focus-within:opacity-100 focus-within:translate-y-0 transition-all duration-200 motion-reduce:transition-none"
+          >
+            <div className="relative whitespace-nowrap rounded-md border border-white/15 bg-black px-4 py-3 text-white shadow-2xl">
+              <p className="font-cb-mono text-[9px] tracking-[0.4em] uppercase opacity-70">
+                {tooltipEyebrow}
+              </p>
+              <p className="mt-1 font-cb-sans text-sm tracking-wide max-w-[220px] truncate">
+                {playlistTitle}
+              </p>
+              <p className="mt-1 font-cb-mono text-[9px] tracking-[0.3em] uppercase opacity-60">
+                Bear's choice. Press play.
+              </p>
+              <span
+                aria-hidden="true"
+                className="absolute -bottom-1 right-4 h-2 w-2 rotate-45 bg-black border-r border-b border-white/15"
+              />
+            </div>
+          </div>
+        )}
         <button
           type="button"
           onClick={() => setCollapsed((c) => !c)}
