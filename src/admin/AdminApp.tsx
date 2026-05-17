@@ -35,7 +35,9 @@ export const AdminApp = () => {
         <Route path="management/email-delivery" element={<EmailDeliveryPage />} />
         <Route path="management/leads" element={<LeadsList />} />
         <Route path="management/leads/:id" element={<LeadDetail />} />
-        <Route path="*" element={<Navigate to="/management/admin" replace />} />
+        <Route path="management/events" element={<EventsPage />} />
+        <Route path="management/stories" element={<StoriesPage />} />
+        <Route path="*" element={<Navigate to="/management/admin" replace />
       </Routes>
       <Toaster />
     </>
