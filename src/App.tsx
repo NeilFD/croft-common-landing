@@ -393,6 +393,9 @@ const App = () => {
                         <Route path="food/menus" element={<TownMenus />} />
                         <Route path="food/afternoon-tea" element={<TownAfternoonTea />} />
                         <Route path="karaoke" element={<TownKaraoke />} />
+                        <Route path="parties" element={<TownParties />} />
+                        <Route path="birthdays" element={<TownBirthdays />} />
+                        <Route path="pool-party" element={<TownPoolParty />} />
                         <Route path="playlist" element={<TownPlaylist />} />
                       </Route>
 
