@@ -483,7 +483,7 @@ const App = () => {
                       <Route path="/check-in" element={<CheckIn />} />
                       <Route path="/calendar" element={<Calendar />} />
                       <Route path="/manage-event/:token" element={<ManageEvent />} />
-                      <Route path="/privacy" element={<Privacy />} />
+                      <Route path="/privacy" element={<MemberRoutes><Privacy /></MemberRoutes>} />
                       <Route path="/unsubscribe" element={<Unsubscribe />} />
                       <Route path="/branding" element={<Branding />} />
                       <Route path="/push-setup" element={<PushSetup />} />
