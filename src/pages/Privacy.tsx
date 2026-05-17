@@ -1,169 +1,103 @@
-import PageLayout from '@/components/PageLayout';
-import { CMSText } from '@/components/cms/CMSText';
+import CBStaticPage from "@/components/crazybear/CBStaticPage";
 
-const Privacy = () => {
-  return (
-    <PageLayout>
-      <div className="min-h-screen bg-background text-foreground">
-        <div className="container mx-auto px-4 py-16 max-w-4xl">
-          <CMSText
-            page="privacy"
-            section="hero"
-            contentKey="title"
-            fallback="PRIVACY POLICY"
-            as="h1"
-            className="font-brutalist text-4xl md:text-5xl mb-8 text-center"
-          />
-          
-          <div className="space-y-8 font-industrial leading-relaxed">
-            <section>
-              <h2 className="font-brutalist text-2xl mb-4">1. Information We Collect</h2>
-              <p className="mb-4">
-                When you subscribe to our newsletter or use our services, we may collect:
-              </p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>Your name and email address</li>
-                <li>Information about your interactions with our website</li>
-                <li>Technical information such as IP address and browser type</li>
-                <li>Event participation and booking information</li>
-              </ul>
-            </section>
+const Privacy = () => (
+  <CBStaticPage
+    title="Privacy"
+    intro="What we collect. Why. And how to make us forget."
+    seoDescription="Privacy policy for The Crazy Bear. What we collect, why we hold it, your rights and how to contact us."
+    path="/privacy"
+  >
+    <div className="space-y-10 font-cb-sans text-base leading-relaxed">
+      <section>
+        <h2 className="font-serif text-2xl uppercase">1. Who we are</h2>
+        <p className="mt-3 opacity-85">
+          The Crazy Bear Group is the data controller for crazybear.dev and bookings made at our hotels at
+          Stadhampton (Oxfordshire) and Beaconsfield (Buckinghamshire).
+        </p>
+      </section>
 
-            <section>
-              <h2 className="font-brutalist text-2xl mb-4">2. How We Use Your Information</h2>
-              <p className="mb-4">
-                We use your information to:
-              </p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>Send you our newsletter and updates about events</li>
-                <li>Provide access to The Common Room exclusive content</li>
-                <li>Improve our services and user experience</li>
-                <li>Communicate with you about your bookings or inquiries</li>
-                <li>Comply with legal obligations</li>
-              </ul>
-            </section>
+      <section>
+        <h2 className="font-serif text-2xl uppercase">2. What we collect</h2>
+        <ul className="mt-3 list-disc list-inside space-y-2 opacity-85">
+          <li>Your name, email, phone number and address</li>
+          <li>Booking, stay and event details</li>
+          <li>Payment information processed by our payment provider</li>
+          <li>Account, membership and Bear's Den Gold subscription data</li>
+          <li>Website usage, device and cookie data</li>
+        </ul>
+      </section>
 
-            <section>
-              <h2 className="font-brutalist text-2xl mb-4">3. Legal Basis for Processing</h2>
-              <p className="mb-4">
-                We process your personal data based on:
-              </p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>Your consent when you subscribe to our newsletter</li>
-                <li>Legitimate interests in providing and improving our services</li>
-                <li>Contractual necessity when you make bookings</li>
-                <li>Legal obligations where required</li>
-              </ul>
-            </section>
+      <section>
+        <h2 className="font-serif text-2xl uppercase">3. How we use it</h2>
+        <ul className="mt-3 list-disc list-inside space-y-2 opacity-85">
+          <li>To take and manage your bookings</li>
+          <li>To run your membership and subscription</li>
+          <li>To send you updates and offers you have opted into</li>
+          <li>To improve the website and our service</li>
+          <li>To meet our legal and tax obligations</li>
+        </ul>
+      </section>
 
-            <section>
-              <h2 className="font-brutalist text-2xl mb-4">4. Data Sharing</h2>
-              <p className="mb-4">
-                We do not sell your personal data. We may share your information with:
-              </p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>Service providers who help us operate our business (email service providers, analytics)</li>
-                <li>Legal authorities when required by law</li>
-                <li>Professional advisors in connection with legal or business matters</li>
-              </ul>
-            </section>
+      <section>
+        <h2 className="font-serif text-2xl uppercase">4. Legal basis</h2>
+        <p className="mt-3 opacity-85">
+          We process your data under consent, contract, legitimate interests and legal obligation, as set out by
+          the UK GDPR and the Data Protection Act 2018.
+        </p>
+      </section>
 
-            <section>
-              <h2 className="font-brutalist text-2xl mb-4">5. Your Rights</h2>
-              <p className="mb-4">
-                Under GDPR and UK data protection law, you have the right to:
-              </p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>Access your personal data</li>
-                <li>Correct inaccurate or incomplete data</li>
-                <li>Request deletion of your data</li>
-                <li>Object to processing of your data</li>
-                <li>Request restriction of processing</li>
-                <li>Data portability</li>
-                <li>Withdraw consent at any time</li>
-              </ul>
-            </section>
+      <section>
+        <h2 className="font-serif text-2xl uppercase">5. Sharing</h2>
+        <p className="mt-3 opacity-85">
+          We do not sell your personal data. We share it only with trusted processors who help us run the
+          business (payments, email, analytics, hosting), and with authorities where required by law.
+        </p>
+      </section>
 
-            <section>
-              <h2 className="font-brutalist text-2xl mb-4">6. Data Retention</h2>
-              <p>
-                We retain your personal data only for as long as necessary to fulfill the purposes for which it was collected, 
-                or as required by law. Newsletter subscribers' data is retained until they unsubscribe.
-              </p>
-            </section>
+      <section>
+        <h2 className="font-serif text-2xl uppercase">6. Your rights</h2>
+        <ul className="mt-3 list-disc list-inside space-y-2 opacity-85">
+          <li>Access the data we hold on you</li>
+          <li>Correct anything that's wrong</li>
+          <li>Ask us to delete it</li>
+          <li>Object to or restrict processing</li>
+          <li>Withdraw consent at any time</li>
+          <li>Port your data to another provider</li>
+        </ul>
+      </section>
 
-            <section>
-              <h2 className="font-brutalist text-2xl mb-4">7. Data Security</h2>
-              <p>
-                We implement appropriate technical and organizational measures to protect your personal data against 
-                unauthorized access, alteration, disclosure, or destruction.
-              </p>
-            </section>
+      <section>
+        <h2 className="font-serif text-2xl uppercase">7. Retention</h2>
+        <p className="mt-3 opacity-85">
+          We keep your data only as long as we need it for the purpose it was collected, or as required by law.
+          Marketing data is kept until you unsubscribe.
+        </p>
+      </section>
 
-            <section>
-              <h2 className="font-brutalist text-2xl mb-4">8. Cookies</h2>
-              <p>
-                Our website uses essential cookies to function properly. We do not use tracking or advertising cookies 
-                without your explicit consent.
-              </p>
-            </section>
+      <section>
+        <h2 className="font-serif text-2xl uppercase">8. Cookies</h2>
+        <p className="mt-3 opacity-85">
+          See our <a href="/cookies" className="underline underline-offset-4">Cookies policy</a> for the full
+          list and to change your preferences.
+        </p>
+      </section>
 
-            <section>
-              <h2 className="font-brutalist text-2xl mb-4">9. Third-Party Services</h2>
-              <p className="mb-4">
-                We use the following third-party services:
-              </p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>Email service providers for newsletter delivery</li>
-                <li>Analytics services to improve our website</li>
-                <li>Payment processors for transactions</li>
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="font-brutalist text-2xl mb-4">10. International Transfers</h2>
-              <p>
-                Some of our service providers may be located outside the UK/EU. We ensure appropriate safeguards 
-                are in place for any international data transfers.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="font-brutalist text-2xl mb-4">11. Updates to This Policy</h2>
-              <p>
-                We may update this privacy policy from time to time. Any changes will be posted on this page 
-                with an updated effective date.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="font-brutalist text-2xl mb-4">12. Contact Us</h2>
-              <div className="bg-surface p-6 rounded-lg">
-                <p className="mb-2"><strong>Data Controller:</strong> Croft Common Ltd</p>
-                <p className="mb-2"><strong>Address:</strong> 22 Stokes Croft, Bristol BS1 3PR</p>
-                <p className="mb-2"><strong>Email:</strong> privacy@croftcommon.co.uk</p>
-                <p className="mb-4">
-                  If you have any questions about this privacy policy or wish to exercise your rights, 
-                  please contact us using the details above.
-                </p>
-                <p className="text-sm text-foreground/70">
-                  You also have the right to lodge a complaint with the Information Commissioner's Office (ICO) 
-                  if you believe your data protection rights have been breached.
-                </p>
-              </div>
-            </section>
-
-            <section className="text-center pt-8 border-t border-surface">
-              <p className="text-sm text-foreground/70">
-                <strong>Effective Date:</strong> January 1, 2024<br />
-                <strong>Last Updated:</strong> January 1, 2024
-              </p>
-            </section>
-          </div>
+      <section>
+        <h2 className="font-serif text-2xl uppercase">9. Contact</h2>
+        <div className="mt-3 border border-black/15 p-6">
+          <p className="opacity-85"><strong>The Crazy Bear Group</strong></p>
+          <p className="opacity-85">Bear Lane, Stadhampton, Oxfordshire OX44 7UR</p>
+          <p className="opacity-85">privacy@crazybear.dev</p>
+          <p className="mt-4 opacity-70 text-sm">
+            You can also complain to the Information Commissioner's Office (ICO) at ico.org.uk.
+          </p>
         </div>
-      </div>
-    </PageLayout>
-  );
-};
+        <p className="mt-6 font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60">
+          Last updated: May 2026
+        </p>
+      </section>
+    </div>
+  </CBStaticPage>
+);
 
 export default Privacy;
