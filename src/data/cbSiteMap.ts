@@ -142,6 +142,9 @@ export const SITE_MAP: SiteMapGroup[] = [
     town: {
       eyebrow: "Town / Beaconsfield",
       links: [
+        { label: "Parties", path: "/town/parties" },
+        { label: "Birthdays", path: "/town/birthdays" },
+        { label: "Pool Party", path: "/town/pool-party" },
         { label: "Karaoke", path: "/town/karaoke" },
       ],
     },
