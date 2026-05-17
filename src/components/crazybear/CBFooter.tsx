@@ -3,6 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import bearMark from '@/assets/crazy-bear-mark.png';
 import CBSubscriptionForm from './CBSubscriptionForm';
 import { SITE_MAP, LEGAL_LINKS, PRIMARY_CTAS, MEMBERS_ENTRY } from '@/data/cbSiteMap';
+import { InstagramIcon, TikTokIcon } from '@/components/crazybear/icons/SocialIcons';
+
+const IG_URL = 'https://instagram.com/crazybearhotels';
+const TIKTOK_URL = 'https://tiktok.com/@crazybeargroup';
 
 import GestureOverlay from '@/components/GestureOverlay';
 import BiometricUnlockModal from '@/components/BiometricUnlockModal';
