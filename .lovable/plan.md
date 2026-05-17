@@ -1,91 +1,67 @@
-## Remaining work
+## Status today
 
-Pages and infra files already exist (Treatments, Merch, Gallery, FAQHub, Press, Contact, Careers, Terms, Cookies, CBStaticPage, CBCookieBanner, useCookieConsent, SocialIcons, footer updates, `cb_journal_posts` migration). What's left is fixing the FAQ field bug, mounting the banner, building the Country event + Journal pages, and registering everything into the routing/CMS/site map so the build passes the registry check.
+- `scripts/check-cms-registry.ts` passes: 82 entries, 75 routes. Every public route in `src/App.tsx` is either in `CMS_PAGES` or excluded. (The "stale" warnings are a known false positive: nested property routes like `/country/pub` are declared as relative `<Route path="pub">` under `/country`, so the regex doesn't match — they are wired up correctly.)
+- All Town / Country property pages already pass `cmsPage="…"` to `PropertyPage`, so hero + body + FAQs are editable.
+- Country event pages I added (`/country/dogs`, `/country/pub-quiz`, `/country/cinema-nights`, `/country/outdoor-feasts`) also pass `cmsPage`, so hero text is editable.
+- The new root-level pages I added (Privacy, Terms, Cookies, Press, Contact, Careers, Treatments, Merch, Gallery, FAQ, Journal) are in the **registry** but their body copy is **hardcoded** — currently you can't edit the text through the visual editor.
 
-## 1. Fix FAQHub field mapping
+So: registry-complete, but several pages need their copy wired to `CMSText` before they are truly editable.
 
-`cbFaqs` uses `question` / `answer` (and groups by `page`). Update `src/pages/crazybear/FAQHub.tsx` to read those fields, group by page key, and provide a search across both fields.
+## What to change
 
-## 2. Mount cookie banner globally
+### 1. Upgrade `CBStaticPage` to be CMS-aware
 
-In `src/App.tsx`, render `<CBCookieBanner />` once at the app root (alongside Toaster) so it appears on every route. The `/cookies` page already exposes a "Manage preferences" button via the `useCookieConsent` hook.
+Add an optional `cmsPage` prop. When set, render hero `eyebrow`, `title`, `intro` through `<CMSText page={cmsPage} section="hero" contentKey="…" fallback={…} />` — same pattern `PropertyPage` already uses. No change for pages that don't pass `cmsPage`.
 
-## 3. Country event pages (mirror of Town Celebrate trio)
+### 2. Make body copy editable on every static page
 
-Add three Country-only pages following the same CMS pattern used for `/town/parties`, `/town/birthdays`, `/town/pool-party`:
+Replace hardcoded headings and paragraphs with `<CMSText>` blocks keyed by stable `section` / `contentKey`. One pass per page, fallbacks set to today's copy so nothing visibly changes until an editor saves new content.
 
-```text
-/country/pub-quiz          Pub Quiz at Stadhampton
-/country/cinema-nights     Cinema Nights at Stadhampton
-/country/outdoor-feasts    Outdoor Feasts at Stadhampton
-```
+Pages to convert (all under `src/pages/crazybear/`):
 
-Implementation:
-- Add entries to `src/pages/property/index.tsx` under the Country branch.
-- Add to `src/data/cmsPages.ts` so each appears in CMS visual editor + SEO monitor.
-- Add to `src/data/cbSiteMap.ts` Country / Discover column (already has Culture, Playlist).
+| Route          | cmsPage slug    | Notes |
+|----------------|-----------------|-------|
+| `/privacy`     | `privacy`       | 9 sections of policy text |
+| `/terms`       | `terms`         | 10 numbered clauses |
+| `/cookies`     | `cookies`       | Policy + cookie table intro |
+| `/press`       | `press`         | Intro + contact block |
+| `/contact`     | `contact`       | Two property contact cards |
+| `/careers`     | `careers`       | Intro + roles list |
+| `/treatments`  | `treatments`    | Stadhampton + Beaconsfield blocks |
+| `/merch`       | `merch`         | Intro + item descriptions |
+| `/gallery`     | `gallery`       | Intro + social CTA |
+| `/faq`         | `faq`           | Hero only (FAQ items stay in `cbFaqs` / FAQ CMS) |
+| `/journal`     | `journal`       | Hero only (posts via `cb_journal_posts` admin) |
+| `/journal/:slug` | n/a           | Content comes from DB post |
+| `/whats-on`    | `whats-on`      | Hero + intro |
+| `/gift-vouchers` | `gift-vouchers` | Hero + product blurbs |
+| `/bears-den`   | `bears-den`     | Hero + benefit list |
+| `/curious`     | `curious`       | Hero + intro |
 
-## 4. Dogs page (Country only)
+Pages intentionally **not** wired (excluded from editable copy):
 
-`/country/dogs` — dog-friendly rooms, walks, house rules, treats. Built into `src/pages/property/index.tsx` (Country branch), CMS-registered, linked from Country / Stay chips in `cbSiteMap.ts`.
+- `/set-password` — auth flow
+- `/stories`, `/stories/:slug` — already DB-driven
+- `/den/*` member pages — app UI, not marketing copy
+- `/management/*`, `/admin/*` — internal
+- Redirects and `/manage-event/:token`, `/check-in`, `/calendar`, `/unsubscribe`, `/branding`, `/push-setup`, `/croft-common-datetime`, `/book`, `/event-enquiry` — transactional / form / utility pages
 
-## 5. Journal (front-end)
+### 3. Verify
 
-Two routes:
+- Run `bun run scripts/check-cms-registry.ts` — should still pass.
+- Open each converted page in the visual editor (`/cms/visual?page=<slug>`) and confirm hero + body text appear as editable blocks.
+- Spot-check that fallbacks render identically on the live page when no `cms_content` row exists.
 
-```text
-/journal             Index — published posts from cb_journal_posts (cards, tag filter)
-/journal/:slug       Detail — markdown body, cover, author, date, related
-```
+## Technical details
 
-- New page files `src/pages/crazybear/Journal.tsx` and `src/pages/crazybear/JournalPost.tsx`, both using `CBStaticPage` shell.
-- Query Supabase via existing client; respect `status = 'published'`.
-- Markdown rendering via the project's existing markdown approach (check `cb_stories` detail for the precedent and re-use it).
-
-## 6. Journal (admin authoring)
-
-- New `src/admin/pages/JournalPage.tsx` modelled directly on `StoriesPage.tsx` (list, create, edit drawer, draft/publish toggle, cover upload to `cms-assets`).
-- Add route `management/journal` in `src/admin/AdminApp.tsx`.
-- Add link in `src/admin/components/AdminSidebar.tsx` under Management.
-
-## 7. Route registration
-
-In `src/App.tsx`, add lazy routes for:
-
-```text
-/treatments  /merch  /gallery  /faq  /press  /contact  /careers  /terms  /cookies
-/journal     /journal/:slug
-```
-
-## 8. CMS + site map wiring
-
-For every new public route, add an entry to:
-- `src/data/cmsPages.ts` (so the CMS visual editor + SEO monitor pick it up — project rule).
-- `src/data/cbSiteMap.ts`:
-  - Dogs → Country / Stay chips
-  - Pub Quiz / Cinema Nights / Outdoor Feasts → Country / Discover column
-  - Treatments → Country Stay + Town Eat & Drink columns
-  - Merch, Journal, Gallery, Press, Contact, Careers → footer "Across both" (extend `SITE_TREE.both`)
-  - FAQ → footer "Across both" + nav utility
-  - Terms, Cookies → `LEGAL_LINKS`
-
-## 9. Verification
-
-- Run `scripts/check-cms-registry.ts` mentally against the changes (every new route must be in `cmsPages.ts`).
-- Smoke the build, then load `/`, `/journal`, `/faq`, `/cookies`, and `/country/pub-quiz` to confirm shells render.
-
-## Build order
-
-1. FAQHub field fix + mount cookie banner (quick wins).
-2. Register all already-built static pages in `App.tsx`, `cmsPages.ts`, `cbSiteMap.ts`.
-3. Country events + Dogs (property index + CMS + sitemap).
-4. Journal front pages.
-5. Journal admin page + sidebar + admin route.
-6. Final registry check, build.
+- `cms_content` table already supports arbitrary `(page, section, content_key)` triples — no DB migration needed.
+- `CMSText` already handles both edit-mode editing and live-site published reads. We're only adding new keys.
+- Convention: one `section` per logical block on a page (`hero`, `intro`, `clause-1`, `clause-2`, … or `card-stadhampton`, `card-beaconsfield`), `contentKey` for the field (`title`, `body`, `eyebrow`).
+- Keep all existing copy verbatim as the `fallback`, so behaviour is unchanged until someone edits.
 
 ## Out of scope
 
-- No new DB tables (only `cb_journal_posts`, already migrated).
-- No Stripe / checkout (Merch stays showcase only).
-- No live IG/TikTok embeds (Gallery stays curated grid v1).
-- No new edge functions.
+- No new DB tables, edge functions, or auth changes.
+- No changes to property pages — they're already wired.
+- Not refactoring `scripts/check-cms-registry.ts` to resolve nested-route false positives (cosmetic warning only).
+- Not adding new admin tooling for the Journal / FAQs — those CMS surfaces already exist.
