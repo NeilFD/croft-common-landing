@@ -349,6 +349,7 @@ const App = () => {
                 <Suspense fallback={null}>
                   <NudgeFloatingButton />
                   <CBSpotifyPlayer />
+                  <CBCookieBanner />
                 </Suspense>
                 
                 <TransitionProvider>
