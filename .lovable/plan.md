@@ -1,106 +1,91 @@
-## Scope
+## Remaining work
 
-New pages to add, plus footer + cookie infrastructure. Per the answers:
+Pages and infra files already exist (Treatments, Merch, Gallery, FAQHub, Press, Contact, Careers, Terms, Cookies, CBStaticPage, CBCookieBanner, useCookieConsent, SocialIcons, footer updates, `cb_journal_posts` migration). What's left is fixing the FAQ field bug, mounting the banner, building the Country event + Journal pages, and registering everything into the routing/CMS/site map so the build passes the registry check.
 
-- **Dogs**: Country only (`/country/dogs`)
-- **Both sites**: Treatments, Merch, Journal, Social Gallery, Terms, FAQ Hub, Cookies, Press, Contact, Careers — implemented as **root-level** pages that speak for both sites (one canonical page each, with Town + Country sections inside where it makes sense). Keeps the nav lean and avoids per-site duplication for content that isn't venue-specific.
-- **Country events**: Pub Quiz, Cinema Nights, Outdoor Feasts (mirror of the Town Celebrate trio just added)
-- **Merch**: showcase only (no checkout)
-- **Cookies**: lightweight banner + generated policy
-- **Socials**: IG `@crazybearhotels`, TikTok `@crazybeargroup`
+## 1. Fix FAQHub field mapping
 
-## Page list and routes
+`cbFaqs` uses `question` / `answer` (and groups by `page`). Update `src/pages/crazybear/FAQHub.tsx` to read those fields, group by page key, and provide a search across both fields.
+
+## 2. Mount cookie banner globally
+
+In `src/App.tsx`, render `<CBCookieBanner />` once at the app root (alongside Toaster) so it appears on every route. The `/cookies` page already exposes a "Manage preferences" button via the `useCookieConsent` hook.
+
+## 3. Country event pages (mirror of Town Celebrate trio)
+
+Add three Country-only pages following the same CMS pattern used for `/town/parties`, `/town/birthdays`, `/town/pool-party`:
 
 ```text
-Country only
-  /country/dogs                  Dogs at Stadhampton
-
-Country "What's happening" (Discover)
-  /country/pub-quiz
-  /country/cinema-nights
-  /country/outdoor-feasts
-
-Root (both sites)
-  /treatments                    Spa & treatments (Country-led, Town beauty add-ons)
-  /merch                         Showcase grid, "Buy in venue / enquire"
-  /journal                       Blog index (CMS-driven)
-  /journal/:slug                 Blog post
-  /gallery                       Social gallery (IG + TikTok embeds, curated grid)
-  /press                         Press kit, logos, downloads, contact
-  /contact                       Contact hub (Town + Country cards, form)
-  /careers                       Roles, culture, apply CTA
-  /faq                           Aggregated FAQ hub
-  /terms                         Terms & conditions
-  /cookies                       Cookies policy + manage preferences
+/country/pub-quiz          Pub Quiz at Stadhampton
+/country/cinema-nights     Cinema Nights at Stadhampton
+/country/outdoor-feasts    Outdoor Feasts at Stadhampton
 ```
 
-## Journal / Blog (CMS authoring)
+Implementation:
+- Add entries to `src/pages/property/index.tsx` under the Country branch.
+- Add to `src/data/cmsPages.ts` so each appears in CMS visual editor + SEO monitor.
+- Add to `src/data/cbSiteMap.ts` Country / Discover column (already has Culture, Playlist).
 
-New `cb_journal_posts` table (same shape as `cb_stories`): `id, slug, title, excerpt, body_md, cover_image, author, published_at, status (draft|published), site_scope (both|town|country), tags[]`. RLS: public read for `published`, admin write.
+## 4. Dogs page (Country only)
 
-Admin: new `JournalPage` in `src/admin/pages/` modelled directly on `StoriesPage`, added to `AdminSidebar` under Management. Markdown body, cover image upload via existing bucket, draft/publish toggle.
+`/country/dogs` — dog-friendly rooms, walks, house rules, treats. Built into `src/pages/property/index.tsx` (Country branch), CMS-registered, linked from Country / Stay chips in `cbSiteMap.ts`.
 
-Front: `/journal` lists published posts (cards, filter by tag); `/journal/:slug` renders markdown with hero, author, date, related posts.
+## 5. Journal (front-end)
 
-## FAQ Hub
+Two routes:
 
-`/faq` reads `cbFaqs` (already structured by page) and renders a single searchable, grouped accordion ("Stay", "Eat & Drink", "Celebrate", "Discover", "Membership", "Practical"). Each page-level FAQ already exists — hub just aggregates with deep-link anchors back to source pages.
+```text
+/journal             Index — published posts from cb_journal_posts (cards, tag filter)
+/journal/:slug       Detail — markdown body, cover, author, date, related
+```
 
-## Cookie consent
+- New page files `src/pages/crazybear/Journal.tsx` and `src/pages/crazybear/JournalPost.tsx`, both using `CBStaticPage` shell.
+- Query Supabase via existing client; respect `status = 'published'`.
+- Markdown rendering via the project's existing markdown approach (check `cb_stories` detail for the precedent and re-use it).
 
-- New `CookieBanner` component, mounted once in `App.tsx`. Sticky bottom-left, B&W, two buttons: "Accept" / "Reject non-essential". Choice persisted in `localStorage` under `cb-cookie-consent` (`accepted | rejected | null`).
-- A `useCookieConsent()` hook exposes status. Analytics scripts (if/when added) gate on `accepted`.
-- `/cookies` page: generated UK-compliant policy (essential, analytics, embeds: Spotify, YouTube, IG, TikTok), plus a "Manage preferences" button that re-opens the banner.
+## 6. Journal (admin authoring)
 
-## Footer socials
+- New `src/admin/pages/JournalPage.tsx` modelled directly on `StoriesPage.tsx` (list, create, edit drawer, draft/publish toggle, cover upload to `cms-assets`).
+- Add route `management/journal` in `src/admin/AdminApp.tsx`.
+- Add link in `src/admin/components/AdminSidebar.tsx` under Management.
 
-Add IG + TikTok icon buttons (inline SVGs — no Lucide) to `CBFooter` "Across both" column, linking to:
-- `https://instagram.com/crazybearhotels`
-- `https://tiktok.com/@crazybeargroup`
+## 7. Route registration
 
-## Social Gallery (`/gallery`)
+In `src/App.tsx`, add lazy routes for:
 
-Curated B&W grid. v1: static masonry of brand images grouped by tag (Food / Rooms / Nights / Dogs), with prominent "Follow on Instagram" and "Follow on TikTok" CTAs. v2 (out of scope here): live IG embed.
+```text
+/treatments  /merch  /gallery  /faq  /press  /contact  /careers  /terms  /cookies
+/journal     /journal/:slug
+```
 
-## Treatments, Merch, Dogs, Press, Contact, Careers, Terms
+## 8. CMS + site map wiring
 
-All use the existing `PropertyPage` / standard CB page shell (top nav + logo + CBFooter) with bespoke body content. Notable bits:
+For every new public route, add an entry to:
+- `src/data/cmsPages.ts` (so the CMS visual editor + SEO monitor pick it up — project rule).
+- `src/data/cbSiteMap.ts`:
+  - Dogs → Country / Stay chips
+  - Pub Quiz / Cinema Nights / Outdoor Feasts → Country / Discover column
+  - Treatments → Country Stay + Town Eat & Drink columns
+  - Merch, Journal, Gallery, Press, Contact, Careers → footer "Across both" (extend `SITE_TREE.both`)
+  - FAQ → footer "Across both" + nav utility
+  - Terms, Cookies → `LEGAL_LINKS`
 
-- **Treatments**: Country-led (spa lists), Town section for beauty add-ons. Booking CTA → enquire flow.
-- **Merch**: 6–9 product cards, photo + price + "Available in venue", enquire link. No cart, no Stripe.
-- **Dogs (Country)**: dog-friendly rooms, walk routes, house rules, treats. Photo-led.
-- **Press**: short bio, downloadable logo pack (static assets), contact email, recent coverage list.
-- **Contact**: Town card + Country card (address, phone, email, map link), plus enquiry form posting to existing `cb_enquiries` table.
-- **Careers**: punchy culture intro (bold, irreverent — matches Bears Den voice), open roles list, apply CTA to careers email.
-- **Terms**: standard UK hospitality T&Cs scaffold, editable via CMS.
+## 9. Verification
 
-## CMS + site map integration
-
-For each new page:
-1. Route registered in `src/App.tsx` (lazy).
-2. Entry added to `src/data/cmsPages.ts` so the CMS visual editor, sidebar, and SEO monitor pick it up automatically (project rule: every new page must fit the CMS).
-3. Linked from `src/data/cbSiteMap.ts` in the correct section so the homepage, top nav, and `CBFooter` all surface it without further edits:
-   - Dogs → Country / Stay chips
-   - Pub Quiz, Cinema Nights, Outdoor Feasts → Country / Discover
-   - Treatments → both sites / Stay (Country) and Eat & Drink chips (Town)
-   - Merch, Journal, Gallery, Press, Contact, Careers → footer "Across both"
-   - Terms, Cookies → footer legal row
-   - FAQ → footer "Across both" + top nav utility link
-
-## Technical details
-
-- Icons: inline SVGs for IG/TikTok (no Lucide).
-- Tokens: B&W only, Bowlby One headings, Space Grotesk body. No new colours.
-- Spellings: UK throughout (£, "favourite", "personalise", etc.).
-- DB change required only for Journal: one migration creating `cb_journal_posts` + RLS + `updated_at` trigger. Awaiting approval before code.
-- No new edge functions. No Stripe changes. No auth changes.
-- Existing `cb_stories` admin pattern is the template for `JournalPage`.
+- Run `scripts/check-cms-registry.ts` mentally against the changes (every new route must be in `cmsPages.ts`).
+- Smoke the build, then load `/`, `/journal`, `/faq`, `/cookies`, and `/country/pub-quiz` to confirm shells render.
 
 ## Build order
 
-1. Migration: `cb_journal_posts` (await approval).
-2. Cookie banner + `/cookies` page + footer socials (no DB).
-3. Static pages: Dogs, Treatments, Merch, Press, Contact, Careers, Terms, FAQ hub, Gallery.
-4. Country events: Pub Quiz, Cinema Nights, Outdoor Feasts.
-5. Journal: front pages + admin authoring page.
-6. Wire everything into `cmsPages.ts`, `cbSiteMap.ts`, `App.tsx`; verify build passes the CMS registry check.
+1. FAQHub field fix + mount cookie banner (quick wins).
+2. Register all already-built static pages in `App.tsx`, `cmsPages.ts`, `cbSiteMap.ts`.
+3. Country events + Dogs (property index + CMS + sitemap).
+4. Journal front pages.
+5. Journal admin page + sidebar + admin route.
+6. Final registry check, build.
+
+## Out of scope
+
+- No new DB tables (only `cb_journal_posts`, already migrated).
+- No Stripe / checkout (Merch stays showcase only).
+- No live IG/TikTok embeds (Gallery stays curated grid v1).
+- No new edge functions.

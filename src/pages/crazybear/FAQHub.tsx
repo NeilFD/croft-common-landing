@@ -4,8 +4,8 @@ import CBStaticPage from "@/components/crazybear/CBStaticPage";
 import { cbFaqs } from "@/data/cbFaqs";
 
 interface FaqRow {
-  q: string;
-  a: string;
+  question: string;
+  answer: string;
   source: string; // page slug like "/country/rooms"
 }
 
@@ -27,12 +27,11 @@ const FAQHub = () => {
   const grouped = useMemo(() => {
     const rows: FaqRow[] = [];
     for (const [source, entry] of Object.entries(cbFaqs)) {
-      for (const f of entry.faqs) rows.push({ q: f.q, a: f.a, source });
+      for (const f of entry.faqs) rows.push({ question: f.question, answer: f.answer, source });
     }
-    const filtered = q.trim()
-      ? rows.filter(
-          (r) => r.q.toLowerCase().includes(q.toLowerCase()) || r.a.toLowerCase().includes(q.toLowerCase())
-        )
+    const needle = q.trim().toLowerCase();
+    const filtered = needle
+      ? rows.filter((r) => r.question.toLowerCase().includes(needle) || r.answer.toLowerCase().includes(needle))
       : rows;
     const groups: Record<string, FaqRow[]> = {};
     for (const r of filtered) {
@@ -75,10 +74,10 @@ const FAQHub = () => {
                   <li key={`${g}-${i}`} className="py-5">
                     <details className="group">
                       <summary className="cursor-pointer list-none font-serif text-xl uppercase flex items-start justify-between gap-4">
-                        <span>{r.q}</span>
+                        <span>{r.question}</span>
                         <span className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60 mt-1 shrink-0 group-open:rotate-45 transition-transform">+</span>
                       </summary>
-                      <p className="mt-3 font-cb-sans text-base opacity-85 leading-relaxed">{r.a}</p>
+                      <p className="mt-3 font-cb-sans text-base opacity-85 leading-relaxed">{r.answer}</p>
                       <Link
                         to={r.source}
                         className="mt-3 inline-block font-cb-mono text-[9px] tracking-[0.4em] uppercase opacity-60 hover:opacity-100 underline-offset-4 hover:underline"

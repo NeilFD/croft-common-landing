@@ -12,6 +12,7 @@ import { CinemaPage } from './pages/CinemaPage';
 import EmailDeliveryPage from './pages/EmailDeliveryPage';
 import { EventsPage } from './pages/EventsPage';
 import { StoriesPage } from './pages/StoriesPage';
+import { JournalPage } from './pages/JournalPage';
 import LeadsList from '../pages/management/LeadsList';
 import LeadDetail from '../pages/management/LeadDetail';
 import AdminMemberAnalytics from '../pages/AdminMemberAnalytics';
@@ -37,6 +38,7 @@ export const AdminApp = () => {
         <Route path="management/leads/:id" element={<LeadDetail />} />
         <Route path="management/events" element={<EventsPage />} />
         <Route path="management/stories" element={<StoriesPage />} />
+        <Route path="management/journal" element={<JournalPage />} />
         <Route path="*" element={<Navigate to="/management/admin" replace />} />
       </Routes>
       <Toaster />

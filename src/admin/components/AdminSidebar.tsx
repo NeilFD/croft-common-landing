@@ -61,6 +61,7 @@ const navigationItems = [
       { title: 'Cinema Management', url: '/admin/management/cinema', icon: Film },
       { title: "What's Happening", url: '/admin/management/events', icon: BarChart3 },
       { title: 'Stories', url: '/admin/management/stories', icon: History },
+      { title: 'Journal', url: '/admin/management/journal', icon: History },
       { title: 'Email Delivery', url: '/admin/management/email-delivery', icon: Mail },
       { title: 'Member Database', url: '/admin/member-analytics', icon: Database },
     ],

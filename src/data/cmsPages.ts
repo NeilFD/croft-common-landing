@@ -121,6 +121,22 @@ const WhatsOnPage = lazy(() => import('@/pages/crazybear/WhatsOn'));
 const StoriesPage = lazy(() => import('@/pages/crazybear/Stories'));
 const GiftVouchersPage = lazy(() => import('@/pages/crazybear/GiftVouchers'));
 
+// Round-2 structural pages
+const CountryDogsPage = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryDogs })));
+const CountryPubQuizPage = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryPubQuiz })));
+const CountryCinemaNightsPage = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryCinemaNights })));
+const CountryOutdoorFeastsPage = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryOutdoorFeasts })));
+const TreatmentsPage = lazy(() => import('@/pages/crazybear/Treatments'));
+const MerchPage = lazy(() => import('@/pages/crazybear/Merch'));
+const GalleryPage = lazy(() => import('@/pages/crazybear/Gallery'));
+const FAQHubPage = lazy(() => import('@/pages/crazybear/FAQHub'));
+const PressPage = lazy(() => import('@/pages/crazybear/Press'));
+const ContactPage = lazy(() => import('@/pages/crazybear/Contact'));
+const CareersPage = lazy(() => import('@/pages/crazybear/Careers'));
+const TermsPage = lazy(() => import('@/pages/crazybear/Terms'));
+const CookiesPage = lazy(() => import('@/pages/crazybear/Cookies'));
+const JournalIndexPage = lazy(() => import('@/pages/crazybear/Journal'));
+
 const CMSFooterPreview = lazy(() => import('@/pages/CMSFooterPreview'));
 const CMSNavigationPreview = lazy(() => import('@/pages/CMSNavigationPreview'));
 const CMSEmailTemplates = lazy(() => import('@/pages/CMSEmailTemplates'));
@@ -463,7 +479,35 @@ export const CMS_PAGES: CmsPageEntry[] = [
   { slug: 'gift-vouchers', route: '/gift-vouchers', title: 'Gift Vouchers', description: 'Buy a Crazy Bear gift voucher', group: 'Standalone', icon: Heart, component: GiftVouchersPage,
     seo: { include: true, defaultTitle: 'Gift Vouchers | Crazy Bear', defaultDescription: 'Gift vouchers for Crazy Bear Town and Country.' } },
 
-  // ─── Global content (no public route, edited in CMS only) ─────
+  // ─── Round-2 structural pages ────────────────────────────────
+  { slug: 'country/dogs', route: '/country/dogs', title: 'Dogs', description: 'Dog-friendly Country', group: 'Country', icon: Heart, component: CountryDogsPage, parentSlug: 'country', property: 'country',
+    seo: { include: true, defaultTitle: 'Dogs | Crazy Bear Country', defaultDescription: 'Dog-friendly rooms, walks and pub at Crazy Bear Country, Stadhampton.' } },
+  { slug: 'country/pub-quiz', route: '/country/pub-quiz', title: 'Pub Quiz', description: 'Country pub quiz nights', group: 'Country', icon: PartyPopper, component: CountryPubQuizPage, parentSlug: 'country', property: 'country',
+    seo: { include: true, defaultTitle: 'Pub Quiz | Crazy Bear Country', defaultDescription: 'Pub Quiz nights at Crazy Bear Country, Stadhampton.' } },
+  { slug: 'country/cinema-nights', route: '/country/cinema-nights', title: 'Cinema Nights', description: 'Country cinema nights', group: 'Country', icon: PartyPopper, component: CountryCinemaNightsPage, parentSlug: 'country', property: 'country',
+    seo: { include: true, defaultTitle: 'Cinema Nights | Crazy Bear Country', defaultDescription: 'Cinema Nights at Crazy Bear Country, Stadhampton.' } },
+  { slug: 'country/outdoor-feasts', route: '/country/outdoor-feasts', title: 'Outdoor Feasts', description: 'Country outdoor feasts', group: 'Country', icon: PartyPopper, component: CountryOutdoorFeastsPage, parentSlug: 'country', property: 'country',
+    seo: { include: true, defaultTitle: 'Outdoor Feasts | Crazy Bear Country', defaultDescription: 'Outdoor Feasts at Crazy Bear Country, Stadhampton.' } },
+  { slug: 'treatments', route: '/treatments', title: 'Treatments', description: 'Spa and beauty across both sites', group: 'Standalone', icon: Sparkles, component: TreatmentsPage,
+    seo: { include: true, defaultTitle: 'Treatments | Crazy Bear', defaultDescription: 'Spa at Country, beauty add-ons at Town. Treatments across The Crazy Bear.' } },
+  { slug: 'merch', route: '/merch', title: 'Merch', description: 'Merchandise showcase', group: 'Standalone', icon: Sparkles, component: MerchPage,
+    seo: { include: true, defaultTitle: 'Merch | Crazy Bear', defaultDescription: 'Crazy Bear merchandise. Available in venue.' } },
+  { slug: 'gallery', route: '/gallery', title: 'Social Gallery', description: 'Curated Instagram + TikTok grid', group: 'Standalone', icon: ImageIcon, component: GalleryPage,
+    seo: { include: true, defaultTitle: 'Gallery | Crazy Bear', defaultDescription: 'A curated gallery of Crazy Bear moments from Instagram and TikTok.' } },
+  { slug: 'faq', route: '/faq', title: 'FAQ Hub', description: 'All FAQs across the site', group: 'Standalone', icon: BookOpen, component: FAQHubPage,
+    seo: { include: true, defaultTitle: 'FAQ | Crazy Bear', defaultDescription: 'Every Crazy Bear FAQ in one place. Stay, eat, drink, celebrate, practical.' } },
+  { slug: 'press', route: '/press', title: 'Press', description: 'Press kit, logos, contact', group: 'Standalone', icon: FileText, component: PressPage,
+    seo: { include: true, defaultTitle: 'Press | Crazy Bear', defaultDescription: 'Press enquiries, logos and recent coverage for The Crazy Bear.' } },
+  { slug: 'contact', route: '/contact', title: 'Contact', description: 'Contact hub for Town and Country', group: 'Standalone', icon: Mail, component: ContactPage,
+    seo: { include: true, defaultTitle: 'Contact | Crazy Bear', defaultDescription: 'Contact Crazy Bear Town and Crazy Bear Country.' } },
+  { slug: 'careers', route: '/careers', title: 'Careers', description: 'Open roles and culture', group: 'Standalone', icon: Users, component: CareersPage,
+    seo: { include: true, defaultTitle: 'Careers | Crazy Bear', defaultDescription: 'Join The Crazy Bear. Open roles across Town and Country.' } },
+  { slug: 'terms', route: '/terms', title: 'Terms', description: 'Terms and conditions', group: 'Standalone', icon: ScrollText, component: TermsPage,
+    seo: { include: true, defaultTitle: 'Terms | Crazy Bear', defaultDescription: 'Terms and conditions for The Crazy Bear.' } },
+  { slug: 'cookies', route: '/cookies', title: 'Cookies', description: 'Cookies policy and preferences', group: 'Standalone', icon: Lock, component: CookiesPage,
+    seo: { include: true, defaultTitle: 'Cookies | Crazy Bear', defaultDescription: 'How The Crazy Bear uses cookies. Manage your preferences.' } },
+  { slug: 'journal', route: '/journal', title: 'Journal', description: 'Blog index', group: 'Standalone', icon: BookOpen, component: JournalIndexPage,
+    seo: { include: true, defaultTitle: 'Journal | Crazy Bear', defaultDescription: 'Notes from inside The Crazy Bear. Food, music, design and mischief.' } },
   { slug: 'global/footer', route: '__global/footer', title: 'Footer', description: 'Site-wide footer', group: 'Global', icon: FileText, component: CMSFooterPreview,
     seo: { include: false, defaultTitle: '', defaultDescription: '' } },
   { slug: 'global/navigation', route: '__global/navigation', title: 'Navigation', description: 'Site-wide navigation', group: 'Global', icon: Globe, component: CMSNavigationPreview,
@@ -530,6 +574,7 @@ export const CMS_EXCLUDED_ROUTES: string[] = [
   '/country/members',
   '/town/members',
   '/stories/:slug',
+  '/journal/:slug',
 ];
 
 export const CMS_PAGES_BY_SLUG: Record<string, CmsPageEntry> = Object.fromEntries(

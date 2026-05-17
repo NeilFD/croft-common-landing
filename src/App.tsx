@@ -69,6 +69,22 @@ const TownParties = lazy(() => import("./pages/property").then((m) => ({ default
 const TownBirthdays = lazy(() => import("./pages/property").then((m) => ({ default: m.TownBirthdays })));
 const TownPoolParty = lazy(() => import("./pages/property").then((m) => ({ default: m.TownPoolParty })));
 const TownPlaylist = lazy(() => import("./pages/property").then((m) => ({ default: m.TownPlaylist })));
+const CountryDogs = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryDogs })));
+const CountryPubQuiz = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryPubQuiz })));
+const CountryCinemaNights = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryCinemaNights })));
+const CountryOutdoorFeasts = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryOutdoorFeasts })));
+const Treatments = lazy(() => import("./pages/crazybear/Treatments"));
+const Merch = lazy(() => import("./pages/crazybear/Merch"));
+const Gallery = lazy(() => import("./pages/crazybear/Gallery"));
+const FAQHub = lazy(() => import("./pages/crazybear/FAQHub"));
+const Press = lazy(() => import("./pages/crazybear/Press"));
+const Contact = lazy(() => import("./pages/crazybear/Contact"));
+const Careers = lazy(() => import("./pages/crazybear/Careers"));
+const Terms = lazy(() => import("./pages/crazybear/Terms"));
+const Cookies = lazy(() => import("./pages/crazybear/Cookies"));
+const Journal = lazy(() => import("./pages/crazybear/Journal"));
+const JournalPost = lazy(() => import("./pages/crazybear/JournalPost"));
+const CBCookieBanner = lazy(() => import("./components/crazybear/CBCookieBanner"));
 const WhatsOn = lazy(() => import("./pages/crazybear/WhatsOn"));
 const Stories = lazy(() => import("./pages/crazybear/Stories"));
 const StoryDetail = lazy(() => import("./pages/crazybear/StoryDetail"));
@@ -333,6 +349,7 @@ const App = () => {
                 <Suspense fallback={null}>
                   <NudgeFloatingButton />
                   <CBSpotifyPlayer />
+                  <CBCookieBanner />
                 </Suspense>
                 
                 <TransitionProvider>
@@ -369,6 +386,10 @@ const App = () => {
                         <Route path="food/afternoon-tea" element={<CountryAfternoonTea />} />
                         <Route path="terraces-and-gardens" element={<CountryTerracesAndGardens />} />
                         <Route path="playlist" element={<CountryPlaylist />} />
+                        <Route path="dogs" element={<CountryDogs />} />
+                        <Route path="pub-quiz" element={<CountryPubQuiz />} />
+                        <Route path="cinema-nights" element={<CountryCinemaNights />} />
+                        <Route path="outdoor-feasts" element={<CountryOutdoorFeasts />} />
                       </Route>
 
                       {/* Crazy Bear Town */}
@@ -404,6 +425,19 @@ const App = () => {
                       <Route path="/stories" element={<Stories />} />
                       <Route path="/stories/:slug" element={<StoryDetail />} />
                       <Route path="/gift-vouchers" element={<GiftVouchers />} />
+
+                      {/* Root-level cross-site pages */}
+                      <Route path="/treatments" element={<Treatments />} />
+                      <Route path="/merch" element={<Merch />} />
+                      <Route path="/gallery" element={<Gallery />} />
+                      <Route path="/faq" element={<FAQHub />} />
+                      <Route path="/press" element={<Press />} />
+                      <Route path="/contact" element={<Contact />} />
+                      <Route path="/careers" element={<Careers />} />
+                      <Route path="/terms" element={<Terms />} />
+                      <Route path="/cookies" element={<Cookies />} />
+                      <Route path="/journal" element={<Journal />} />
+                      <Route path="/journal/:slug" element={<JournalPost />} />
 
                       {/* Crazy Bear members entry */}
                       <Route path="/bears-den" element={<BearsDen />} />

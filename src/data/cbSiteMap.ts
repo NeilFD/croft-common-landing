@@ -70,6 +70,7 @@ export const SITE_MAP: SiteMapGroup[] = [
         { label: "Rooms", path: "/country/rooms" },
         { label: "Room Types", path: "/country/rooms/types" },
         { label: "Gallery", path: "/country/rooms/gallery" },
+        { label: "Dogs", path: "/country/dogs" },
       ],
       chips: [
         { label: "Snug", path: "/country/rooms/snug" },
