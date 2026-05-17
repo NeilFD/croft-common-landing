@@ -10,6 +10,8 @@ import { SubscribersPage } from './pages/SubscribersPage';
 import { MomentsPage } from './pages/MomentsPage';
 import { CinemaPage } from './pages/CinemaPage';
 import EmailDeliveryPage from './pages/EmailDeliveryPage';
+import { EventsPage } from './pages/EventsPage';
+import { StoriesPage } from './pages/StoriesPage';
 import LeadsList from '../pages/management/LeadsList';
 import LeadDetail from '../pages/management/LeadDetail';
 import AdminMemberAnalytics from '../pages/AdminMemberAnalytics';
@@ -33,6 +35,8 @@ export const AdminApp = () => {
         <Route path="management/email-delivery" element={<EmailDeliveryPage />} />
         <Route path="management/leads" element={<LeadsList />} />
         <Route path="management/leads/:id" element={<LeadDetail />} />
+        <Route path="management/events" element={<EventsPage />} />
+        <Route path="management/stories" element={<StoriesPage />} />
         <Route path="*" element={<Navigate to="/management/admin" replace />} />
       </Routes>
       <Toaster />
