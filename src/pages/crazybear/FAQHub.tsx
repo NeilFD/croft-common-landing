@@ -49,6 +49,7 @@ const FAQHub = () => {
       intro={"Every question we've been asked.\nAll in one place. Use the search."}
       seoDescription="FAQs for The Crazy Bear: rooms, food, parties, weddings, membership and practical questions across Town and Country."
       path="/faq"
+      cmsPage="faq"
     >
       <div className="mb-10">
         <label className="sr-only" htmlFor="faq-search">Search</label>

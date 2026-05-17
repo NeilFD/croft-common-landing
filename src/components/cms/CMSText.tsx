@@ -18,7 +18,7 @@ interface CMSTextProps {
   contentKey: string;
   fallback: string;
   className?: string;
-  as?: 'h1' | 'h2' | 'h3' | 'h4' | 'p' | 'div' | 'a' | 'button';
+  as?: 'h1' | 'h2' | 'h3' | 'h4' | 'p' | 'div' | 'a' | 'button' | 'span' | 'li';
   href?: string;
   children?: ReactNode;
 }
