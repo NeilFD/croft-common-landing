@@ -45,30 +45,79 @@ const CBFooter = () => {
         {/* Subscription */}
         <CBSubscriptionForm />
 
-        {/* Site map */}
+        {/* Site map — organised by site (Town / Country) + cross-site */}
         <nav
           aria-label="Site map"
-          className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12 border-t border-white/15 pt-12"
+          className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-12 border-t border-white/15 pt-12"
         >
-          {SITE_MAP.map((group) => (
-            <div key={group.id}>
-              <p className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60 mb-4">
-                {group.label}
+          {(['town', 'country'] as const).map((site) => (
+            <div key={site}>
+              <p className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60 mb-6">
+                {site === 'town' ? 'Town — Beaconsfield' : 'Country — Stadhampton'}
               </p>
-              <ul className="space-y-2">
-                {group.links.map((link) => (
-                  <li key={link.path}>
-                    <Link
-                      to={link.path}
-                      className="font-cb-sans text-sm opacity-80 hover:opacity-100 hover:underline underline-offset-4"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+              <div className="space-y-6">
+                {SITE_MAP.map((group) => {
+                  const col = group[site];
+                  const links = [...col.links, ...(col.chips ?? [])];
+                  if (links.length === 0) return null;
+                  return (
+                    <div key={`${site}-${group.id}`}>
+                      <p className="font-cb-mono text-[9px] tracking-[0.35em] uppercase opacity-50 mb-2">
+                        {group.label}
+                      </p>
+                      <ul className="space-y-1.5">
+                        {links.map((link) => (
+                          <li key={link.path}>
+                            <Link
+                              to={link.path}
+                              className="font-cb-sans text-sm opacity-80 hover:opacity-100 hover:underline underline-offset-4"
+                            >
+                              {link.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           ))}
+
+          {/* Across both */}
+          <div>
+            <p className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60 mb-6">
+              Across both
+            </p>
+            <ul className="space-y-1.5">
+              {SITE_MAP.flatMap((g) => g.bothBelow ?? []).map((link) => (
+                <li key={link.path}>
+                  <Link
+                    to={link.path}
+                    className="font-cb-sans text-sm opacity-80 hover:opacity-100 hover:underline underline-offset-4"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link
+                  to={PRIMARY_CTAS.book.path}
+                  className="font-cb-sans text-sm opacity-80 hover:opacity-100 hover:underline underline-offset-4"
+                >
+                  Book
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to={PRIMARY_CTAS.enquire.path}
+                  className="font-cb-sans text-sm opacity-80 hover:opacity-100 hover:underline underline-offset-4"
+                >
+                  Enquire
+                </Link>
+              </li>
+            </ul>
+          </div>
         </nav>
 
         {/* Info grid */}
