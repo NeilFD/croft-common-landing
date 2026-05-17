@@ -121,6 +121,22 @@ const WhatsOnPage = lazy(() => import('@/pages/crazybear/WhatsOn'));
 const StoriesPage = lazy(() => import('@/pages/crazybear/Stories'));
 const GiftVouchersPage = lazy(() => import('@/pages/crazybear/GiftVouchers'));
 
+// Round-2 structural pages
+const CountryDogsPage = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryDogs })));
+const CountryPubQuizPage = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryPubQuiz })));
+const CountryCinemaNightsPage = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryCinemaNights })));
+const CountryOutdoorFeastsPage = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryOutdoorFeasts })));
+const TreatmentsPage = lazy(() => import('@/pages/crazybear/Treatments'));
+const MerchPage = lazy(() => import('@/pages/crazybear/Merch'));
+const GalleryPage = lazy(() => import('@/pages/crazybear/Gallery'));
+const FAQHubPage = lazy(() => import('@/pages/crazybear/FAQHub'));
+const PressPage = lazy(() => import('@/pages/crazybear/Press'));
+const ContactPage = lazy(() => import('@/pages/crazybear/Contact'));
+const CareersPage = lazy(() => import('@/pages/crazybear/Careers'));
+const TermsPage = lazy(() => import('@/pages/crazybear/Terms'));
+const CookiesPage = lazy(() => import('@/pages/crazybear/Cookies'));
+const JournalIndexPage = lazy(() => import('@/pages/crazybear/Journal'));
+
 const CMSFooterPreview = lazy(() => import('@/pages/CMSFooterPreview'));
 const CMSNavigationPreview = lazy(() => import('@/pages/CMSNavigationPreview'));
 const CMSEmailTemplates = lazy(() => import('@/pages/CMSEmailTemplates'));
