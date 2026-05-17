@@ -1,93 +1,85 @@
-## What you're looking at
+# Homepage rethink — Stay / Eat & Drink / Celebrate / Discover / Visit Us
 
-The screenshot is the full-screen **menu overlay** (`CBNavOverlay`). It currently dumps every public route into four flat columns (Stay / Eat & Drink / Celebrate / Discover). It's long because Rooms alone contributes 14 lines (Types + 4 categories + Gallery × 2 sites).
+## Diagnosis
 
-The cleanest fix is to flip the model from **"by topic"** to **"by site"** (Town / Country) and use **concertinas** for the deep groups. Topic-mixed lists are why every line reads "Town/Country X" — once you nest under the site, the label noise vanishes.
+The new menu is organised by **site** (Town column / Country column). The homepage is still organised by **topic** with flat lists of every leaf page underneath (Stay = 15 links, Eat & Drink = 13, Celebrate = 9, Discover = 7). Two problems:
 
-## New structure
+1. **Mental model clash.** Menu says Town/Country, homepage says topic. Users have to re-orient on every section.
+2. **Sitemap, not keynote.** Long flat lists feel like a footer dumped into the body. No air, no authority, no editorial voice. Apple keynote homepages don't list every product variant — they show the headline and trust users to drill in.
 
-Two big columns, mirrored:
+## Best practice (the rule of thumb)
+
+A homepage section should answer three things, in order:
+1. **What is this?** (headline + one line)
+2. **Where do I go next?** (max 4–5 curated destinations per column, not every leaf)
+3. **Where's the full set?** (one "see all" link)
+
+Miller's 7±2 caps the scan. Mirror the menu structure (Town | Country) so the muscle memory carries from nav to body. Keep the deep leaves (Snug, Cosy, Boujee, Decadent etc.) on the property hub pages where they belong — not on the homepage.
+
+## Proposed structure
+
+Each topic section becomes a **two-column mirror**: Country left, Town right. Same number of links per side. Same visual weight. Big headline stays.
 
 ```text
-┌─ CRAZY BEAR TOWN ──────────┐   ┌─ CRAZY BEAR COUNTRY ───────┐
-│  Town home                 │   │  Country home              │
-│  ▸ Food            [+]     │   │  ▸ Food            [+]     │
-│  ▸ Drink           [+]     │   │  ▸ Pub             [+]     │
-│  ▸ Rooms           [+]     │   │  ▸ Rooms           [+]     │
-│    Pool                    │   │    Terraces & Gardens      │
-│    Karaoke                 │   │    Parties                 │
-│    Culture                 │   │  ▸ Events          [+]     │
-│    Playlist                │   │    Culture                 │
-│                            │   │    Playlist                │
-└────────────────────────────┘   └────────────────────────────┘
+01 / STAY
+STAY
+Two hotels. One spirit.
 
-┌─ ACROSS BOTH ──────────────────────────────────────────────┐
-│  What's Happening · Stories from the Bear · Gift Vouchers  │
-│  About · House Rules · The Bear's Den                      │
-└────────────────────────────────────────────────────────────┘
-
-[ BOOK ]   [ ENQUIRE ]      Privacy · Unsubscribe · Switch site
+COUNTRY / STADHAMPTON          TOWN / BEACONSFIELD
+Country Rooms              →   Town Rooms                  →
+Room Types                 →   Room Types                  →
+Snug · Cosy · Boujee · Decadent (one row of 4 chips)
+Gallery                    →   Gallery                     →
+                               Pool                        →
+See all Country rooms      →   See all Town rooms          →
 ```
 
-Concertinas (`<details>`) expand to reveal sub-pages, e.g.:
+Same pattern for every section. Removes the 15-link wall, keeps every page reachable, and the page now reads as Country|Town top-to-bottom.
 
-- **Town → Rooms** → Snug · Cosy · Boujee · Decadent · Room Types · Gallery
-- **Town → Food** → Menus · The Black Bear · B&B · Hom Thai · Afternoon Tea
-- **Country → Rooms** → Snug · Cosy · Boujee · Decadent · Room Types · Gallery
-- **Country → Food** → Menus · Afternoon Tea
-- **Country → Pub** → Food · Drink · Hospitality
-- **Country → Events** → Weddings · Birthdays · Business
+## Per-section plan
 
-That collapses the menu from ~45 visible links to **~16 lines closed**, with everything one tap away.
+**01 / Stay** — 2 columns. Each side: Rooms hub, Room Types, a single chip row for the four variants (Snug / Cosy / Boujee / Decadent), Gallery. Town gets an extra "Pool". Variant chips link out but don't shout.
 
-## Why this is best practice
+**02 / Eat & Drink** — 2 columns. Town: The Black Bear, B&B, Hom Thai, Afternoon Tea, Cocktails, All menus. Country: The Pub (food), Pub Drink, Pub Hospitality, Afternoon Tea, All menus. Sunday Lunch / Breakfast / Lunch slot in as a single "Menus" link per side, not as separate cards.
 
-**UX**
-- **Mental model matches the brand.** Town and Country are the two products. Topic-bucketing forces every label to disambiguate ("Town Cocktails", "Country Pub Drink"); site-bucketing lets labels be short ("Cocktails", "Drink").
-- **Progressive disclosure.** ~7±2 visible items per column is the comfortable scan limit; concertinas hide depth without losing it.
-- **One scroll, one screen.** On a laptop the whole menu fits without scrolling once concertinas are closed.
-- **Single source of truth.** `Open` defaults differ by viewport — on mobile everything starts collapsed, on desktop the two `Rooms` groups can default open since that's the most-clicked area.
+**03 / Celebrate** — Asymmetric, on purpose. Country is the events engine, Town is the night out. Country column: Weddings, Parties, Birthdays, Business Events, Terraces & Gardens, All events. Town column: Karaoke (with the new "Tonight you are Celine" line as the strapline). Underneath the two columns, a full-width footer row: **What's Happening** and **Gift Vouchers** (both apply across sites).
 
-**SEO**
-- Use semantic `<details>/<summary>` so collapsed links **stay in the DOM** — Google indexes hidden-by-default content as long as it's in the rendered HTML, which `<details>` guarantees.
-- Keep every `<a href>` (no JS-only reveal). Crawlers follow them regardless of open state.
-- Add `aria-label="Site menu"` (already there) and `aria-expanded` on `<summary>` (browser handles for `<details>`).
-- No change to `sitemap.xml` / `llms.txt` — those already enumerate everything.
-- Avoid duplicating links in multiple columns; one link per route prevents internal-link dilution.
+**04 / Discover** — 2 columns. Country: Culture, Playlist. Town: Culture, Playlist. Full-width row underneath for the cross-site: **About**, **House Rules**, **Stories from the Bear**. Discover is shorter than the others — that's fine, it gives the page rhythm.
 
-## Build steps
+**05 / Visit Us** — Already correct (Country left, Town right with address + CTAs). Keep as-is. It's the proof that the mirror model works.
 
-1. **Extend `src/data/cbSiteMap.ts`** with a new `SITE_TREE` export that groups by site:
-   ```ts
-   export const SITE_TREE = {
-     town:    { label, home: "/town",    sections: [ {label, path?, links?}, ... ] },
-     country: { label, home: "/country", sections: [ ... ] },
-     both:    [ {label, path}, ... ]   // What's Happening, Stories, Gift Vouchers, About, House Rules, Bear's Den
-   }
-   ```
-   Keep the old `SITE_MAP` export untouched so `CBFooter` and `CBLandingSections` don't break — they can be migrated in a follow-up if you want.
+## What we keep
 
-2. **Rewrite `CBNavOverlay.tsx`**:
-   - Top bar unchanged.
-   - Body becomes a `grid-cols-1 md:grid-cols-2` for Town / Country, with a third "Across both" row below.
-   - Use a small `<NavGroup>` component that renders `<details>` when `links` exist, otherwise a flat `<Link>`.
-   - Defaults: closed on mobile (`<details>` no `open`), `open` on `md:` and up for Rooms only (via a CSS-only `md:[&]:open` trick or a tiny `useMediaQuery`).
-   - Keep Book / Enquire / property switch / legal in the footer row, but slim them into one line.
+- Section numbering (01 / 02 / 03 / 04 / 05) — gives it editorial confidence.
+- Alternating black/white sections — keeps the rhythm.
+- Big display headlines, mono eyebrows, generous vertical padding.
+- Bear's Den strip at the very bottom.
 
-3. **Style**:
-   - `<summary>` styled to look like the current section H2 but one size smaller (`text-2xl md:text-3xl font-display uppercase`), with a `+` / `–` indicator using `::after` and `[open]:` variant.
-   - Removes the redundant "Town"/"Country" prefix from every child label.
-   - No focus rings on the summary (per project rule) — use underline-on-focus instead.
+## What we lose
 
-4. **Telemetry-friendly**: each `<summary>` gets `data-nav-section="town/rooms"` etc., so analytics can see which concertinas users open.
+- Every leaf page listed on the homepage. The deep variants live on `/country/rooms` and `/town/rooms` — homepage trusts the user to click through. SEO impact is negligible: the variants are still internally linked from the rooms hubs and the menu overlay (in DOM via `<details>`).
 
-5. **No DB, no route, no sitemap changes.** Pure presentation refactor of one component plus an additive data export.
+## SEO note
 
-## Out of scope (flag for later)
+Internal links from the homepage carry slightly more weight than links from a hub page. To not lose ranking on the variant pages, every removed link is still surfaced via:
+- the menu overlay (always in DOM)
+- the property hub pages (`/country`, `/town`)
+- the footer site map
+- `sitemap.xml`
 
-- Migrating `CBFooter` and `CBLandingSections` to the same Town/Country structure — they currently use the topic columns. Worth doing for consistency, but it's a separate visual change.
-- Adding a search input at the top of the menu (often useful on sites this deep).
+Net SEO change: neutral. Homepage clarity: significant gain.
 
-## Open question before I build
+## Technical scope
 
-The "Across both" row currently lists 6 links flat. If you'd prefer those split into **Visit** (What's Happening, Stories, Gift Vouchers) and **About** (About, House Rules, The Bear's Den) — say the word, otherwise I'll keep them as one tidy row.
+- Rewrite `src/components/crazybear/CBLandingSections.tsx` to render Town/Country columns per section instead of a flat list.
+- Replace the topic-flat `SITE_MAP[].links` consumption with a new shape: `SITE_MAP[].country[]` and `SITE_MAP[].town[]`, plus an optional `bothBelow[]` row for cross-site links (used by Celebrate and Discover).
+- Update `src/data/cbSiteMap.ts`:
+  - Change `SiteMapGroup` type to `{ id, label, intro, country: SiteMapLink[], town: SiteMapLink[], bothBelow?: SiteMapLink[] }`.
+  - Move every existing link into the right bucket. Stay: 5 Country + 5 Town. Eat & Drink: 6 Town + 5 Country. Celebrate: 6 Country + 1 Town (Karaoke), 2 `bothBelow`. Discover: 2 Country + 2 Town, 3 `bothBelow`.
+  - Add tiny "see all" link per column pointing at the property's hub for that topic.
+  - `allPublicPaths()` keeps working — flatten across `country + town + bothBelow`.
+- No DB, no route, no sitemap changes. Visit Us section untouched.
+
+## Open question
+
+Stay variants (Snug / Cosy / Boujee / Decadent) — should they appear on the homepage as a **single chip row per column** (recommended, mirrors the menu) or be **dropped entirely** from the homepage and only live on the menu + rooms hub? Dropping them is more keynote, less SEO-belt-and-braces. The plan above assumes the chip row; say the word and I'll cut them.

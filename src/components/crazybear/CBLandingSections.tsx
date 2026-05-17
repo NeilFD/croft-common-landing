@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
-import { SITE_MAP, PRIMARY_CTAS, MEMBERS_ENTRY } from "@/data/cbSiteMap";
+import { SITE_MAP, PRIMARY_CTAS, MEMBERS_ENTRY, type SiteMapColumn, type SiteMapLink } from "@/data/cbSiteMap";
 
 /**
- * Homepage content sections that mirror the global nav order.
- * Scrolling the page = navigating the menu. Each section is a signpost,
- * not a rebuild of the destination page.
+ * Homepage content sections that mirror the global nav order AND the
+ * Town/Country menu structure. Each topic section renders two columns
+ * (Country | Town) plus optional cross-site links beneath.
  *
  * Visual language reuses existing tokens (font-display, font-cb-mono,
  * font-cb-sans, B&W). No new design.
@@ -12,57 +12,66 @@ import { SITE_MAP, PRIMARY_CTAS, MEMBERS_ENTRY } from "@/data/cbSiteMap";
 const CBLandingSections = () => {
   return (
     <div className="bg-black text-white">
-      {SITE_MAP.map((group, idx) => (
-        <section
-          key={group.id}
-          id={group.id}
-          aria-labelledby={`${group.id}-heading`}
-          className={`border-t border-white/15 px-6 md:px-12 py-20 md:py-28 ${
-            idx % 2 === 1 ? "bg-white text-black" : ""
-          }`}
-        >
-          <div className="mx-auto max-w-6xl">
-            <p
-              className={`font-cb-mono text-[10px] tracking-[0.5em] uppercase ${
-                idx % 2 === 1 ? "opacity-60" : "opacity-70"
-              }`}
-            >
-              {String(idx + 1).padStart(2, "0")} &nbsp;/&nbsp; {group.label}
-            </p>
-            <h2
-              id={`${group.id}-heading`}
-              className="mt-4 font-display text-5xl md:text-7xl uppercase leading-[0.9] tracking-tight"
-            >
-              {group.label}
-            </h2>
-            <p className="mt-6 max-w-2xl font-cb-sans text-lg md:text-xl leading-relaxed opacity-80 whitespace-pre-line">
-              {group.intro}
-            </p>
+      {SITE_MAP.map((group, idx) => {
+        const inverted = idx % 2 === 1;
+        return (
+          <section
+            key={group.id}
+            id={group.id}
+            aria-labelledby={`${group.id}-heading`}
+            className={`border-t border-white/15 px-6 md:px-12 py-20 md:py-28 ${
+              inverted ? "bg-white text-black" : ""
+            }`}
+          >
+            <div className="mx-auto max-w-6xl">
+              <p
+                className={`font-cb-mono text-[10px] tracking-[0.5em] uppercase ${
+                  inverted ? "opacity-60" : "opacity-70"
+                }`}
+              >
+                {String(idx + 1).padStart(2, "0")} &nbsp;/&nbsp; {group.label}
+              </p>
+              <h2
+                id={`${group.id}-heading`}
+                className="mt-4 font-display text-5xl md:text-7xl uppercase leading-[0.9] tracking-tight"
+              >
+                {group.label}
+              </h2>
+              <p className="mt-6 max-w-2xl font-cb-sans text-lg md:text-xl leading-relaxed opacity-80 whitespace-pre-line">
+                {group.intro}
+              </p>
 
-            <ul className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4">
-              {group.links.map((link) => (
-                <li key={link.path}>
-                  <Link
-                    to={link.path}
-                    className={`group flex items-center justify-between border-b py-3 ${
-                      idx % 2 === 1
-                        ? "border-black/20 hover:border-black"
-                        : "border-white/20 hover:border-white"
-                    } transition-colors`}
+              <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12">
+                <Column column={group.country} inverted={inverted} />
+                <Column column={group.town} inverted={inverted} />
+              </div>
+
+              {group.bothBelow && group.bothBelow.length > 0 && (
+                <div
+                  className={`mt-10 pt-8 border-t ${
+                    inverted ? "border-black/15" : "border-white/15"
+                  }`}
+                >
+                  <p
+                    className={`font-cb-mono text-[10px] tracking-[0.4em] uppercase mb-4 ${
+                      inverted ? "opacity-60" : "opacity-60"
+                    }`}
                   >
-                    <h3 className="font-cb-sans text-base tracking-wide">
-                      {link.label}
-                    </h3>
-                    <span className="font-cb-mono text-xs tracking-[0.3em] uppercase opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all">
-                      &rarr;
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-      ))}
+                    Across both
+                  </p>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-2">
+                    {group.bothBelow.map((link) => (
+                      <li key={link.path}>
+                        <Row link={link} inverted={inverted} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </section>
+        );
+      })}
 
       {/* Visit us — addresses & primary CTAs */}
       <section
@@ -189,5 +198,73 @@ const CBLandingSections = () => {
     </div>
   );
 };
+
+const Column = ({ column, inverted }: { column: SiteMapColumn; inverted: boolean }) => {
+  return (
+    <div>
+      <p
+        className={`font-cb-mono text-[10px] tracking-[0.4em] uppercase mb-5 ${
+          inverted ? "opacity-60" : "opacity-60"
+        }`}
+      >
+        {column.eyebrow}
+      </p>
+      <ul className="space-y-0">
+        {column.links.map((link) => (
+          <li key={link.path}>
+            <Row link={link} inverted={inverted} />
+          </li>
+        ))}
+      </ul>
+
+      {column.chips && column.chips.length > 0 && (
+        <div className="mt-5 flex flex-wrap gap-2">
+          {column.chips.map((chip) => (
+            <Link
+              key={chip.path}
+              to={chip.path}
+              className={`inline-flex items-center font-cb-mono text-[10px] tracking-[0.3em] uppercase px-3 py-1.5 border transition-colors ${
+                inverted
+                  ? "border-black/30 hover:bg-black hover:text-white"
+                  : "border-white/30 hover:bg-white hover:text-black"
+              }`}
+            >
+              {chip.label}
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {column.seeAll && (
+        <div className="mt-6">
+          <Link
+            to={column.seeAll.path}
+            className={`inline-flex items-center font-cb-mono text-[10px] tracking-[0.4em] uppercase underline-offset-4 hover:underline ${
+              inverted ? "opacity-70 hover:opacity-100" : "opacity-70 hover:opacity-100"
+            }`}
+          >
+            {column.seeAll.label} &rarr;
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const Row = ({ link, inverted }: { link: SiteMapLink; inverted: boolean }) => (
+  <Link
+    to={link.path}
+    className={`group flex items-center justify-between border-b py-3 transition-colors ${
+      inverted
+        ? "border-black/15 hover:border-black"
+        : "border-white/15 hover:border-white"
+    }`}
+  >
+    <h3 className="font-cb-sans text-base tracking-wide">{link.label}</h3>
+    <span className="font-cb-mono text-xs tracking-[0.3em] uppercase opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all">
+      &rarr;
+    </span>
+  </Link>
+);
 
 export default CBLandingSections;
