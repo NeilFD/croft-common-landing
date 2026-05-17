@@ -1,85 +1,106 @@
-# Homepage rethink — Stay / Eat & Drink / Celebrate / Discover / Visit Us
+## Scope
 
-## Diagnosis
+New pages to add, plus footer + cookie infrastructure. Per the answers:
 
-The new menu is organised by **site** (Town column / Country column). The homepage is still organised by **topic** with flat lists of every leaf page underneath (Stay = 15 links, Eat & Drink = 13, Celebrate = 9, Discover = 7). Two problems:
+- **Dogs**: Country only (`/country/dogs`)
+- **Both sites**: Treatments, Merch, Journal, Social Gallery, Terms, FAQ Hub, Cookies, Press, Contact, Careers — implemented as **root-level** pages that speak for both sites (one canonical page each, with Town + Country sections inside where it makes sense). Keeps the nav lean and avoids per-site duplication for content that isn't venue-specific.
+- **Country events**: Pub Quiz, Cinema Nights, Outdoor Feasts (mirror of the Town Celebrate trio just added)
+- **Merch**: showcase only (no checkout)
+- **Cookies**: lightweight banner + generated policy
+- **Socials**: IG `@crazybearhotels`, TikTok `@crazybeargroup`
 
-1. **Mental model clash.** Menu says Town/Country, homepage says topic. Users have to re-orient on every section.
-2. **Sitemap, not keynote.** Long flat lists feel like a footer dumped into the body. No air, no authority, no editorial voice. Apple keynote homepages don't list every product variant — they show the headline and trust users to drill in.
-
-## Best practice (the rule of thumb)
-
-A homepage section should answer three things, in order:
-1. **What is this?** (headline + one line)
-2. **Where do I go next?** (max 4–5 curated destinations per column, not every leaf)
-3. **Where's the full set?** (one "see all" link)
-
-Miller's 7±2 caps the scan. Mirror the menu structure (Town | Country) so the muscle memory carries from nav to body. Keep the deep leaves (Snug, Cosy, Boujee, Decadent etc.) on the property hub pages where they belong — not on the homepage.
-
-## Proposed structure
-
-Each topic section becomes a **two-column mirror**: Country left, Town right. Same number of links per side. Same visual weight. Big headline stays.
+## Page list and routes
 
 ```text
-01 / STAY
-STAY
-Two hotels. One spirit.
+Country only
+  /country/dogs                  Dogs at Stadhampton
 
-COUNTRY / STADHAMPTON          TOWN / BEACONSFIELD
-Country Rooms              →   Town Rooms                  →
-Room Types                 →   Room Types                  →
-Snug · Cosy · Boujee · Decadent (one row of 4 chips)
-Gallery                    →   Gallery                     →
-                               Pool                        →
-See all Country rooms      →   See all Town rooms          →
+Country "What's happening" (Discover)
+  /country/pub-quiz
+  /country/cinema-nights
+  /country/outdoor-feasts
+
+Root (both sites)
+  /treatments                    Spa & treatments (Country-led, Town beauty add-ons)
+  /merch                         Showcase grid, "Buy in venue / enquire"
+  /journal                       Blog index (CMS-driven)
+  /journal/:slug                 Blog post
+  /gallery                       Social gallery (IG + TikTok embeds, curated grid)
+  /press                         Press kit, logos, downloads, contact
+  /contact                       Contact hub (Town + Country cards, form)
+  /careers                       Roles, culture, apply CTA
+  /faq                           Aggregated FAQ hub
+  /terms                         Terms & conditions
+  /cookies                       Cookies policy + manage preferences
 ```
 
-Same pattern for every section. Removes the 15-link wall, keeps every page reachable, and the page now reads as Country|Town top-to-bottom.
+## Journal / Blog (CMS authoring)
 
-## Per-section plan
+New `cb_journal_posts` table (same shape as `cb_stories`): `id, slug, title, excerpt, body_md, cover_image, author, published_at, status (draft|published), site_scope (both|town|country), tags[]`. RLS: public read for `published`, admin write.
 
-**01 / Stay** — 2 columns. Each side: Rooms hub, Room Types, a single chip row for the four variants (Snug / Cosy / Boujee / Decadent), Gallery. Town gets an extra "Pool". Variant chips link out but don't shout.
+Admin: new `JournalPage` in `src/admin/pages/` modelled directly on `StoriesPage`, added to `AdminSidebar` under Management. Markdown body, cover image upload via existing bucket, draft/publish toggle.
 
-**02 / Eat & Drink** — 2 columns. Town: The Black Bear, B&B, Hom Thai, Afternoon Tea, Cocktails, All menus. Country: The Pub (food), Pub Drink, Pub Hospitality, Afternoon Tea, All menus. Sunday Lunch / Breakfast / Lunch slot in as a single "Menus" link per side, not as separate cards.
+Front: `/journal` lists published posts (cards, filter by tag); `/journal/:slug` renders markdown with hero, author, date, related posts.
 
-**03 / Celebrate** — Asymmetric, on purpose. Country is the events engine, Town is the night out. Country column: Weddings, Parties, Birthdays, Business Events, Terraces & Gardens, All events. Town column: Karaoke (with the new "Tonight you are Celine" line as the strapline). Underneath the two columns, a full-width footer row: **What's Happening** and **Gift Vouchers** (both apply across sites).
+## FAQ Hub
 
-**04 / Discover** — 2 columns. Country: Culture, Playlist. Town: Culture, Playlist. Full-width row underneath for the cross-site: **About**, **House Rules**, **Stories from the Bear**. Discover is shorter than the others — that's fine, it gives the page rhythm.
+`/faq` reads `cbFaqs` (already structured by page) and renders a single searchable, grouped accordion ("Stay", "Eat & Drink", "Celebrate", "Discover", "Membership", "Practical"). Each page-level FAQ already exists — hub just aggregates with deep-link anchors back to source pages.
 
-**05 / Visit Us** — Already correct (Country left, Town right with address + CTAs). Keep as-is. It's the proof that the mirror model works.
+## Cookie consent
 
-## What we keep
+- New `CookieBanner` component, mounted once in `App.tsx`. Sticky bottom-left, B&W, two buttons: "Accept" / "Reject non-essential". Choice persisted in `localStorage` under `cb-cookie-consent` (`accepted | rejected | null`).
+- A `useCookieConsent()` hook exposes status. Analytics scripts (if/when added) gate on `accepted`.
+- `/cookies` page: generated UK-compliant policy (essential, analytics, embeds: Spotify, YouTube, IG, TikTok), plus a "Manage preferences" button that re-opens the banner.
 
-- Section numbering (01 / 02 / 03 / 04 / 05) — gives it editorial confidence.
-- Alternating black/white sections — keeps the rhythm.
-- Big display headlines, mono eyebrows, generous vertical padding.
-- Bear's Den strip at the very bottom.
+## Footer socials
 
-## What we lose
+Add IG + TikTok icon buttons (inline SVGs — no Lucide) to `CBFooter` "Across both" column, linking to:
+- `https://instagram.com/crazybearhotels`
+- `https://tiktok.com/@crazybeargroup`
 
-- Every leaf page listed on the homepage. The deep variants live on `/country/rooms` and `/town/rooms` — homepage trusts the user to click through. SEO impact is negligible: the variants are still internally linked from the rooms hubs and the menu overlay (in DOM via `<details>`).
+## Social Gallery (`/gallery`)
 
-## SEO note
+Curated B&W grid. v1: static masonry of brand images grouped by tag (Food / Rooms / Nights / Dogs), with prominent "Follow on Instagram" and "Follow on TikTok" CTAs. v2 (out of scope here): live IG embed.
 
-Internal links from the homepage carry slightly more weight than links from a hub page. To not lose ranking on the variant pages, every removed link is still surfaced via:
-- the menu overlay (always in DOM)
-- the property hub pages (`/country`, `/town`)
-- the footer site map
-- `sitemap.xml`
+## Treatments, Merch, Dogs, Press, Contact, Careers, Terms
 
-Net SEO change: neutral. Homepage clarity: significant gain.
+All use the existing `PropertyPage` / standard CB page shell (top nav + logo + CBFooter) with bespoke body content. Notable bits:
 
-## Technical scope
+- **Treatments**: Country-led (spa lists), Town section for beauty add-ons. Booking CTA → enquire flow.
+- **Merch**: 6–9 product cards, photo + price + "Available in venue", enquire link. No cart, no Stripe.
+- **Dogs (Country)**: dog-friendly rooms, walk routes, house rules, treats. Photo-led.
+- **Press**: short bio, downloadable logo pack (static assets), contact email, recent coverage list.
+- **Contact**: Town card + Country card (address, phone, email, map link), plus enquiry form posting to existing `cb_enquiries` table.
+- **Careers**: punchy culture intro (bold, irreverent — matches Bears Den voice), open roles list, apply CTA to careers email.
+- **Terms**: standard UK hospitality T&Cs scaffold, editable via CMS.
 
-- Rewrite `src/components/crazybear/CBLandingSections.tsx` to render Town/Country columns per section instead of a flat list.
-- Replace the topic-flat `SITE_MAP[].links` consumption with a new shape: `SITE_MAP[].country[]` and `SITE_MAP[].town[]`, plus an optional `bothBelow[]` row for cross-site links (used by Celebrate and Discover).
-- Update `src/data/cbSiteMap.ts`:
-  - Change `SiteMapGroup` type to `{ id, label, intro, country: SiteMapLink[], town: SiteMapLink[], bothBelow?: SiteMapLink[] }`.
-  - Move every existing link into the right bucket. Stay: 5 Country + 5 Town. Eat & Drink: 6 Town + 5 Country. Celebrate: 6 Country + 1 Town (Karaoke), 2 `bothBelow`. Discover: 2 Country + 2 Town, 3 `bothBelow`.
-  - Add tiny "see all" link per column pointing at the property's hub for that topic.
-  - `allPublicPaths()` keeps working — flatten across `country + town + bothBelow`.
-- No DB, no route, no sitemap changes. Visit Us section untouched.
+## CMS + site map integration
 
-## Open question
+For each new page:
+1. Route registered in `src/App.tsx` (lazy).
+2. Entry added to `src/data/cmsPages.ts` so the CMS visual editor, sidebar, and SEO monitor pick it up automatically (project rule: every new page must fit the CMS).
+3. Linked from `src/data/cbSiteMap.ts` in the correct section so the homepage, top nav, and `CBFooter` all surface it without further edits:
+   - Dogs → Country / Stay chips
+   - Pub Quiz, Cinema Nights, Outdoor Feasts → Country / Discover
+   - Treatments → both sites / Stay (Country) and Eat & Drink chips (Town)
+   - Merch, Journal, Gallery, Press, Contact, Careers → footer "Across both"
+   - Terms, Cookies → footer legal row
+   - FAQ → footer "Across both" + top nav utility link
 
-Stay variants (Snug / Cosy / Boujee / Decadent) — should they appear on the homepage as a **single chip row per column** (recommended, mirrors the menu) or be **dropped entirely** from the homepage and only live on the menu + rooms hub? Dropping them is more keynote, less SEO-belt-and-braces. The plan above assumes the chip row; say the word and I'll cut them.
+## Technical details
+
+- Icons: inline SVGs for IG/TikTok (no Lucide).
+- Tokens: B&W only, Bowlby One headings, Space Grotesk body. No new colours.
+- Spellings: UK throughout (£, "favourite", "personalise", etc.).
+- DB change required only for Journal: one migration creating `cb_journal_posts` + RLS + `updated_at` trigger. Awaiting approval before code.
+- No new edge functions. No Stripe changes. No auth changes.
+- Existing `cb_stories` admin pattern is the template for `JournalPage`.
+
+## Build order
+
+1. Migration: `cb_journal_posts` (await approval).
+2. Cookie banner + `/cookies` page + footer socials (no DB).
+3. Static pages: Dogs, Treatments, Merch, Press, Contact, Careers, Terms, FAQ hub, Gallery.
+4. Country events: Pub Quiz, Cinema Nights, Outdoor Feasts.
+5. Journal: front pages + admin authoring page.
+6. Wire everything into `cmsPages.ts`, `cbSiteMap.ts`, `App.tsx`; verify build passes the CMS registry check.

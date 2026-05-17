@@ -439,6 +439,57 @@ export type Database = {
         }
         Relationships: []
       }
+      cb_journal_posts: {
+        Row: {
+          author: string | null
+          body: string | null
+          created_at: string
+          excerpt: string | null
+          hero_url: string | null
+          id: string
+          published: boolean
+          published_at: string | null
+          site_scope: string
+          slug: string
+          sort_order: number
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string | null
+          body?: string | null
+          created_at?: string
+          excerpt?: string | null
+          hero_url?: string | null
+          id?: string
+          published?: boolean
+          published_at?: string | null
+          site_scope?: string
+          slug: string
+          sort_order?: number
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string | null
+          body?: string | null
+          created_at?: string
+          excerpt?: string | null
+          hero_url?: string | null
+          id?: string
+          published?: boolean
+          published_at?: string | null
+          site_scope?: string
+          slug?: string
+          sort_order?: number
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cb_members: {
         Row: {
           birthday_day: number | null
