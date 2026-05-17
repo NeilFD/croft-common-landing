@@ -339,6 +339,18 @@ const CulturePage = ({ site }: Props) => {
               >
                 {c.ctaSecondaryLabel}
               </Link>
+              <Link
+                to={site === "town" ? "/town/playlist" : "/country/playlist"}
+                className="inline-block font-cb-mono text-[10px] tracking-[0.5em] uppercase border border-white/40 px-7 py-4 hover:bg-white/10 transition-colors"
+              >
+                Open the playlist
+              </Link>
+              <Link
+                to="/stories"
+                className="inline-block font-cb-mono text-[10px] tracking-[0.5em] uppercase border border-white/40 px-7 py-4 hover:bg-white/10 transition-colors"
+              >
+                Stories from the Bear
+              </Link>
             </div>
           </div>
         </section>
