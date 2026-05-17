@@ -591,3 +591,36 @@ export const CountryPlaylist = () => (
     <PlaylistBody url="https://open.spotify.com/playlist/4KCZQ5fOj3UauK3pTWDZo7" label="Country playlist" />
   </PropertyPage>
 );
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Town — Celebrate (Parties / Birthdays / Pool Party)
+ * ────────────────────────────────────────────────────────────────────── */
+export const TownParties = () => (
+  <PropertyPage
+    title="Parties"
+    eyebrow="Town"
+    body={"Bookable rooms. Loud cocktails. A staircase made for entrances.\n\nTell us the night, we'll do the rest."}
+    seoDescription="Private parties at Crazy Bear Town, Beaconsfield. Bookable rooms, cocktails, late nights."
+    cmsPage="town/parties"
+  />
+);
+
+export const TownBirthdays = () => (
+  <PropertyPage
+    title="Birthdays"
+    eyebrow="Town"
+    body={"Cake by request. Cocktails by default. Karaoke if you must.\n\nTurn another year up in Beaconsfield."}
+    seoDescription="Birthday parties at Crazy Bear Town, Beaconsfield. Private rooms, cocktails and karaoke."
+    cmsPage="town/birthdays"
+  />
+);
+
+export const TownPoolParty = () => (
+  <PropertyPage
+    title="Pool Party"
+    eyebrow="Town"
+    body={"The hidden pool, after dark. Loungers, low light, louder music.\n\nPrivate hire for the brave."}
+    seoDescription="Private pool parties at Crazy Bear Town, Beaconsfield. Hidden pool, late nights, by hire."
+    cmsPage="town/pool-party"
+  />
+);
