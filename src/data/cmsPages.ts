@@ -113,6 +113,9 @@ const CountryPlaylistPage = lazy(() => import('@/pages/property').then(m => ({ d
 const TownMenusPage = lazy(() => import('@/pages/property').then(m => ({ default: m.TownMenus })));
 const TownAfternoonTeaPage = lazy(() => import('@/pages/property').then(m => ({ default: m.TownAfternoonTea })));
 const TownKaraokePage = lazy(() => import('@/pages/property').then(m => ({ default: m.TownKaraoke })));
+const TownPartiesPage = lazy(() => import('@/pages/property').then(m => ({ default: m.TownParties })));
+const TownBirthdaysPage = lazy(() => import('@/pages/property').then(m => ({ default: m.TownBirthdays })));
+const TownPoolPartyPage = lazy(() => import('@/pages/property').then(m => ({ default: m.TownPoolParty })));
 const TownPlaylistPage = lazy(() => import('@/pages/property').then(m => ({ default: m.TownPlaylist })));
 const WhatsOnPage = lazy(() => import('@/pages/crazybear/WhatsOn'));
 const StoriesPage = lazy(() => import('@/pages/crazybear/Stories'));
