@@ -574,6 +574,7 @@ export const CMS_EXCLUDED_ROUTES: string[] = [
   '/country/members',
   '/town/members',
   '/stories/:slug',
+  '/journal/:slug',
 ];
 
 export const CMS_PAGES_BY_SLUG: Record<string, CmsPageEntry> = Object.fromEntries(
