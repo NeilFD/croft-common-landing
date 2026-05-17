@@ -171,10 +171,10 @@ const PropertyPage = ({
             contentKey="body"
             fallback={bodyText}
             as="p"
-            className="font-cb-sans text-xl md:text-2xl leading-relaxed"
+            className="font-cb-sans text-xl md:text-2xl leading-relaxed whitespace-pre-line"
           />
         ) : (
-          <p className="font-cb-sans text-xl md:text-2xl leading-relaxed">
+          <p className="font-cb-sans text-xl md:text-2xl leading-relaxed whitespace-pre-line">
             {bodyText}
           </p>
         )}
