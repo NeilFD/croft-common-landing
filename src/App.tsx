@@ -65,6 +65,9 @@ const CountryPlaylist = lazy(() => import("./pages/property").then((m) => ({ def
 const TownMenus = lazy(() => import("./pages/property").then((m) => ({ default: m.TownMenus })));
 const TownAfternoonTea = lazy(() => import("./pages/property").then((m) => ({ default: m.TownAfternoonTea })));
 const TownKaraoke = lazy(() => import("./pages/property").then((m) => ({ default: m.TownKaraoke })));
+const TownParties = lazy(() => import("./pages/property").then((m) => ({ default: m.TownParties })));
+const TownBirthdays = lazy(() => import("./pages/property").then((m) => ({ default: m.TownBirthdays })));
+const TownPoolParty = lazy(() => import("./pages/property").then((m) => ({ default: m.TownPoolParty })));
 const TownPlaylist = lazy(() => import("./pages/property").then((m) => ({ default: m.TownPlaylist })));
 const WhatsOn = lazy(() => import("./pages/crazybear/WhatsOn"));
 const Stories = lazy(() => import("./pages/crazybear/Stories"));
@@ -390,6 +393,9 @@ const App = () => {
                         <Route path="food/menus" element={<TownMenus />} />
                         <Route path="food/afternoon-tea" element={<TownAfternoonTea />} />
                         <Route path="karaoke" element={<TownKaraoke />} />
+                        <Route path="parties" element={<TownParties />} />
+                        <Route path="birthdays" element={<TownBirthdays />} />
+                        <Route path="pool-party" element={<TownPoolParty />} />
                         <Route path="playlist" element={<TownPlaylist />} />
                       </Route>
 
