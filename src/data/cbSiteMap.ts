@@ -147,3 +147,123 @@ export const allPublicPaths = (): string[] => {
   paths.add("/gift-vouchers");
   return Array.from(paths);
 };
+
+/* ------------------------------------------------------------------ */
+/* SITE_TREE — used by the menu overlay (CBNavOverlay).               */
+/* Grouped by site (Town / Country) instead of by topic.              */
+/* ------------------------------------------------------------------ */
+
+export type SiteTreeSection = {
+  label: string;
+  /** Optional landing page for the section itself. */
+  path?: string;
+  /** Optional child links — when present the section becomes a concertina. */
+  links?: SiteMapLink[];
+  /** Default open on desktop (md+). Defaults to false. */
+  defaultOpenMd?: boolean;
+};
+
+export type SiteTreeBranch = {
+  label: string;
+  home: SiteMapLink;
+  sections: SiteTreeSection[];
+};
+
+export const SITE_TREE: { town: SiteTreeBranch; country: SiteTreeBranch; both: SiteMapLink[] } = {
+  town: {
+    label: "Crazy Bear Town",
+    home: { label: "Town home", path: "/town" },
+    sections: [
+      {
+        label: "Food",
+        path: "/town/food",
+        links: [
+          { label: "All menus", path: "/town/food/menus" },
+          { label: "The Black Bear", path: "/town/food/black-bear" },
+          { label: "B&B", path: "/town/food/bnb" },
+          { label: "Hom Thai", path: "/town/food/hom-thai" },
+          { label: "Afternoon Tea", path: "/town/food/afternoon-tea" },
+        ],
+      },
+      {
+        label: "Drink",
+        path: "/town/drink",
+        links: [{ label: "Cocktails", path: "/town/drink/cocktails" }],
+      },
+      {
+        label: "Rooms",
+        path: "/town/rooms",
+        defaultOpenMd: true,
+        links: [
+          { label: "Snug", path: "/town/rooms/snug" },
+          { label: "Cosy", path: "/town/rooms/cosy" },
+          { label: "Boujee", path: "/town/rooms/boujee" },
+          { label: "Decadent", path: "/town/rooms/decadent" },
+          { label: "Room Types", path: "/town/rooms/types" },
+          { label: "Gallery", path: "/town/rooms/gallery" },
+        ],
+      },
+      { label: "Pool", path: "/town/pool" },
+      { label: "Karaoke", path: "/town/karaoke" },
+      { label: "Culture", path: "/town/culture" },
+      { label: "Playlist", path: "/town/playlist" },
+    ],
+  },
+  country: {
+    label: "Crazy Bear Country",
+    home: { label: "Country home", path: "/country" },
+    sections: [
+      {
+        label: "Food",
+        path: "/country/food",
+        links: [
+          { label: "All menus", path: "/country/food/menus" },
+          { label: "Afternoon Tea", path: "/country/food/afternoon-tea" },
+        ],
+      },
+      {
+        label: "Pub",
+        path: "/country/pub",
+        links: [
+          { label: "Food", path: "/country/pub/food" },
+          { label: "Drink", path: "/country/pub/drink" },
+          { label: "Hospitality", path: "/country/pub/hospitality" },
+        ],
+      },
+      {
+        label: "Rooms",
+        path: "/country/rooms",
+        defaultOpenMd: true,
+        links: [
+          { label: "Snug", path: "/country/rooms/snug" },
+          { label: "Cosy", path: "/country/rooms/cosy" },
+          { label: "Boujee", path: "/country/rooms/boujee" },
+          { label: "Decadent", path: "/country/rooms/decadent" },
+          { label: "Room Types", path: "/country/rooms/types" },
+          { label: "Gallery", path: "/country/rooms/gallery" },
+        ],
+      },
+      { label: "Terraces & Gardens", path: "/country/terraces-and-gardens" },
+      { label: "Parties", path: "/country/parties" },
+      {
+        label: "Events",
+        path: "/country/events",
+        links: [
+          { label: "Weddings", path: "/country/events/weddings" },
+          { label: "Birthdays", path: "/country/events/birthdays" },
+          { label: "Business", path: "/country/events/business" },
+        ],
+      },
+      { label: "Culture", path: "/country/culture" },
+      { label: "Playlist", path: "/country/playlist" },
+    ],
+  },
+  both: [
+    { label: "What's Happening", path: "/whats-on" },
+    { label: "Stories from the Bear", path: "/stories" },
+    { label: "Gift Vouchers", path: "/gift-vouchers" },
+    { label: "About", path: "/about" },
+    { label: "House Rules", path: "/house-rules" },
+    { label: "The Bear's Den", path: "/bears-den" },
+  ],
+};
