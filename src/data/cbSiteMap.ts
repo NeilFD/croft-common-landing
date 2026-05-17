@@ -193,7 +193,6 @@ export const SITE_TREE: { town: SiteTreeBranch; country: SiteTreeBranch; both: S
       {
         label: "Rooms",
         path: "/town/rooms",
-        defaultOpenMd: true,
         links: [
           { label: "Snug", path: "/town/rooms/snug" },
           { label: "Cosy", path: "/town/rooms/cosy" },
@@ -233,7 +232,6 @@ export const SITE_TREE: { town: SiteTreeBranch; country: SiteTreeBranch; both: S
       {
         label: "Rooms",
         path: "/country/rooms",
-        defaultOpenMd: true,
         links: [
           { label: "Snug", path: "/country/rooms/snug" },
           { label: "Cosy", path: "/country/rooms/cosy" },
