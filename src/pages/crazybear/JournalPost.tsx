@@ -79,7 +79,7 @@ const JournalPost = () => {
       />
       {post.hero_url ? (
         <section className="relative h-[60vh] min-h-[400px] w-full overflow-hidden bg-black text-white">
-          <img src={post.hero_url} alt={post.title} width={1920} height={1080} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: "center 25%" }} />
+          <img src={post.hero_url} alt={post.title} width={1920} height={1080} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: "center 0%" }} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
           <CBTopNav tone="light" />
         </section>
