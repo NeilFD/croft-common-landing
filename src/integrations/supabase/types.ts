@@ -396,14 +396,19 @@ export type Database = {
           body: string | null
           created_at: string
           ends_at: string | null
+          excerpt: string | null
           external_url: string | null
           id: string
+          og_image_url: string | null
           poster_url: string | null
           published: boolean
+          seo_description: string | null
+          seo_title: string | null
           site: string
           slug: string
           sort_order: number
           starts_at: string | null
+          subtitle: string | null
           title: string
           updated_at: string
         }
@@ -411,14 +416,19 @@ export type Database = {
           body?: string | null
           created_at?: string
           ends_at?: string | null
+          excerpt?: string | null
           external_url?: string | null
           id?: string
+          og_image_url?: string | null
           poster_url?: string | null
           published?: boolean
+          seo_description?: string | null
+          seo_title?: string | null
           site?: string
           slug: string
           sort_order?: number
           starts_at?: string | null
+          subtitle?: string | null
           title: string
           updated_at?: string
         }
@@ -426,14 +436,19 @@ export type Database = {
           body?: string | null
           created_at?: string
           ends_at?: string | null
+          excerpt?: string | null
           external_url?: string | null
           id?: string
+          og_image_url?: string | null
           poster_url?: string | null
           published?: boolean
+          seo_description?: string | null
+          seo_title?: string | null
           site?: string
           slug?: string
           sort_order?: number
           starts_at?: string | null
+          subtitle?: string | null
           title?: string
           updated_at?: string
         }
@@ -447,11 +462,16 @@ export type Database = {
           excerpt: string | null
           hero_url: string | null
           id: string
+          og_image_url: string | null
           published: boolean
           published_at: string | null
+          reading_minutes: number | null
+          seo_description: string | null
+          seo_title: string | null
           site_scope: string
           slug: string
           sort_order: number
+          subtitle: string | null
           tags: string[]
           title: string
           updated_at: string
@@ -463,11 +483,16 @@ export type Database = {
           excerpt?: string | null
           hero_url?: string | null
           id?: string
+          og_image_url?: string | null
           published?: boolean
           published_at?: string | null
+          reading_minutes?: number | null
+          seo_description?: string | null
+          seo_title?: string | null
           site_scope?: string
           slug: string
           sort_order?: number
+          subtitle?: string | null
           tags?: string[]
           title: string
           updated_at?: string
@@ -479,11 +504,16 @@ export type Database = {
           excerpt?: string | null
           hero_url?: string | null
           id?: string
+          og_image_url?: string | null
           published?: boolean
           published_at?: string | null
+          reading_minutes?: number | null
+          seo_description?: string | null
+          seo_title?: string | null
           site_scope?: string
           slug?: string
           sort_order?: number
+          subtitle?: string | null
           tags?: string[]
           title?: string
           updated_at?: string
@@ -555,12 +585,17 @@ export type Database = {
           body: string | null
           created_at: string
           excerpt: string | null
+          gallery_urls: string[]
           hero_url: string | null
           id: string
+          og_image_url: string | null
           published: boolean
           published_at: string | null
+          seo_description: string | null
+          seo_title: string | null
           slug: string
           sort_order: number
+          subtitle: string | null
           title: string
           updated_at: string
         }
@@ -568,12 +603,17 @@ export type Database = {
           body?: string | null
           created_at?: string
           excerpt?: string | null
+          gallery_urls?: string[]
           hero_url?: string | null
           id?: string
+          og_image_url?: string | null
           published?: boolean
           published_at?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
           slug: string
           sort_order?: number
+          subtitle?: string | null
           title: string
           updated_at?: string
         }
@@ -581,12 +621,17 @@ export type Database = {
           body?: string | null
           created_at?: string
           excerpt?: string | null
+          gallery_urls?: string[]
           hero_url?: string | null
           id?: string
+          og_image_url?: string | null
           published?: boolean
           published_at?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
           slug?: string
           sort_order?: number
+          subtitle?: string | null
           title?: string
           updated_at?: string
         }
