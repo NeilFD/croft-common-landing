@@ -74,22 +74,29 @@ export const GanttGrid = ({
 
   const headerDays = Array.from({ length: win.days }, (_, i) => addDays(win.start, i));
 
-  return (
-    <div
-      className="border border-foreground bg-background"
-      style={{ display: 'grid', gridTemplateColumns: `${LEFT_RAIL}px 1fr` }}
-    >
-      {/* Top-left corner */}
-      <div className="border-b border-r border-foreground bg-foreground text-background px-3 py-2 font-display text-xs uppercase tracking-wider flex items-center">
-        {format(win.start, 'MMM yyyy')}
-        {win.size === 'quarter' ? ` – ${format(win.end, 'MMM yyyy')}` : ''}
-      </div>
+  const minGridWidth = win.days * MIN_DAY_WIDTH;
+  const colTemplate = `repeat(${win.days}, minmax(${MIN_DAY_WIDTH}px, 1fr))`;
 
-      {/* Day header */}
+  return (
+    <div className="border border-foreground bg-background overflow-x-auto">
       <div
-        className="border-b border-foreground bg-foreground text-background grid"
-        style={{ gridTemplateColumns: `repeat(${win.days}, minmax(0, 1fr))` }}
+        style={{
+          display: 'grid',
+          gridTemplateColumns: `${LEFT_RAIL}px 1fr`,
+          minWidth: LEFT_RAIL + minGridWidth,
+        }}
       >
+        {/* Top-left corner */}
+        <div className="border-b border-r border-foreground bg-foreground text-background px-3 py-2 font-display text-xs uppercase tracking-wider flex items-center sticky left-0 z-10">
+          {format(win.start, 'MMM yyyy')}
+          {win.size === 'quarter' ? ` – ${format(win.end, 'MMM yyyy')}` : ''}
+        </div>
+
+        {/* Day header */}
+        <div
+          className="border-b border-foreground bg-foreground text-background grid"
+          style={{ gridTemplateColumns: colTemplate }}
+        >
         {headerDays.map((d, i) => (
           <div
             key={i}
