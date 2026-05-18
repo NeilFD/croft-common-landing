@@ -838,6 +838,60 @@ export const ManagementSidebar = () => {
                               <SidebarMenuItem>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
+                                    <SidebarMenuButton
+                                      asChild
+                                      className={getNavClass(isActive('/management/admin/management/events', false))}
+                                    >
+                                      <NavLink to="/management/admin/management/events" className="font-cb-sans">
+                                        <CalendarDays className="mr-2 h-4 w-4" />
+                                        What's Happening
+                                      </NavLink>
+                                    </SidebarMenuButton>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                                    <p className="font-cb-sans">What's Happening</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </SidebarMenuItem>
+                              <SidebarMenuItem>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <SidebarMenuButton
+                                      asChild
+                                      className={getNavClass(isActive('/management/admin/management/stories', false))}
+                                    >
+                                      <NavLink to="/management/admin/management/stories" className="font-cb-sans">
+                                        <BookOpen className="mr-2 h-4 w-4" />
+                                        Stories
+                                      </NavLink>
+                                    </SidebarMenuButton>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                                    <p className="font-cb-sans">Stories</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </SidebarMenuItem>
+                              <SidebarMenuItem>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <SidebarMenuButton
+                                      asChild
+                                      className={getNavClass(isActive('/management/admin/management/journal', false))}
+                                    >
+                                      <NavLink to="/management/admin/management/journal" className="font-cb-sans">
+                                        <FileText className="mr-2 h-4 w-4" />
+                                        Journal
+                                      </NavLink>
+                                    </SidebarMenuButton>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                                    <p className="font-cb-sans">Journal</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </SidebarMenuItem>
+                              <SidebarMenuItem>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
                                     <SidebarMenuButton 
                                       asChild
                                       className={getNavClass(isActive('/management/admin/analytics/member-analytics', false))}
