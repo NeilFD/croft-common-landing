@@ -51,6 +51,8 @@ const Curious: React.FC = () => {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const { toast } = useToast();
+  const { assets: heroAssets } = useCMSAssets('curious', 'hero');
+  const bgImage = heroAssets[0]?.src ?? cbBgImage;
   const initial = (params.get('c') as Category | null) || null;
   const [category, setCategory] = useState<Category | null>(initial);
   const [submitting, setSubmitting] = useState(false);
