@@ -146,45 +146,42 @@ Deno.serve(async (req) => {
     const { error: profileError } = await supabaseAdmin
       .from('management_profiles')
       .upsert({
-        user_id: authUser.user.id,
+        user_id: targetUserId,
         display_name: user_name,
         email,
-        job_title
+        job_title,
+        is_active: true
       }, { onConflict: 'user_id' })
 
     if (profileError) {
       console.error('Profile error:', profileError)
-      await supabaseAdmin.auth.admin.deleteUser(authUser.user.id)
       throw profileError
     }
 
-    // Add role
+    // Add role (idempotent)
     const { error: roleError } = await supabaseAdmin
       .from('user_roles')
-      .insert({ user_id: authUser.user.id, role: mappedRole })
+      .upsert({ user_id: targetUserId, role: mappedRole }, { onConflict: 'user_id,role' })
 
     if (roleError) {
       console.error('Role error:', roleError)
-      await supabaseAdmin.auth.admin.deleteUser(authUser.user.id)
-      await supabaseAdmin.from('management_profiles').delete().eq('user_id', authUser.user.id)
       throw roleError
     }
 
     const userData = { email, role: mappedRole, temp_password: tempPassword, created_by: callerId }
 
-    // Create password metadata entry
+    // Create/refresh password metadata entry
     const { error: pwdError } = await supabaseAdmin
       .from('user_password_metadata')
-      .insert({
-        user_id: authUser.user.id,
+      .upsert({
+        user_id: targetUserId,
         must_change_password: true,
         is_first_login: true,
         created_by: userData.created_by
-      })
+      }, { onConflict: 'user_id' })
 
     if (pwdError) {
       console.error('Password metadata error:', pwdError)
-      // Continue anyway - not critical
     }
 
     // Log audit entry
@@ -192,7 +189,7 @@ Deno.serve(async (req) => {
       .from('management_user_audit')
       .insert({
         action: 'user_created',
-        target_user_id: authUser.user.id,
+        target_user_id: targetUserId,
         actor_id: userData.created_by,
         details: { 
           email: userData.email, 
@@ -204,12 +201,11 @@ Deno.serve(async (req) => {
 
     if (auditError) {
       console.error('Audit error:', auditError)
-      // Continue anyway - not critical
     }
 
     return new Response(
       JSON.stringify({
-        user_id: authUser.user.id,
+        user_id: targetUserId,
         email: userData.email,
         role: userData.role,
         temp_password: userData.temp_password
