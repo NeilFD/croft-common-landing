@@ -193,7 +193,7 @@ const LowercasePathGuard = () => {
       "secretkitchens",
       "secretkitchenadmin",
       "hall",
-     "community",
+     
      "common-room",
      "calendar",
      "manage-event",
