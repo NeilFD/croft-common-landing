@@ -86,6 +86,7 @@ const Journal = lazy(() => import("./pages/crazybear/Journal"));
 const JournalPost = lazy(() => import("./pages/crazybear/JournalPost"));
 const CBCookieBanner = lazy(() => import("./components/crazybear/CBCookieBanner"));
 const WhatsOn = lazy(() => import("./pages/crazybear/WhatsOn"));
+const WhatsOnDetail = lazy(() => import("./pages/crazybear/WhatsOnDetail"));
 const Stories = lazy(() => import("./pages/crazybear/Stories"));
 const StoryDetail = lazy(() => import("./pages/crazybear/StoryDetail"));
 const GiftVouchers = lazy(() => import("./pages/crazybear/GiftVouchers"));
@@ -417,6 +418,7 @@ const App = () => {
 
                       {/* Site-wide */}
                       <Route path="/whats-on" element={<WhatsOn />} />
+                      <Route path="/whats-on/:slug" element={<WhatsOnDetail />} />
                       <Route path="/stories" element={<Stories />} />
                       <Route path="/stories/:slug" element={<StoryDetail />} />
                       <Route path="/gift-vouchers" element={<GiftVouchers />} />
