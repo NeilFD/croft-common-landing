@@ -124,13 +124,29 @@ serve(async (req) => {
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) throw new Error("LOVABLE_API_KEY not configured");
 
-    const { action, body, channel } = await req.json();
-    const ch = (channel || "instagram").toLowerCase();
-    const builder = ACTIONS[action];
-    if (!builder) throw new Error(`Unknown action: ${action}`);
-
+    const payload = await req.json();
+    const { action } = payload;
     const { voice, hints } = await loadSettings();
-    const prompt = builder(voice, hints, body || "", ch);
+
+    let prompt: string;
+    if (action === "cms_copy") {
+      prompt = buildCmsPrompt(voice, {
+        page: payload.page || "",
+        section: payload.section || "",
+        contentKey: payload.contentKey || "",
+        pageTitle: payload.pageTitle,
+        property: payload.property,
+        currentText: payload.currentText,
+        brief: payload.brief,
+        kind: payload.kind,
+      });
+    } else {
+      const ch = (payload.channel || "instagram").toLowerCase();
+      const builder = ACTIONS[action];
+      if (!builder) throw new Error(`Unknown action: ${action}`);
+      prompt = builder(voice, hints, payload.body || "", ch);
+    }
+
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
