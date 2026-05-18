@@ -442,7 +442,8 @@ export const CMSText = ({
   const renderEditingInterface = () => {
     if (!isEditing) return null;
     
-    const isMultiline = editValue.length > 100 || editValue.includes('\n');
+    const kindForUi = inferKind(section, contentKey);
+    const isMultiline = editValue.length > 80 || editValue.includes('\n') || kindForUi === 'body' || kindForUi === 'intro' || kindForUi === 'legal';
     
     console.log('🎯 CMS: Rendering editing interface via portal');
     
