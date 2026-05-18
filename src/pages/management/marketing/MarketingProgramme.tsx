@@ -22,6 +22,7 @@ import {
 } from '@/lib/marketing/programme';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 const PROPERTY_TABS = ['all', 'town', 'country', 'group'] as const;
 type PropertyTab = (typeof PROPERTY_TABS)[number];
