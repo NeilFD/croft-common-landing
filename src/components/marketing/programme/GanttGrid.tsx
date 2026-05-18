@@ -274,11 +274,18 @@ const GanttBar = ({
   const [drag, setDrag] = useState<{ mode: DragMode; startX: number; origStartIdx: number; origEndIdx: number } | null>(null);
   const [previewStart, setPreviewStart] = useState(startIdx);
   const [previewSpan, setPreviewSpan] = useState(span);
+  // Refs mirror latest preview values so the pointerup handler never reads
+  // stale closure state (pointerup can fire before React flushes the last
+  // pointermove update).
+  const previewStartRef = useRef(startIdx);
+  const previewSpanRef = useRef(span);
 
   useEffect(() => {
     if (!drag) {
       setPreviewStart(startIdx);
       setPreviewSpan(span);
+      previewStartRef.current = startIdx;
+      previewSpanRef.current = span;
     }
   }, [startIdx, span, drag]);
 
@@ -307,12 +314,17 @@ const GanttBar = ({
         en = win.days - 1;
         if (s < 0) s = 0;
       }
+      const nextSpan = Math.max(1, en - s + 1);
+      previewStartRef.current = s;
+      previewSpanRef.current = nextSpan;
       setPreviewStart(s);
-      setPreviewSpan(Math.max(1, en - s + 1));
+      setPreviewSpan(nextSpan);
     };
     const onUp = async () => {
-      const newStart = indexToDate(previewStart, win);
-      const newEnd = indexToDate(previewStart + previewSpan - 1, win);
+      const ps = previewStartRef.current;
+      const pSpan = previewSpanRef.current;
+      const newStart = indexToDate(ps, win);
+      const newEnd = indexToDate(ps + pSpan - 1, win);
       const sISO = format(newStart, 'yyyy-MM-dd');
       const eISO = format(newEnd, 'yyyy-MM-dd');
       setDrag(null);
@@ -331,7 +343,7 @@ const GanttBar = ({
       globalThis.removeEventListener('pointermove', onMove);
       globalThis.removeEventListener('pointerup', onUp);
     };
-  }, [drag, dayWidth, win, previewStart, previewSpan, campaign.id, campaign.start_date, campaign.end_date, onCommit, optimistic]);
+  }, [drag, dayWidth, win, campaign.id, campaign.start_date, campaign.end_date, onCommit, optimistic]);
 
   const accent = campaign.property_tag ? PROPERTY_ACCENT[campaign.property_tag] : '#666';
   const top = lanePadding / 2 + subRow * (subRowHeight + subRowGap);

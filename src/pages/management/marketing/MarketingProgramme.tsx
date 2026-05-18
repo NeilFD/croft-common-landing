@@ -22,12 +22,14 @@ import {
 } from '@/lib/marketing/programme';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 const PROPERTY_TABS = ['all', 'town', 'country', 'group'] as const;
 type PropertyTab = (typeof PROPERTY_TABS)[number];
 
 const MarketingProgramme = () => {
   const { toast } = useToast();
+  const qc = useQueryClient();
   const [anchor, setAnchor] = useState(() => startOfMonth(new Date()));
   const [size, setSize] = useState<WindowSize>('month');
   const [property, setProperty] = useState<PropertyTab>('all');
@@ -78,8 +80,13 @@ const MarketingProgramme = () => {
       .eq('id', id);
     if (error) {
       toast({ title: 'Could not save dates', description: error.message, variant: 'destructive' });
+      // Roll back the optimistic update by refetching the truth from the DB.
+      qc.invalidateQueries({ queryKey: ['marketing', 'programme'] });
       throw error;
     }
+    // Resync cache so any other consumers see the new dates.
+    qc.invalidateQueries({ queryKey: ['marketing', 'programme'] });
+    qc.invalidateQueries({ queryKey: ['marketing', 'campaigns'] });
   };
 
   const snapshot = async (): Promise<string | null> => {
