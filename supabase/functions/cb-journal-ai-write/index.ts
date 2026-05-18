@@ -167,20 +167,26 @@ Deno.serve(async (req) => {
     const model = body.model || "google/gemini-2.5-flash";
     const userPrompt = buildUserPrompt(body);
 
+    // GPT-5 family rejects non-default temperature
+    const isGpt5 = /^openai\/gpt-5/.test(model);
+    const payload: Record<string, unknown> = {
+      model,
+      messages: [
+        { role: "system", content: VOICE },
+        { role: "user", content: userPrompt },
+      ],
+    };
+    if (!isGpt5) payload.temperature = 0.7;
+
+    console.log("[cb-journal-ai-write] calling AI", { model, mode: body.mode });
+
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: "system", content: VOICE },
-          { role: "user", content: userPrompt },
-        ],
-        temperature: 0.7,
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (aiResp.status === 429) {
@@ -197,6 +203,7 @@ Deno.serve(async (req) => {
     }
     if (!aiResp.ok) {
       const detail = await aiResp.text();
+      console.error("[cb-journal-ai-write] AI gateway error", aiResp.status, detail);
       return new Response(
         JSON.stringify({ error: "AI request failed", detail }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
