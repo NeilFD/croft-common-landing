@@ -135,7 +135,7 @@ export const GanttGrid = ({
             {/* Vertical day separators */}
             <div
               className="absolute inset-0 grid pointer-events-none"
-              style={{ gridTemplateColumns: `repeat(${win.days}, minmax(0, 1fr))` }}
+              style={{ gridTemplateColumns: colTemplate }}
             >
               {headerDays.map((d, i) => (
                 <div
@@ -151,7 +151,7 @@ export const GanttGrid = ({
             {!readOnly && (
               <div
                 className="absolute inset-0 grid"
-                style={{ gridTemplateColumns: `repeat(${win.days}, minmax(0, 1fr))` }}
+                style={{ gridTemplateColumns: colTemplate }}
               >
                 {headerDays.map((d, i) => (
                   <button
