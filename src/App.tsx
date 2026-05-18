@@ -90,7 +90,7 @@ const Stories = lazy(() => import("./pages/crazybear/Stories"));
 const StoryDetail = lazy(() => import("./pages/crazybear/StoryDetail"));
 const GiftVouchers = lazy(() => import("./pages/crazybear/GiftVouchers"));
 const EventEnquiry = lazy(() => import("./pages/EventEnquiry"));
-const Community = lazy(() => import("./pages/Community"));
+
 const CommonRoom = lazy(() => import("./pages/CommonRoom"));
 const CommonRoomMain = lazy(() => import("./pages/CommonRoomMain"));
 const MemberHome = lazy(() => import("./pages/MemberHome"));
