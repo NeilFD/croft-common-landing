@@ -9,6 +9,7 @@ import CBFooter from "@/components/crazybear/CBFooter";
 interface Story {
   id: string;
   title: string;
+  subtitle: string | null;
   slug: string;
   excerpt: string | null;
   hero_url: string | null;
