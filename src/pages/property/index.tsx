@@ -485,7 +485,7 @@ export const TownMenus = () => (
     body="Every menu. One place."
     seoDescription="Every menu across Crazy Bear Town, Beaconsfield. The Black Bear, the B&B, Hom Thai."
     cmsPage="town/food/menus"
-    heroObjectPosition="center 0%"
+    heroObjectPosition="center 45%"
   >
     <CBMenusIndex venues={TOWN_MENUS} cmsPage="town/food/menus" />
   </PropertyPage>
@@ -497,7 +497,7 @@ export const CountryMenus = () => (
     body="Every menu. One place."
     seoDescription="Every menu across Crazy Bear Country, Stadhampton. The Pub, Restaurant and Thai."
     cmsPage="country/food/menus"
-    heroObjectPosition="center 0%"
+    heroObjectPosition="center 45%"
   >
     <CBMenusIndex venues={COUNTRY_MENUS} cmsPage="country/food/menus" />
   </PropertyPage>
