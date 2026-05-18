@@ -4571,6 +4571,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_password_metadata: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          is_first_login: boolean
+          must_change_password: boolean
+          password_changed_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_first_login?: boolean
+          must_change_password?: boolean
+          password_changed_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_first_login?: boolean
+          must_change_password?: boolean
+          password_changed_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -4879,6 +4912,10 @@ export type Database = {
         Args: { client_ip?: string; payload: Json }
         Returns: string
       }
+      deactivate_management_user: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -4888,6 +4925,7 @@ export type Database = {
         Returns: number
       }
       ensure_referral_code: { Args: { p_user_id: string }; Returns: string }
+      force_password_change: { Args: { p_user_id: string }; Returns: undefined }
       get_cinema_status:
         | {
             Args: never
