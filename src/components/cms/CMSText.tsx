@@ -66,6 +66,10 @@ export const CMSText = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const originalElementRef = useRef<any>(null);
+  const preAiValueRef = useRef<string | null>(null);
+
+  const [aiBrief, setAiBrief] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Show fallback while loading, or if no content after loading
   const displayText = loading ? fallback : (content?.content_data?.text ?? fallback);
