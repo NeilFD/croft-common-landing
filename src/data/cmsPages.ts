@@ -423,6 +423,7 @@ export const CMS_PAGES: CmsPageEntry[] = [
 export const CMS_EXCLUDED_ROUTES: string[] = [
   '/whats-on/:slug', // dynamic event detail, content edited per-event in admin
   '/journal/:slug', // dynamic journal detail
+  '/management/marketing/programme', // management-only Gantt, no CMS
   '/image-picker',
   '/set-password',
   '/croft', // legacy alias to old Croft Common index
