@@ -1,43 +1,51 @@
-## The honest audit
+## What's actually broken
 
-Most pages already read their hero image from the CMS, but a handful never did. That's why The B&B looked stuck — its template (CBMenuPage, shared with Black Bear / Hom Thai) was hardcoded to the bundled image. I patched that one in the previous turn. The pages below are the remaining offenders.
+Every public page IS registered in the CMS (`src/data/cmsPages.ts`) and almost every page IS wired for inline copy editing (`cmsPage="..."` → `CMSText` slots in `PropertyPage` / `CBMenuPage`). The visual editor route works (e.g. `/management/cms/visual/town/food/afternoon-tea` will render the live page with click-to-edit).
 
-### Already reading hero image from CMS (no work needed)
+The problem is the **sidebar in `src/components/cms/CMSSidebar.tsx`** only renders **two levels** deep:
 
-- All pages using `CBStaticPage`: Privacy, Careers, FAQHub, Gallery, Press, Journal, Merch, Contact, Treatments, Cookies, Terms
-- All pages using `PropertyPage` (Town/Country property hubs, rooms, events, drink, etc.)
-- About, Culture (Town + Country), Stories/Journal detail pages (use post `hero_url`)
-- The B&B / Black Bear / Hom Thai (just fixed via `CBMenuPage`)  
-  
-  
-Hang on youre saying BnB doesnt need work, but it isnt working IRL?
+```
+Country Home
+ ├─ Country Pub        ← child of `country`        ✓ visible
+ ├─ Country Food       ← child of `country`        ✓ visible
+ │   ├─ Country Menus     ← grandchild             ✗ HIDDEN
+ │   └─ Afternoon Tea     ← grandchild             ✗ HIDDEN
+ ├─ Country Rooms
+ │   ├─ Room Types        ← HIDDEN
+ │   ├─ Room Gallery      ← HIDDEN
+ │   ├─ Snug/Cosy/...     ← HIDDEN
+ └─ Country Events
+     ├─ Weddings          ← HIDDEN
+     ├─ Birthdays         ← HIDDEN
+     └─ Business          ← HIDDEN
+```
 
-### NOT reading hero image from CMS — need fixing
+Pages currently unreachable from the sidebar (so you can never click into them to edit copy):
 
-1. **What's On** (`/whats-on`) — hero section has CMSText but no CMS image, just a plain black band.
-2. **Gift Vouchers** (`/gift-vouchers`) — same, text only, no hero image slot.
-3. **Members** (`/members`) — hero is a plain black band.
-4. **Bear's Den** (`/bears-den`) — hero uses bundled bear mark only, no CMS image.
-5. **Curious** (`/curious`) — uses a hardcoded bundled background image, not CMS.
+**Country**: `country/pub/food`, `country/pub/drink`, `country/pub/hospitality`, `country/rooms/types`, `country/rooms/gallery`, `country/rooms/snug`, `country/rooms/cosy`, `country/rooms/boujee`, `country/rooms/decadent`, `country/food/menus`, `country/food/afternoon-tea`, `country/events/weddings`, `country/events/birthdays`, `country/events/business`, `country/playlist` (parentSlug `country/culture`).
 
-## What I'll do
+**Town**: `town/food/black-bear`, `town/food/bnb`, `town/food/hom-thai`, `town/food/menus`, `town/food/afternoon-tea`, `town/drink/cocktails`, `town/rooms/types`, `town/rooms/gallery`, `town/rooms/snug`, `town/rooms/cosy`, `town/rooms/boujee`, `town/rooms/decadent`, `town/pool-party` (parent `town/pool`), `town/playlist` (parent `town/culture`).
 
-For each of the 5 pages above:
+(The same pages appear in the public **Assets** page picker as "73 pages total" — they exist, the sidebar just hides them.)
 
-1. Add a `useCMSAssets(page, "hero")` (or single-row `cms_images` query) lookup using the page's existing CMS namespace.
-2. Render the returned image as an absolute-positioned `<img>` behind the existing hero copy, with the same black overlay treatment used on CBStaticPage so text stays legible.
-3. Keep the current bundled image (where one exists) as a fallback when no CMS row is published.
-4. Register the new `hero` image slot for each page in `src/data/cmsImageRegistry.ts` so the CMS Assets screen exposes a "Replace" slot exactly like The B&B has now.
+## Fix
 
-No changes to routing, copy, or business logic — image source only.
+1. **`src/components/cms/CMSSidebar.tsx`** — replace the hand-rolled two-level `renderPage` with a recursive `renderNode` driven by `childrenOf(slug)`. Nodes with children render as a `Collapsible` with the same chevron + indent treatment already in use; nodes without children render as a plain `NavLink`. No data changes required because `parentSlug` already encodes the full tree.
 
-## Technical notes
+2. **Audit pass on a handful of pages that currently render hardcoded copy outside `CMSText`** so editing actually does something for every section the user can now reach:
+   - `src/pages/property/index.tsx` — `CBSectionedPage` sections (Terraces & Gardens 4 areas) and `CBMenusIndex` venue blurbs are hardcoded strings. Wire each section title/body and each venue name/blurb through `CMSText` using deterministic content keys (e.g. `country/terraces-and-gardens.fishpond.title`).
+   - `src/components/crazybear/culture/CulturePage.tsx` (Town Culture, Country Culture) — currently no `CMSText`. Wrap the rendered copy blocks so both culture pages are editable.
+   - `src/pages/crazybear/Stories.tsx`, `Journal.tsx` index intros — wrap intro copy in `CMSText` (post bodies stay in their existing post tables).
 
-- Single source of truth for the hero query: factor a small `useCMSHero(page)` hook (mirrors the inline query already in `CBStaticPage` and the new one in `CBMenuPage`) and reuse it across these 5 pages so we stop duplicating the same Supabase call.
-- Registry entries follow the existing pattern: `{ page, slot: "hero", label: "<Page name> hero", defaults: [{ src: <bundled fallback>, alt: "" }] }`.
-- Curious currently uses `cbBgImage` as a CSS `background-image`; switch to an `<img>` layer so the CMS image can override it cleanly.
+3. **Add Hospitality, Stories, Journal etc. that were missing from the sidebar list** — these come back automatically once the sidebar recurses, no separate work.
+
+4. **No registry / no route / no schema changes.** No DB migration. The fallback strings already in the code stay as defaults until you publish edits.
+
+## How you'll use it after
+
+Open `/management/cms` → the Country and Town sections in the left sidebar expand all the way down (Country → Country Food → Afternoon Tea, etc.). Click any page → click **Edit** → click any text on the rendered page to change it → **Publish**.
 
 ## Out of scope
 
-- Changing which images are currently published in the CMS (that's a content task in the CMS UI).
-- Touching pages already wired correctly.
+- No changes to authentication, the database, the Assets image flow, routing, or page layouts.
+- Tightly templated micro-copy (button labels inside shared components like `CBMenusIndex`, schema-driven SEO defaults) stays as-is unless you want a second pass after this lands.
