@@ -53,6 +53,7 @@ export const AiAssistPanel = ({ title, currentBody, onInsert, onSeo }: Props) =>
         } catch {}
         throw new Error(detail);
       }
+      if (mode === "seo") {
         onSeo?.({
           seo_title: data?.seo_title,
           seo_description: data?.seo_description,
