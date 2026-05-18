@@ -223,20 +223,6 @@ export const CMS_PAGES: CmsPageEntry[] = [
     },
   },
   {
-    slug: 'community',
-    route: '/community',
-    title: 'Community',
-    description: 'Community feed and updates',
-    group: 'Standalone',
-    icon: Heart,
-    component: Community,
-    seo: {
-      include: true,
-      defaultTitle: 'Community | Crazy Bear',
-      defaultDescription: 'Community moments and updates from Crazy Bear.',
-    },
-  },
-  {
     slug: 'event-enquiry',
     route: '/event-enquiry',
     title: 'Event Enquiry',
