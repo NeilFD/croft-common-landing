@@ -13,13 +13,16 @@ type SiteFilter = "both" | "town" | "country";
 interface CBEvent {
   id: string;
   title: string;
+  subtitle: string | null;
   slug: string;
   site: "town" | "country" | "both";
   starts_at: string | null;
   ends_at: string | null;
   poster_url: string | null;
+  excerpt: string | null;
   body: string | null;
   external_url: string | null;
+  og_image_url: string | null;
 }
 
 const formatDate = (iso: string | null) => {

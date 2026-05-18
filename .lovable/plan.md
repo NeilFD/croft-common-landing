@@ -1,55 +1,88 @@
-## Problem
+## Goal
 
-On `/whats-on` (and several other Crazy Bear pages) the top nav sits halfway down the hero, overlapping the headline, instead of being pinned to the very top of the section.
+Upgrade the admin pages for **Events** (`/whats-on`), **Journal** (blog), and **Stories from the Bear** from bare text/URL forms into a proper content studio: rich editor, drag-and-drop image uploads, full SEO control, and AI assist for blog drafting (length-controlled, British English, no em dashes).  
+  
+This capability needs to be in the CMS systems, page for these pages please!!!!!!!!
 
-## Root cause
+The public pages already exist; this is about giving editors the tools to produce world-class content and surfacing every new field on the live site.
 
-`CBTopNav` positions itself with `absolute top-0`. On the affected pages it is rendered inside an inner wrapper like `<div className="relative z-10">`, which becomes its offset parent. That wrapper sits **below** the section's `pt-40 md:pt-48` padding (160–192px), so the nav is pushed down by that padding instead of anchoring to the section's top edge.
+## What editors will get
 
-Pages where CBTopNav is wrapped in a `relative` inner div (broken):
+For each of the three content types:
 
-- `src/pages/crazybear/WhatsOn.tsx`
-- `src/pages/crazybear/GiftVouchers.tsx`
-- `src/pages/crazybear/BearsDen.tsx`
-- `src/components/crazybear/CBStaticPage.tsx` (powers Careers, Contact, Cookies, Curious, FAQHub, Merch, Press, SetPassword content, Terms, Treatments, etc — anything built on CBStaticPage)
-- `src/components/property/PropertyLayout.tsx` (`<div className="relative">` wraps the nav)
+- Clean two-column editor: content on the left, sidebar on the right (Status, Site, Schedule, SEO, Hero image).
+- Hero image **upload** (drag-and-drop or click), with replace and remove. No more pasting URLs.
+- Inline image uploads inside body content (paste, drop, or toolbar button).
+- Rich-text editor: H2/H3, bold, italic, lists, quotes, links, inline images. Markdown shortcuts.
+- **Subtitle** field on events (currently missing) and short **excerpt** on all three.
+- **SEO panel**: SEO title, meta description (with character counters), social share image (defaults to hero), canonical override.
+- Draft / Publish toggle plus scheduled publish date.
+- Live preview link that opens the public route.
 
-Pages where CBTopNav is already a direct child of a `relative` section (correct, no change):
+Events also keep: start/end datetimes, Town/Country/Both, optional external ticket URL.
 
-- `Members.tsx`, `Stories.tsx`, `JournalPost.tsx`, `StoryDetail.tsx`, `About.tsx`, `HouseRules.tsx`, `Landing.tsx`
+Journal also gets: author, tags, reading-time estimate (auto-calculated, editable).
 
-## Fix
+Stories also gets: gallery (additional images shown in detail view).
 
-For each broken file, move `<CBTopNav />` out of the inner relative wrapper so it becomes a direct child of the outer `relative` `<section>` (sibling of `CBHeroBackdrop` and the content wrapper). The content wrapper keeps its `relative z-10` for stacking above the backdrop; the nav already has `z-30` so it stays above everything.
+## AI assist (Journal only, per request)
 
-Concretely, change:
+A "Write with AI" panel in the Journal editor:
 
-```tsx
-<section className="relative ... pt-40 md:pt-48 ...">
-  <CBHeroBackdrop page={PAGE} />
-  <div className="relative z-10">
-    <CBTopNav tone="light" />
-    ...content
-  </div>
-</section>
-```
+- Inputs: working title, angle/notes, **target length** (choose either word count or "minutes to read"), tone (default: Bear's Den voice — short, staccato, confident).
+- Output is inserted as a **draft into the editor** — editor still chooses what to keep. Never auto-publishes.
+- Hard rules enforced in the system prompt and post-processed server-side:
+  - British English spellings only (organise, colour, theatre, etc.).
+  - No em dashes or double hyphens anywhere in the output. Server strips any that slip through and replaces with a comma or full stop.
+  - No emoji.
+  - Honour the requested length within ±10%.
+- Powered by Lovable AI gateway (default `google/gemini-2.5-flash`, upgrade button for `openai/gpt-5` on long pieces). No API key needed.
+- Same panel exposes "Rewrite selection", "Tighten", "Expand to N words", "Suggest SEO title + meta".
 
-to:
+## Public-page wiring
 
-```tsx
-<section className="relative ... pt-40 md:pt-48 ...">
-  <CBHeroBackdrop page={PAGE} />
-  <CBTopNav tone="light" />
-  <div className="relative z-10">
-    ...content
-  </div>
-</section>
-```
+- `/whats-on` cards: show subtitle + use new SEO image if no poster set.
+- `/journal` and `/journal/:slug`: render hero, excerpt, body as rich HTML, reading time, tags, per-route `<title>`/meta/OG from SEO fields via existing `CBSeo`.
+- `/bears-den` stories rail and `/stories/:slug`: render hero, gallery, body, SEO meta.
 
-Same shape applies to `BearsDen.tsx` (double-nested) and `CBStaticPage.tsx` (which fans out to many static pages, fixing them all in one edit). For `PropertyLayout.tsx`, drop the unnecessary `relative` wrapper around the nav so it anchors to the page hero below.
+No layout overhaul, just feeding the existing components the fuller data.
 
-## Verification
+## Technical notes
 
-After edits, load `/whats-on`, `/gift-vouchers`, `/bears-den`, a CBStaticPage route (e.g. `/careers`), and a property page; confirm the nav sits flush with the top of the hero on each.
+**Schema additions** (one migration, additive only — existing data unaffected):
 
-No CMS, data, or behavioural changes — purely DOM restructuring.
+- `cb_events`: `subtitle text`, `excerpt text`, `seo_title text`, `seo_description text`, `og_image_url text`.
+- `cb_journal_posts`: `subtitle text`, `seo_title text`, `seo_description text`, `og_image_url text`, `reading_minutes int`.
+- `cb_stories`: `subtitle text`, `gallery_urls text[] not null default '{}'`, `seo_title text`, `seo_description text`, `og_image_url text`.
+
+**Storage**: new public bucket `cb-content` for hero/poster/inline/gallery images. Read = public. Write = `has_management_role(admin|super_admin)`. Same policy shape as existing admin tables.
+
+**Rich editor**: TipTap (`@tiptap/react`, starter-kit, image, link, placeholder). Stored as sanitised HTML in the existing `body` column. Markdown-style shortcuts (`##`, `**`, `>`) for fast typing.
+
+**AI edge function**: new `cb-journal-ai-write`. Accepts `{ mode: 'draft' | 'rewrite' | 'tighten' | 'expand' | 'seo', input, targetWords?, targetMinutes?, tone? }`. Calls Lovable AI gateway with a strict system prompt; post-processes output to scrub em dashes / Americanisms before returning. JWT-verified, admin-only.
+
+**Shared admin components** (new, under `src/admin/components/content/`):
+
+- `ContentEditor.tsx` — two-column shell.
+- `RichTextEditor.tsx` — TipTap wrapper with image upload.
+- `ImageDropzone.tsx` — drag/drop to `cb-content` bucket.
+- `SeoFields.tsx` — title/description/OG with counters.
+- `AiAssistPanel.tsx` — Journal-only.
+
+`EventsPage.tsx`, `JournalPage.tsx`, `StoriesPage.tsx` are rewritten to use these but keep their list/delete affordances.
+
+## Out of scope (call out, don't build)
+
+- Page-builder style block system on the public pages (the existing layouts are kept).
+- Versioning/revision history for posts.
+- Translations.
+
+These can be follow-ups if wanted.
+
+## Open questions
+
+1. **Reading-time AI** — happy with auto-estimate (200 wpm) shown editable, or want the AI to set it?
+2. **AI scope** — should AI assist also be enabled for Events and Stories (description/synopsis only), or strictly Journal as written?
+3. **Social image generation** — when no OG image is uploaded, fall back to the hero; would you also want a "generate social card" button later?
+
+I'll proceed with: auto reading-time (editable), Journal-only AI, hero-as-OG fallback — unless you say otherwise.
