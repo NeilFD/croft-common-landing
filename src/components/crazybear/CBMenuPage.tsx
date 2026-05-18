@@ -1,9 +1,11 @@
 import { Helmet } from "react-helmet-async";
 import { useLocation } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import bearMark from "@/assets/crazy-bear-mark.png";
 import type { Menu, MenuItem, MenuSection } from "@/data/menus";
 import { getHeroFor } from "@/data/propertyHeroMap";
 import { CMSText } from "@/components/cms/CMSText";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   menu: Menu;
@@ -247,7 +249,25 @@ const Section = ({ section, cmsPage }: { section: MenuSection; cmsPage?: string 
 
 const CBMenuPage = ({ menu, cmsPage }: Props) => {
   const location = useLocation();
-  const hero = getHeroFor(location.pathname, "");
+  const { data: cmsHero } = useQuery({
+    enabled: !!cmsPage,
+    queryKey: ["cms-hero-image", cmsPage],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("cms_images")
+        .select("image_url")
+        .eq("page", cmsPage)
+        .eq("slot", "hero")
+        .eq("published", true)
+        .eq("is_draft", false)
+        .order("sort_order", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return (data as { image_url: string } | null)?.image_url ?? null;
+    },
+  });
+  const hero = cmsHero ?? getHeroFor(location.pathname, "");
   return (
     <>
       <Helmet>
