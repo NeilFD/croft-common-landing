@@ -159,7 +159,7 @@ const Curious: React.FC = () => {
         <div
           aria-hidden
           className="fixed inset-0 -z-10 bg-cover bg-center "
-          style={{ backgroundImage: `url(${cbBgImage})` }}
+          style={{ backgroundImage: `url(${bgImage})` }}
         />
         <div aria-hidden className="fixed inset-0 -z-10 bg-black/40" />
 
