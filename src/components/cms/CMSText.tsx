@@ -378,6 +378,55 @@ export const CMSText = ({
   const handleCancel = () => {
     setIsEditing(false);
     setEditValue('');
+    setAiBrief('');
+    preAiValueRef.current = null;
+  };
+
+  const handleGenerateWithAi = async () => {
+    if (isGenerating) return;
+    setIsGenerating(true);
+    try {
+      const entry = CMS_PAGES_BY_SLUG[page];
+      const kind = inferKind(section, contentKey);
+      const { data, error } = await supabase.functions.invoke('marketing-ai-assist', {
+        body: {
+          action: 'cms_copy',
+          page,
+          section,
+          contentKey,
+          pageTitle: entry?.title,
+          property: entry?.property ?? null,
+          currentText: editValue || fallback,
+          brief: aiBrief.trim() || undefined,
+          kind,
+        },
+      });
+      if (error) throw error;
+      const text = (data as any)?.text?.trim();
+      const errMsg = (data as any)?.error;
+      if (errMsg) {
+        toast({ title: 'AI error', description: errMsg, variant: 'destructive' });
+        return;
+      }
+      if (!text) {
+        toast({ title: 'No text returned', description: 'Try again or adjust the brief.', variant: 'destructive' });
+        return;
+      }
+      if (preAiValueRef.current === null) preAiValueRef.current = editValue;
+      setEditValue(text);
+      toast({ title: 'AI draft ready', description: 'Tweak it, then Save.' });
+    } catch (e: any) {
+      toast({ title: 'AI failed', description: e?.message || 'Unknown error', variant: 'destructive' });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleUndoAi = () => {
+    if (preAiValueRef.current !== null) {
+      setEditValue(preAiValueRef.current);
+      preAiValueRef.current = null;
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
