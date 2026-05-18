@@ -638,7 +638,7 @@ export const CountryDogs = () => (
     body={"Dogs welcome. Beds, bowls, biscuits.\n\nWalks from the door. Mud encouraged. Tail-wags rewarded at the bar."}
     seoDescription="Dog-friendly rooms, walks and pub at Crazy Bear Country, Stadhampton. Beds, bowls, biscuits, and walks from the door."
     cmsPage="country/dogs"
-    heroObjectPosition="center 65%"
+    heroObjectPosition="center 30%"
   />
 );
 
