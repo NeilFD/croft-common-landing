@@ -9,12 +9,18 @@ import CBFooter from "@/components/crazybear/CBFooter";
 interface Post {
   id: string;
   title: string;
+  subtitle: string | null;
   slug: string;
   excerpt: string | null;
   body: string | null;
   hero_url: string | null;
   author: string | null;
   published_at: string | null;
+  reading_minutes: number | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  og_image_url: string | null;
+  tags: string[] | null;
 }
 
 const JournalPost = () => {
@@ -27,7 +33,9 @@ const JournalPost = () => {
     (async () => {
       const { data } = await supabase
         .from("cb_journal_posts" as any)
-        .select("id,title,slug,excerpt,body,hero_url,author,published_at")
+        .select(
+          "id,title,subtitle,slug,excerpt,body,hero_url,author,published_at,reading_minutes,seo_title,seo_description,og_image_url,tags",
+        )
         .eq("slug", slug)
         .eq("published", true)
         .maybeSingle();
@@ -44,10 +52,7 @@ const JournalPost = () => {
           <div className="text-center">
             <p className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60">Lost in the woods</p>
             <h1 className="mt-4 font-serif text-4xl uppercase">Post not found</h1>
-            <Link
-              to="/journal"
-              className="mt-8 inline-block font-cb-mono text-[10px] tracking-[0.5em] uppercase border border-white px-6 py-3 hover:bg-white hover:text-black transition-colors"
-            >
+            <Link to="/journal" className="mt-8 inline-block font-cb-mono text-[10px] tracking-[0.5em] uppercase border border-white px-6 py-3 hover:bg-white hover:text-black transition-colors">
               Back to the Journal
             </Link>
           </div>
@@ -59,11 +64,16 @@ const JournalPost = () => {
 
   if (!post) return null;
 
+  const seoTitle = post.seo_title ?? `${post.title} | Journal | Crazy Bear`;
+  const seoDesc = (post.seo_description ?? post.excerpt ?? `${post.title}. A note from inside Crazy Bear.`).slice(0, 158);
+  const ogImage = post.og_image_url ?? post.hero_url ?? undefined;
+
   return (
     <>
       <CBSeo
-        title={`${post.title} | Journal | Crazy Bear`}
-        description={(post.excerpt ?? `${post.title}. A note from inside Crazy Bear.`).slice(0, 158)}
+        title={seoTitle}
+        description={seoDesc}
+        image={ogImage}
         path={`/journal/${post.slug}`}
         jsonLd={[breadcrumbSchema(`/journal/${post.slug}`)]}
       />
@@ -83,21 +93,32 @@ const JournalPost = () => {
           <p className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60">
             {new Date(post.published_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
             {post.author ? ` · ${post.author}` : ""}
+            {post.reading_minutes ? ` · ${post.reading_minutes} min read` : ""}
           </p>
         )}
         <h1 className="mt-4 font-serif text-4xl md:text-6xl uppercase">{post.title}</h1>
+        {post.subtitle && (
+          <p className="mt-4 font-cb-sans text-xl md:text-2xl opacity-80">{post.subtitle}</p>
+        )}
         {post.excerpt && (
           <p className="mt-6 font-cb-sans text-xl leading-relaxed opacity-90">{post.excerpt}</p>
         )}
         {post.body && (
-          <div className="mt-10 font-cb-sans text-lg leading-relaxed whitespace-pre-line opacity-90">
-            {post.body}
+          <div
+            className="cb-prose mt-10 font-cb-sans text-lg leading-relaxed opacity-90"
+            dangerouslySetInnerHTML={{ __html: post.body }}
+          />
+        )}
+        {post.tags && post.tags.length > 0 && (
+          <div className="mt-10 flex flex-wrap gap-2">
+            {post.tags.map((t) => (
+              <span key={t} className="font-cb-mono text-[9px] tracking-[0.3em] uppercase border border-foreground/30 px-3 py-1">
+                {t}
+              </span>
+            ))}
           </div>
         )}
-        <Link
-          to="/journal"
-          className="mt-16 inline-block font-cb-mono text-[10px] tracking-[0.5em] uppercase border border-foreground px-6 py-3 hover:bg-foreground hover:text-background transition-colors"
-        >
+        <Link to="/journal" className="mt-16 inline-block font-cb-mono text-[10px] tracking-[0.5em] uppercase border border-foreground px-6 py-3 hover:bg-foreground hover:text-background transition-colors">
           More from the Journal
         </Link>
       </article>

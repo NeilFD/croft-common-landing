@@ -9,11 +9,16 @@ import CBFooter from "@/components/crazybear/CBFooter";
 interface Story {
   id: string;
   title: string;
+  subtitle: string | null;
   slug: string;
   excerpt: string | null;
   body: string | null;
   hero_url: string | null;
+  gallery_urls: string[] | null;
   published_at: string | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  og_image_url: string | null;
 }
 
 const StoryDetail = () => {
@@ -26,7 +31,9 @@ const StoryDetail = () => {
     (async () => {
       const { data } = await supabase
         .from("cb_stories" as any)
-        .select("id,title,slug,excerpt,body,hero_url,published_at")
+        .select(
+          "id,title,subtitle,slug,excerpt,body,hero_url,gallery_urls,published_at,seo_title,seo_description,og_image_url",
+        )
         .eq("slug", slug)
         .eq("published", true)
         .maybeSingle();
@@ -43,10 +50,7 @@ const StoryDetail = () => {
           <div className="text-center">
             <p className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60">Lost in the woods</p>
             <h1 className="mt-4 font-serif text-4xl uppercase">Story not found</h1>
-            <Link
-              to="/stories"
-              className="mt-8 inline-block font-cb-mono text-[10px] tracking-[0.5em] uppercase border border-white px-6 py-3 hover:bg-white hover:text-black transition-colors"
-            >
+            <Link to="/stories" className="mt-8 inline-block font-cb-mono text-[10px] tracking-[0.5em] uppercase border border-white px-6 py-3 hover:bg-white hover:text-black transition-colors">
               Back to stories
             </Link>
           </div>
@@ -58,11 +62,16 @@ const StoryDetail = () => {
 
   if (!story) return null;
 
+  const seoTitle = story.seo_title ?? `${story.title} | Stories from the Bear`;
+  const seoDesc = (story.seo_description ?? story.excerpt ?? `${story.title}. A story from Crazy Bear.`).slice(0, 158);
+  const ogImage = story.og_image_url ?? story.hero_url ?? undefined;
+
   return (
     <>
       <CBSeo
-        title={`${story.title} | Stories from the Bear`}
-        description={story.excerpt ?? `${story.title}. A story from Crazy Bear.`}
+        title={seoTitle}
+        description={seoDesc}
+        image={ogImage}
         path={`/stories/${story.slug}`}
         jsonLd={[breadcrumbSchema(`/stories/${story.slug}`)]}
       />
@@ -84,18 +93,26 @@ const StoryDetail = () => {
           </p>
         )}
         <h1 className="mt-4 font-serif text-4xl md:text-6xl uppercase">{story.title}</h1>
+        {story.subtitle && (
+          <p className="mt-4 font-cb-sans text-xl md:text-2xl opacity-80">{story.subtitle}</p>
+        )}
         {story.excerpt && (
           <p className="mt-6 font-cb-sans text-xl leading-relaxed opacity-90">{story.excerpt}</p>
         )}
         {story.body && (
-          <div className="mt-10 font-cb-sans text-lg leading-relaxed whitespace-pre-line opacity-90">
-            {story.body}
+          <div
+            className="cb-prose mt-10 font-cb-sans text-lg leading-relaxed opacity-90"
+            dangerouslySetInnerHTML={{ __html: story.body }}
+          />
+        )}
+        {story.gallery_urls && story.gallery_urls.length > 0 && (
+          <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {story.gallery_urls.map((url) => (
+              <img key={url} src={url} alt="" loading="lazy" className="w-full aspect-[4/3] object-cover bg-muted" />
+            ))}
           </div>
         )}
-        <Link
-          to="/stories"
-          className="mt-16 inline-block font-cb-mono text-[10px] tracking-[0.5em] uppercase border border-foreground px-6 py-3 hover:bg-foreground hover:text-background transition-colors"
-        >
+        <Link to="/stories" className="mt-16 inline-block font-cb-mono text-[10px] tracking-[0.5em] uppercase border border-foreground px-6 py-3 hover:bg-foreground hover:text-background transition-colors">
           More stories
         </Link>
       </article>
