@@ -23,6 +23,7 @@ interface Props {
 
 const LANE_HEIGHT = 56; // px per row
 const LEFT_RAIL = 160; // px label column
+const MIN_DAY_WIDTH = 26; // px — ensures day numbers stay legible (esp. in Quarter view)
 
 type DragMode = 'move' | 'resize-l' | 'resize-r';
 
