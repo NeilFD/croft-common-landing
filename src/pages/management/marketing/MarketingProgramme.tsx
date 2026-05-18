@@ -5,6 +5,7 @@ import jsPDF from 'jspdf';
 import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { GanttGrid } from '@/components/marketing/programme/GanttGrid';
 import { CampaignDrawer } from '@/components/marketing/programme/CampaignDrawer';
 import {
