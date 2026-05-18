@@ -23,6 +23,8 @@ interface Props {
   jsonLd?: Record<string, any>[];
   /** When set, hero text + image are editable through the CMS under this page slug. */
   cmsPage?: string;
+  /** Tailwind object-position class for the hero image. Defaults to object-[center_0%]. */
+  heroObjectPosition?: string;
   children?: ReactNode;
 }
 
@@ -64,6 +66,7 @@ const CBStaticPage = ({
   path,
   jsonLd,
   cmsPage,
+  heroObjectPosition = "object-[center_0%]",
   children,
 }: Props) => {
   const { data: hero } = useCMSHeroImage(cmsPage);
@@ -85,7 +88,7 @@ const CBStaticPage = ({
               src={heroImage}
               alt={hero?.alt_text ?? ""}
               aria-hidden={!hero?.alt_text}
-              className="absolute inset-0 h-full w-full object-cover object-[center_0%]"
+              className={`absolute inset-0 h-full w-full object-cover ${heroObjectPosition}`}
               loading="eager"
               decoding="async"
             />
