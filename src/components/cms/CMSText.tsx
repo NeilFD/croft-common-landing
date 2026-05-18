@@ -472,8 +472,8 @@ export const CMSText = ({
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="border-2 border-gray-300 bg-white text-gray-900 resize-none min-h-[80px] w-full mt-1"
-                  disabled={isSaving}
+                  className="border-2 border-gray-300 bg-white text-gray-900 resize-y min-h-[180px] w-full mt-1 text-base leading-relaxed"
+                  disabled={isSaving || isGenerating}
                   placeholder="Enter your text..."
                 />
               ) : (
@@ -482,11 +482,57 @@ export const CMSText = ({
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="border-2 border-gray-300 bg-white text-gray-900 w-full mt-1"
-                  disabled={isSaving}
+                  className="border-2 border-gray-300 bg-white text-gray-900 w-full mt-1 text-base h-11"
+                  disabled={isSaving || isGenerating}
                   placeholder="Enter your text..."
                 />
               )}
+            </div>
+
+            {/* AI assistant */}
+            <div className="space-y-2 border-t pt-3 bg-purple-50/40 -mx-4 px-4 pb-3 rounded-b">
+              <Label className="text-xs font-medium text-gray-700 flex items-center gap-1">
+                <Sparkles className="h-3 w-3 text-purple-600" />
+                Write with AI (Bears Den tone)
+              </Label>
+              <Input
+                value={aiBrief}
+                onChange={(e) => setAiBrief(e.target.value)}
+                placeholder="Optional brief, e.g. mention the log fire, skew funny..."
+                className="border border-gray-300 bg-white text-gray-900 w-full text-sm h-9"
+                disabled={isSaving || isGenerating}
+              />
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  type="button"
+                  onClick={handleGenerateWithAi}
+                  disabled={isGenerating || isSaving}
+                  className="bg-purple-600 text-white hover:bg-purple-700"
+                >
+                  {isGenerating ? (
+                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-3 w-3 mr-1" />
+                  )}
+                  {preAiValueRef.current !== null ? 'Regenerate' : 'Generate'}
+                </Button>
+                {preAiValueRef.current !== null && (
+                  <Button
+                    size="sm"
+                    type="button"
+                    variant="outline"
+                    onClick={handleUndoAi}
+                    disabled={isGenerating || isSaving}
+                  >
+                    <Undo2 className="h-3 w-3 mr-1" />
+                    Undo AI
+                  </Button>
+                )}
+                <span className="text-[10px] text-gray-500 ml-auto">
+                  {inferKind(section, contentKey)} · {CMS_PAGES_BY_SLUG[page]?.title || page}
+                </span>
+              </div>
             </div>
 
             {/* Positioning Controls */}
