@@ -31,6 +31,8 @@ interface Props {
   /** When set, hero text is editable through the CMS under this page namespace
    *  (e.g. "town/pool"). When omitted, falls back to static props. */
   cmsPage?: string;
+  /** CSS object-position for the hero image. Defaults to "center". */
+  heroObjectPosition?: string;
 }
 
 const PropertyPage = ({
@@ -45,6 +47,7 @@ const PropertyPage = ({
   extraJsonLd,
   children,
   cmsPage,
+  heroObjectPosition,
 }: Props) => {
   const { config } = useProperty();
   const location = useLocation();
@@ -116,6 +119,7 @@ const PropertyPage = ({
               decoding="sync"
               fetchPriority="high"
               className={`absolute inset-0 h-full w-full ${fit === "contain" ? "object-contain" : "object-cover"}`}
+              style={heroObjectPosition ? { objectPosition: heroObjectPosition } : undefined}
             />
           )
         )}
