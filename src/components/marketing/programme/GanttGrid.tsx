@@ -240,7 +240,10 @@ interface BarProps {
   campaign: MarketingCampaign;
   window: ProgrammeWindow;
   dayWidth: number;
-  stackIndex: number;
+  subRow: number;
+  subRowHeight: number;
+  subRowGap: number;
+  lanePadding: number;
   onOpen: () => void;
   onCommit: (id: string, startISO: string, endISO: string) => Promise<void>;
   optimistic: (id: string, startISO: string, endISO: string) => void;
@@ -251,7 +254,10 @@ const GanttBar = ({
   campaign,
   window: win,
   dayWidth,
-  stackIndex,
+  subRow,
+  subRowHeight,
+  subRowGap,
+  lanePadding,
   onOpen,
   onCommit,
   optimistic,
