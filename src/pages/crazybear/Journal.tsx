@@ -48,6 +48,7 @@ const Journal = () => {
       seoDescription="The Crazy Bear Journal. Food, music, design notes and mischief from inside Crazy Bear Town and Country."
       path="/journal"
       cmsPage="journal"
+      heroObjectPosition="object-[center_85%]"
     >
       {allTags.length > 0 && (
         <div className="mb-10 flex flex-wrap gap-2">
