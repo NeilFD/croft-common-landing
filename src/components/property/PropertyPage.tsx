@@ -31,6 +31,8 @@ interface Props {
   /** When set, hero text is editable through the CMS under this page namespace
    *  (e.g. "town/pool"). When omitted, falls back to static props. */
   cmsPage?: string;
+  /** CSS object-position for the hero image. Defaults to "center". */
+  heroObjectPosition?: string;
 }
 
 const PropertyPage = ({
