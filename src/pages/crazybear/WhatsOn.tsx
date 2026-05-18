@@ -84,8 +84,8 @@ const WhatsOn = () => {
       />
       <section className="relative bg-black text-white pt-40 md:pt-48 pb-24 md:pb-32 px-6 overflow-hidden">
         <CBHeroBackdrop page="whats-on" />
+        <CBTopNav tone="light" />
         <div className="relative z-10">
-          <CBTopNav tone="light" />
           <div className="mx-auto max-w-5xl text-center">
             <CMSText page="whats-on" section="hero" contentKey="eyebrow" fallback="Crazy Bear" as="p" className="font-cb-mono text-[10px] tracking-[0.5em] uppercase opacity-70" />
             <CMSText page="whats-on" section="hero" contentKey="title" fallback="What's Happening" as="h1" className="mt-4 font-serif text-5xl md:text-7xl uppercase" />
