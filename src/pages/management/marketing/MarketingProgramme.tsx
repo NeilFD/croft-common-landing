@@ -29,6 +29,7 @@ type PropertyTab = (typeof PROPERTY_TABS)[number];
 
 const MarketingProgramme = () => {
   const { toast } = useToast();
+  const qc = useQueryClient();
   const [anchor, setAnchor] = useState(() => startOfMonth(new Date()));
   const [size, setSize] = useState<WindowSize>('month');
   const [property, setProperty] = useState<PropertyTab>('all');
