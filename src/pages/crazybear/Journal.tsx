@@ -6,12 +6,14 @@ import CBStaticPage from "@/components/crazybear/CBStaticPage";
 interface JournalPost {
   id: string;
   title: string;
+  subtitle: string | null;
   slug: string;
   excerpt: string | null;
   hero_url: string | null;
   author: string | null;
   tags: string[] | null;
   published_at: string | null;
+  reading_minutes: number | null;
 }
 
 const Journal = () => {
