@@ -1,9 +1,11 @@
 import { Helmet } from "react-helmet-async";
 import { useLocation } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import bearMark from "@/assets/crazy-bear-mark.png";
 import type { Menu, MenuItem, MenuSection } from "@/data/menus";
 import { getHeroFor } from "@/data/propertyHeroMap";
 import { CMSText } from "@/components/cms/CMSText";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   menu: Menu;
