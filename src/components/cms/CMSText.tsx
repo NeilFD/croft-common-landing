@@ -10,7 +10,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Check, X, AlignLeft, AlignCenter, AlignRight, Move, Layout } from 'lucide-react';
+import { Check, X, AlignLeft, AlignCenter, AlignRight, Move, Layout, Sparkles, Undo2, Loader2 } from 'lucide-react';
+import { CMS_PAGES_BY_SLUG } from '@/data/cmsPages';
+
+const inferKind = (section: string, contentKey: string): string => {
+  const k = (contentKey || '').toLowerCase();
+  const s = (section || '').toLowerCase();
+  if (k === 'eyebrow' || k.endsWith('-eyebrow')) return 'eyebrow';
+  if (k === 'title' || k.endsWith('-title') || k === 'heading') return 'title';
+  if (k === 'intro' || k === 'subtitle' || k === 'kicker') return 'intro';
+  if (k.includes('cta') || k === 'button' || k.endsWith('-label')) return 'cta';
+  if (s.startsWith('clause') || s === 'legal' || s === 'terms' || s === 'privacy') return 'legal';
+  if (k === 'label') return 'label';
+  return 'body';
+};
 
 interface CMSTextProps {
   page: string;
