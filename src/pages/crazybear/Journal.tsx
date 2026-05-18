@@ -25,7 +25,7 @@ const Journal = () => {
     (async () => {
       const { data } = await supabase
         .from("cb_journal_posts" as any)
-        .select("id,title,slug,excerpt,hero_url,author,tags,published_at")
+        .select("id,title,subtitle,slug,excerpt,hero_url,author,tags,published_at,reading_minutes")
         .eq("published", true)
         .order("published_at", { ascending: false });
       if (data) setPosts(data as unknown as JournalPost[]);
