@@ -1,67 +1,68 @@
-## Status today
+## Goal
 
-- `scripts/check-cms-registry.ts` passes: 82 entries, 75 routes. Every public route in `src/App.tsx` is either in `CMS_PAGES` or excluded. (The "stale" warnings are a known false positive: nested property routes like `/country/pub` are declared as relative `<Route path="pub">` under `/country`, so the regex doesn't match — they are wired up correctly.)
-- All Town / Country property pages already pass `cmsPage="…"` to `PropertyPage`, so hero + body + FAQs are editable.
-- Country event pages I added (`/country/dogs`, `/country/pub-quiz`, `/country/cinema-nights`, `/country/outdoor-feasts`) also pass `cmsPage`, so hero text is editable.
-- The new root-level pages I added (Privacy, Terms, Cookies, Press, Contact, Careers, Treatments, Merch, Gallery, FAQ, Journal) are in the **registry** but their body copy is **hardcoded** — currently you can't edit the text through the visual editor.
+Add an AI copy generator to the CMS visual editor so any text block can be auto-written in the Bears Den tone of voice, with page/section/property context baked in.
 
-So: registry-complete, but several pages need their copy wired to `CMSText` before they are truly editable.
+## Where it lives
 
-## What to change
+Inside the existing edit popover in `src/components/cms/CMSText.tsx` (the floating panel that opens when an editor clicks a `<CMSText>` element). A small "✨ Generate with AI" button sits under the textarea, alongside Save/Cancel.  
+  
+I think teh editing popover needs to be a much bigger popver so the text is easily readable
 
-### 1. Upgrade `CBStaticPage` to be CMS-aware
+## How context is built (automatic — no user input required)
 
-Add an optional `cmsPage` prop. When set, render hero `eyebrow`, `title`, `intro` through `<CMSText page={cmsPage} section="hero" contentKey="…" fallback={…} />` — same pattern `PropertyPage` already uses. No change for pages that don't pass `cmsPage`.
+Every `<CMSText>` already knows:
 
-### 2. Make body copy editable on every static page
+- `page` (e.g. `country/dogs`, `privacy`, `bears-den`)
+- `section` (e.g. `hero`, `about`, `clause-3`)
+- `contentKey` (e.g. `title`, `body`, `eyebrow`)
+- `fallback` (the current/original copy — great seed for rewrites)
 
-Replace hardcoded headings and paragraphs with `<CMSText>` blocks keyed by stable `section` / `contentKey`. One pass per page, fallbacks set to today's copy so nothing visibly changes until an editor saves new content.
+We derive extra context from `src/data/cmsPages.ts` (CMS_PAGES_BY_SLUG) which gives:
 
-Pages to convert (all under `src/pages/crazybear/`):
+- Human page title (e.g. "Dogs")
+- Property (`town` | `country` | none) — used to set venue voice
+- Section type guess (hero/body/CTA/legal) from `section` + `contentKey`
 
-| Route          | cmsPage slug    | Notes |
-|----------------|-----------------|-------|
-| `/privacy`     | `privacy`       | 9 sections of policy text |
-| `/terms`       | `terms`         | 10 numbered clauses |
-| `/cookies`     | `cookies`       | Policy + cookie table intro |
-| `/press`       | `press`         | Intro + contact block |
-| `/contact`     | `contact`       | Two property contact cards |
-| `/careers`     | `careers`       | Intro + roles list |
-| `/treatments`  | `treatments`    | Stadhampton + Beaconsfield blocks |
-| `/merch`       | `merch`         | Intro + item descriptions |
-| `/gallery`     | `gallery`       | Intro + social CTA |
-| `/faq`         | `faq`           | Hero only (FAQ items stay in `cbFaqs` / FAQ CMS) |
-| `/journal`     | `journal`       | Hero only (posts via `cb_journal_posts` admin) |
-| `/journal/:slug` | n/a           | Content comes from DB post |
-| `/whats-on`    | `whats-on`      | Hero + intro |
-| `/gift-vouchers` | `gift-vouchers` | Hero + product blurbs |
-| `/bears-den`   | `bears-den`     | Hero + benefit list |
-| `/curious`     | `curious`       | Hero + intro |
+The edit popover also adds an optional one-line "extra brief" input so editors can nudge the output ("mention the log fire", "skew funny", etc.) — empty is fine.
 
-Pages intentionally **not** wired (excluded from editable copy):
+## Backend
 
-- `/set-password` — auth flow
-- `/stories`, `/stories/:slug` — already DB-driven
-- `/den/*` member pages — app UI, not marketing copy
-- `/management/*`, `/admin/*` — internal
-- Redirects and `/manage-event/:token`, `/check-in`, `/calendar`, `/unsubscribe`, `/branding`, `/push-setup`, `/croft-common-datetime`, `/book`, `/event-enquiry` — transactional / form / utility pages
+Extend the existing `supabase/functions/marketing-ai-assist/index.ts` (it already loads the Bears Den voice prompt and channel hints from `marketing_settings`) with a new `cms_copy` action:
 
-### 3. Verify
+```
+action: "cms_copy"
+payload: { page, section, contentKey, pageTitle, property, currentText, brief, kind }
+```
 
-- Run `bun run scripts/check-cms-registry.ts` — should still pass.
-- Open each converted page in the visual editor (`/cms/visual?page=<slug>`) and confirm hero + body text appear as editable blocks.
-- Spot-check that fallbacks render identically on the live page when no `cms_content` row exists.
+`kind` is derived client-side: `title` | `eyebrow` | `intro` | `body` | `cta` | `legal` — drives length/format rules in the prompt (titles ≤ 6 words, eyebrows ALL CAPS short, body 2-3 short paragraphs, CTAs ≤ 4 words, legal = plain factual British English, no flourish).
 
-## Technical details
+The prompt uses the existing `voice_prompt` (Bears Den TOV) loaded from the DB, plus a CMS-specific system addition: British English only, no em dashes, no $, never invent prices/facts, never use the term "membership tiers", keep brand voice consistent with property (Town = urban/edgy; Country = countryside/log-fire).
 
-- `cms_content` table already supports arbitrary `(page, section, content_key)` triples — no DB migration needed.
-- `CMSText` already handles both edit-mode editing and live-site published reads. We're only adding new keys.
-- Convention: one `section` per logical block on a page (`hero`, `intro`, `clause-1`, `clause-2`, … or `card-stadhampton`, `card-beaconsfield`), `contentKey` for the field (`title`, `body`, `eyebrow`).
-- Keep all existing copy verbatim as the `fallback`, so behaviour is unchanged until someone edits.
+Returns `{ text }`. No DB writes — the editor decides whether to keep it.
 
-## Out of scope
+## Frontend flow
 
-- No new DB tables, edge functions, or auth changes.
-- No changes to property pages — they're already wired.
-- Not refactoring `scripts/check-cms-registry.ts` to resolve nested-route false positives (cosmetic warning only).
-- Not adding new admin tooling for the Journal / FAQs — those CMS surfaces already exist.
+1. Editor clicks text → popover opens (existing).
+2. Optional one-line brief input + ✨ Generate button.
+3. Button calls `supabase.functions.invoke('marketing-ai-assist', { body: { action: 'cms_copy', ... } })`.
+4. While loading: spinner on button, textarea disabled.
+5. On success: replace `editValue` with returned text (editor can tweak, then Save as normal draft — existing publish flow unchanged).
+6. A small "Regenerate" link lets them roll again; "Undo" reverts to pre-AI value (stored in a ref).
+7. Errors (429 rate limit, 402 credits) surface via the existing toast pattern.
+
+## Files touched
+
+- `supabase/functions/marketing-ai-assist/index.ts` — add `cms_copy` action + kind-aware prompt builder.
+- `src/components/cms/CMSText.tsx` — add brief input, Generate/Regenerate/Undo buttons, loading state, invoke call.
+- `src/data/cmsPages.ts` — (read only) used for human title + property lookup; add a small helper `getCmsPageContext(slug)` if not already there.
+
+## Not in scope
+
+- No new DB tables, no migrations, no auth changes.
+- No bulk "generate for whole page" mode (can be a follow-up).
+- No image/asset generation — text only.
+- No changes to publish/draft flow — AI output is just pre-filled editor text.
+
+## Why this works
+
+Reuses the existing `marketing-ai-assist` edge function and its DB-loaded Bears Den voice, so any future tone tweaks made in Marketing Settings automatically apply to CMS generation too. Single source of truth for TOV.
