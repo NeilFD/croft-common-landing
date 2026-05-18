@@ -84,6 +84,9 @@ const Stories = () => {
                       </p>
                     )}
                     <h2 className="mt-3 font-serif text-3xl uppercase group-hover:underline">{s.title}</h2>
+                    {s.subtitle && (
+                      <p className="mt-2 font-cb-mono text-[11px] tracking-[0.3em] uppercase opacity-70">{s.subtitle}</p>
+                    )}
                     {s.excerpt && <p className="mt-3 font-cb-sans text-lg opacity-85">{s.excerpt}</p>}
                   </div>
                 </Link>
