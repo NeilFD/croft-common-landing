@@ -21,7 +21,10 @@ interface Props {
   readOnly?: boolean;
 }
 
-const LANE_HEIGHT = 56; // px per row
+const LANE_PADDING = 12; // top+bottom padding inside a lane
+const SUB_ROW_HEIGHT = 26; // px per stacked bar within a lane
+const SUB_ROW_GAP = 4;
+const LANE_MIN_HEIGHT = 56; // px minimum row height
 const LEFT_RAIL = 160; // px label column
 const MIN_DAY_WIDTH = 26; // px — ensures day numbers stay legible (esp. in Quarter view)
 
@@ -52,21 +55,46 @@ export const GanttGrid = ({
     return () => ro.disconnect();
   }, [win.days]);
 
-  const byLane = useMemo(() => {
-    const map: Record<Lane, MarketingCampaign[]> = {
-      key_dates: [],
-      room_promo: [],
-      fnb_promo: [],
-      live_campaign: [],
-      programming: [],
-      social: [],
-      newsletter: [],
+  // Pack bars into sub-rows per lane so overlapping campaigns stack vertically
+  // without overlapping. Lane height grows to fit the deepest stack.
+  const packed = useMemo(() => {
+    const lanes: Record<Lane, { items: Array<{ c: MarketingCampaign; subRow: number; startIdx: number; endIdx: number }>; rows: number }> = {
+      key_dates: { items: [], rows: 1 },
+      room_promo: { items: [], rows: 1 },
+      fnb_promo: { items: [], rows: 1 },
+      live_campaign: { items: [], rows: 1 },
+      programming: { items: [], rows: 1 },
+      social: { items: [], rows: 1 },
+      newsletter: { items: [], rows: 1 },
     };
-    for (const c of campaigns) {
-      if (c.start_date && c.end_date) map[c.lane as Lane]?.push(c);
+    const sorted = [...campaigns]
+      .filter((c) => c.start_date && c.end_date)
+      .sort((a, b) => (a.start_date! < b.start_date! ? -1 : 1));
+    for (const c of sorted) {
+      const lane = lanes[c.lane as Lane];
+      if (!lane) continue;
+      const start = new Date(c.start_date!);
+      const end = new Date(c.end_date!);
+      const sIdx = dayIndex(start, win);
+      const eIdx = dayIndex(end, win);
+      // Find first sub-row whose latest endIdx < sIdx
+      const rowEnds: number[] = [];
+      for (const item of lane.items) {
+        rowEnds[item.subRow] = Math.max(rowEnds[item.subRow] ?? -Infinity, item.endIdx);
+      }
+      let subRow = 0;
+      while ((rowEnds[subRow] ?? -Infinity) >= sIdx) subRow++;
+      lane.items.push({ c, subRow, startIdx: sIdx, endIdx: eIdx });
+      lane.rows = Math.max(lane.rows, subRow + 1);
     }
-    return map;
-  }, [campaigns]);
+    return lanes;
+  }, [campaigns, win]);
+
+  const laneHeight = (lane: Lane) =>
+    Math.max(
+      LANE_MIN_HEIGHT,
+      LANE_PADDING + packed[lane].rows * SUB_ROW_HEIGHT + (packed[lane].rows - 1) * SUB_ROW_GAP,
+    );
 
   const today = startOfDay(new Date());
   const todayInWindow = today >= win.start && today <= win.end;
@@ -116,7 +144,7 @@ export const GanttGrid = ({
           <div
             key={lane}
             className="border-b border-foreground/20 px-3 flex items-center font-display uppercase tracking-wider text-[11px]"
-            style={{ height: LANE_HEIGHT }}
+            style={{ height: laneHeight(lane) }}
           >
             {LANE_LABELS[lane]}
           </div>
@@ -130,7 +158,7 @@ export const GanttGrid = ({
           <div
             key={lane}
             className="relative border-b border-foreground/20"
-            style={{ height: LANE_HEIGHT }}
+            style={{ height: laneHeight(lane) }}
           >
             {/* Vertical day separators */}
             <div
@@ -166,14 +194,17 @@ export const GanttGrid = ({
             )}
 
             {/* Bars */}
-            {byLane[lane].map((c, idx) => (
+            {packed[lane].items.map((item) => (
               <GanttBar
-                key={c.id}
-                campaign={c}
+                key={item.c.id}
+                campaign={item.c}
                 window={win}
                 dayWidth={dayWidth}
-                stackIndex={idx % 2}
-                onOpen={() => onOpenCampaign(c.id)}
+                subRow={item.subRow}
+                subRowHeight={SUB_ROW_HEIGHT}
+                subRowGap={SUB_ROW_GAP}
+                lanePadding={LANE_PADDING}
+                onOpen={() => onOpenCampaign(item.c.id)}
                 onCommit={onCommitDates}
                 optimistic={optimisticUpdate}
                 readOnly={readOnly}
@@ -209,7 +240,10 @@ interface BarProps {
   campaign: MarketingCampaign;
   window: ProgrammeWindow;
   dayWidth: number;
-  stackIndex: number;
+  subRow: number;
+  subRowHeight: number;
+  subRowGap: number;
+  lanePadding: number;
   onOpen: () => void;
   onCommit: (id: string, startISO: string, endISO: string) => Promise<void>;
   optimistic: (id: string, startISO: string, endISO: string) => void;
@@ -220,7 +254,10 @@ const GanttBar = ({
   campaign,
   window: win,
   dayWidth,
-  stackIndex,
+  subRow,
+  subRowHeight,
+  subRowGap,
+  lanePadding,
   onOpen,
   onCommit,
   optimistic,
@@ -295,8 +332,8 @@ const GanttBar = ({
   }, [drag, dayWidth, win, previewStart, previewSpan, campaign.id, campaign.start_date, campaign.end_date, onCommit, optimistic]);
 
   const accent = campaign.property_tag ? PROPERTY_ACCENT[campaign.property_tag] : '#666';
-  const top = 6 + stackIndex * 22;
-  const height = LANE_HEIGHT - 14 - stackIndex * 22;
+  const top = lanePadding / 2 + subRow * (subRowHeight + subRowGap);
+  const height = subRowHeight;
 
   const startDrag = (mode: DragMode) => (e: React.PointerEvent) => {
     if (readOnly) return;
