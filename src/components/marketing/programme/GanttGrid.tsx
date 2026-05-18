@@ -198,6 +198,7 @@ export const GanttGrid = ({
           </div>
         )}
       </div>
+      </div>
     </div>
   );
 };
