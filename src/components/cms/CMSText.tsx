@@ -179,6 +179,8 @@ export const CMSText = ({
     console.log('🎯 CMS: About to set edit state...');
     setEditValue(displayText);
     setPositioning(currentPositioning);
+    setAiBrief('');
+    preAiValueRef.current = null;
     setIsEditing(true);
     console.log('🎯 CMS: Set editing to true, edit value:', displayText);
   };
