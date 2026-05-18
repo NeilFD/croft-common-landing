@@ -4,6 +4,7 @@ import bearMark from '@/assets/crazy-bear-mark.png';
 import CBSubscriptionForm from './CBSubscriptionForm';
 import { SITE_MAP, LEGAL_LINKS, PRIMARY_CTAS, MEMBERS_ENTRY } from '@/data/cbSiteMap';
 import { InstagramIcon, TikTokIcon } from '@/components/crazybear/icons/SocialIcons';
+import { openExternal } from '@/utils/openExternal';
 
 const IG_URL = 'https://instagram.com/crazybearhotels';
 const TIKTOK_URL = 'https://tiktok.com/@crazybeargroup';
