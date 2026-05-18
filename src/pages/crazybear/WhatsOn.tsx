@@ -64,7 +64,7 @@ const WhatsOn = () => {
     (async () => {
       const { data, error } = await supabase
         .from("cb_events" as any)
-        .select("id,title,slug,site,starts_at,ends_at,poster_url,body,external_url")
+        .select("id,title,subtitle,slug,site,starts_at,ends_at,poster_url,excerpt,body,external_url,og_image_url")
         .eq("published", true)
         .order("starts_at", { ascending: true });
       if (!error && data) setEvents(data as unknown as CBEvent[]);
@@ -178,8 +178,11 @@ const WhatsOn = () => {
                     <h2 className="mt-3 font-serif text-2xl uppercase group-hover:underline">
                       {e.title}
                     </h2>
-                    {e.body && (
-                      <p className="mt-2 font-cb-sans text-sm opacity-80 line-clamp-3">{e.body}</p>
+                    {e.subtitle && (
+                      <p className="mt-1 font-cb-mono text-[10px] tracking-[0.3em] uppercase opacity-70">{e.subtitle}</p>
+                    )}
+                    {(e.excerpt || e.body) && (
+                      <p className="mt-2 font-cb-sans text-sm opacity-80 line-clamp-3">{e.excerpt || e.body}</p>
                     )}
                   </Wrapper>
                 </li>

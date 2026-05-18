@@ -6,12 +6,14 @@ import CBStaticPage from "@/components/crazybear/CBStaticPage";
 interface JournalPost {
   id: string;
   title: string;
+  subtitle: string | null;
   slug: string;
   excerpt: string | null;
   hero_url: string | null;
   author: string | null;
   tags: string[] | null;
   published_at: string | null;
+  reading_minutes: number | null;
 }
 
 const Journal = () => {
@@ -23,7 +25,7 @@ const Journal = () => {
     (async () => {
       const { data } = await supabase
         .from("cb_journal_posts" as any)
-        .select("id,title,slug,excerpt,hero_url,author,tags,published_at")
+        .select("id,title,subtitle,slug,excerpt,hero_url,author,tags,published_at,reading_minutes")
         .eq("published", true)
         .order("published_at", { ascending: false });
       if (data) setPosts(data as unknown as JournalPost[]);
@@ -101,9 +103,13 @@ const Journal = () => {
                   <p className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60">
                     {new Date(p.published_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
                     {p.author ? ` · ${p.author}` : ""}
+                    {p.reading_minutes ? ` · ${p.reading_minutes} min read` : ""}
                   </p>
                 )}
                 <h2 className="mt-3 font-serif text-3xl uppercase group-hover:underline">{p.title}</h2>
+                {p.subtitle && (
+                  <p className="mt-2 font-cb-mono text-[11px] tracking-[0.3em] uppercase opacity-70">{p.subtitle}</p>
+                )}
                 {p.excerpt && <p className="mt-3 font-cb-sans text-lg opacity-85">{p.excerpt}</p>}
               </div>
             </Link>

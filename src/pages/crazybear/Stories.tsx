@@ -9,6 +9,7 @@ import CBFooter from "@/components/crazybear/CBFooter";
 interface Story {
   id: string;
   title: string;
+  subtitle: string | null;
   slug: string;
   excerpt: string | null;
   hero_url: string | null;
@@ -23,7 +24,7 @@ const Stories = () => {
     (async () => {
       const { data } = await supabase
         .from("cb_stories" as any)
-        .select("id,title,slug,excerpt,hero_url,published_at")
+        .select("id,title,subtitle,slug,excerpt,hero_url,published_at")
         .eq("published", true)
         .order("published_at", { ascending: false });
       if (data) setStories(data as unknown as Story[]);
@@ -83,6 +84,9 @@ const Stories = () => {
                       </p>
                     )}
                     <h2 className="mt-3 font-serif text-3xl uppercase group-hover:underline">{s.title}</h2>
+                    {s.subtitle && (
+                      <p className="mt-2 font-cb-mono text-[11px] tracking-[0.3em] uppercase opacity-70">{s.subtitle}</p>
+                    )}
                     {s.excerpt && <p className="mt-3 font-cb-sans text-lg opacity-85">{s.excerpt}</p>}
                   </div>
                 </Link>
