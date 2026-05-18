@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import cbBgImage from '@/assets/den-bg-neon.jpg';
 import { CMSText } from '@/components/cms/CMSText';
+import { useCMSAssets } from '@/hooks/useCMSAssets';
 
 type Category = 'general' | 'rooms' | 'dining' | 'membership';
 
