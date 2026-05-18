@@ -55,21 +55,46 @@ export const GanttGrid = ({
     return () => ro.disconnect();
   }, [win.days]);
 
-  const byLane = useMemo(() => {
-    const map: Record<Lane, MarketingCampaign[]> = {
-      key_dates: [],
-      room_promo: [],
-      fnb_promo: [],
-      live_campaign: [],
-      programming: [],
-      social: [],
-      newsletter: [],
+  // Pack bars into sub-rows per lane so overlapping campaigns stack vertically
+  // without overlapping. Lane height grows to fit the deepest stack.
+  const packed = useMemo(() => {
+    const lanes: Record<Lane, { items: Array<{ c: MarketingCampaign; subRow: number; startIdx: number; endIdx: number }>; rows: number }> = {
+      key_dates: { items: [], rows: 1 },
+      room_promo: { items: [], rows: 1 },
+      fnb_promo: { items: [], rows: 1 },
+      live_campaign: { items: [], rows: 1 },
+      programming: { items: [], rows: 1 },
+      social: { items: [], rows: 1 },
+      newsletter: { items: [], rows: 1 },
     };
-    for (const c of campaigns) {
-      if (c.start_date && c.end_date) map[c.lane as Lane]?.push(c);
+    const sorted = [...campaigns]
+      .filter((c) => c.start_date && c.end_date)
+      .sort((a, b) => (a.start_date! < b.start_date! ? -1 : 1));
+    for (const c of sorted) {
+      const lane = lanes[c.lane as Lane];
+      if (!lane) continue;
+      const start = new Date(c.start_date!);
+      const end = new Date(c.end_date!);
+      const sIdx = dayIndex(start, win);
+      const eIdx = dayIndex(end, win);
+      // Find first sub-row whose latest endIdx < sIdx
+      const rowEnds: number[] = [];
+      for (const item of lane.items) {
+        rowEnds[item.subRow] = Math.max(rowEnds[item.subRow] ?? -Infinity, item.endIdx);
+      }
+      let subRow = 0;
+      while ((rowEnds[subRow] ?? -Infinity) >= sIdx) subRow++;
+      lane.items.push({ c, subRow, startIdx: sIdx, endIdx: eIdx });
+      lane.rows = Math.max(lane.rows, subRow + 1);
     }
-    return map;
-  }, [campaigns]);
+    return lanes;
+  }, [campaigns, win]);
+
+  const laneHeight = (lane: Lane) =>
+    Math.max(
+      LANE_MIN_HEIGHT,
+      LANE_PADDING + packed[lane].rows * SUB_ROW_HEIGHT + (packed[lane].rows - 1) * SUB_ROW_GAP,
+    );
 
   const today = startOfDay(new Date());
   const todayInWindow = today >= win.start && today <= win.end;
