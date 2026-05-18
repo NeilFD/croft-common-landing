@@ -26,9 +26,12 @@ const BearsDen = () => {
       />
 
       <main className="min-h-screen bg-black text-white font-cb-sans">
-        <CBTopNav tone="light" />
-        <section className="px-6 pt-32 pb-24 max-w-5xl mx-auto text-center">
-          <img src={bearMark} alt="" className="h-16 w-auto mx-auto invert opacity-90" />
+        <div className="relative overflow-hidden">
+          <CBHeroBackdrop page={PAGE} overlayClassName="bg-black/65" />
+          <div className="relative z-10">
+            <CBTopNav tone="light" />
+            <section className="px-6 pt-32 pb-24 max-w-5xl mx-auto text-center">
+              <img src={bearMark} alt="" className="h-16 w-auto mx-auto invert opacity-90" />
           <CMSText
             page={PAGE}
             section="hero"
