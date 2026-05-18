@@ -85,7 +85,7 @@ const CBStaticPage = ({
               src={heroImage}
               alt={hero?.alt_text ?? ""}
               aria-hidden={!hero?.alt_text}
-              className="absolute inset-0 h-full w-full object-cover object-[center_15%]"
+              className="absolute inset-0 h-full w-full object-cover object-[center_0%]"
               loading="eager"
               decoding="async"
             />
