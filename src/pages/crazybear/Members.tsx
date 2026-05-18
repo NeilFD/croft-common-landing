@@ -1,6 +1,7 @@
 import { Suspense, lazy } from "react";
 import { Link } from "react-router-dom";
 import CBTopNav from "@/components/crazybear/CBTopNav";
+import CBHeroBackdrop from "@/components/crazybear/CBHeroBackdrop";
 import { CMSText } from "@/components/cms/CMSText";
 import { useSEO } from "@/hooks/useSEO";
 
