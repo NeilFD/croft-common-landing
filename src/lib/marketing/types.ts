@@ -49,6 +49,9 @@ export interface MarketingCampaign {
   owner_id: string | null;
   status: string;
   colour: string | null;
+  lane: 'key_dates' | 'room_promo' | 'fnb_promo' | 'live_campaign' | 'programming' | 'social' | 'newsletter';
+  property_tag: 'town' | 'country' | 'group' | null;
+  notes: string | null;
   created_at: string;
   updated_at: string;
 }
