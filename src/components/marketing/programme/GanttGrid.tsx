@@ -144,7 +144,7 @@ export const GanttGrid = ({
           <div
             key={lane}
             className="border-b border-foreground/20 px-3 flex items-center font-display uppercase tracking-wider text-[11px]"
-            style={{ height: LANE_HEIGHT }}
+            style={{ height: laneHeight(lane) }}
           >
             {LANE_LABELS[lane]}
           </div>
