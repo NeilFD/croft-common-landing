@@ -10,7 +10,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Check, X, AlignLeft, AlignCenter, AlignRight, Move, Layout } from 'lucide-react';
+import { Check, X, AlignLeft, AlignCenter, AlignRight, Move, Layout, Sparkles, Undo2, Loader2 } from 'lucide-react';
+import { CMS_PAGES_BY_SLUG } from '@/data/cmsPages';
+
+const inferKind = (section: string, contentKey: string): string => {
+  const k = (contentKey || '').toLowerCase();
+  const s = (section || '').toLowerCase();
+  if (k === 'eyebrow' || k.endsWith('-eyebrow')) return 'eyebrow';
+  if (k === 'title' || k.endsWith('-title') || k === 'heading') return 'title';
+  if (k === 'intro' || k === 'subtitle' || k === 'kicker') return 'intro';
+  if (k.includes('cta') || k === 'button' || k.endsWith('-label')) return 'cta';
+  if (s.startsWith('clause') || s === 'legal' || s === 'terms' || s === 'privacy') return 'legal';
+  if (k === 'label') return 'label';
+  return 'body';
+};
 
 interface CMSTextProps {
   page: string;
@@ -53,6 +66,10 @@ export const CMSText = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const originalElementRef = useRef<any>(null);
+  const preAiValueRef = useRef<string | null>(null);
+
+  const [aiBrief, setAiBrief] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Show fallback while loading, or if no content after loading
   const displayText = loading ? fallback : (content?.content_data?.text ?? fallback);
@@ -106,47 +123,34 @@ export const CMSText = ({
       // Smart positioning with viewport boundary detection
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
-      const popupWidth = 350; // Account for popup width
-      const popupHeight = 450; // Increased to account for actual popup height
-      
-      // Calculate preferred position (above and to the left)
+      const popupWidth = 560;
+      const popupHeight = 620;
+
       let topPos = rect.top - popupHeight - 10;
       let leftPos = rect.left - 50;
-      
-      // Boundary checks and adjustments
-      // If popup goes above viewport, position below element
-      if (topPos < 20) {
-        topPos = rect.bottom + 10;
+
+      if (topPos < 20) topPos = rect.bottom + 10;
+      if (topPos + popupHeight > viewportHeight - 40) {
+        topPos = Math.max(20, viewportHeight - popupHeight - 40);
       }
-      
-      // If popup goes below viewport, position at bottom with margin
-      if (topPos + popupHeight > viewportHeight - 80) {
-        topPos = viewportHeight - popupHeight - 80;
-      }
-      
-      // If popup goes too far left, adjust right
-      if (leftPos < 20) {
-        leftPos = 20;
-      }
-      
-      // If popup goes too far right, adjust left
+      if (leftPos < 20) leftPos = 20;
       if (leftPos + popupWidth > viewportWidth - 20) {
         leftPos = viewportWidth - popupWidth - 20;
       }
-      
-      console.log('🎯 CMS: Calculated position:', { topPos, leftPos });
-      
+
       const editPosition = {
         position: 'fixed' as const,
         top: `${topPos}px`,
         left: `${leftPos}px`,
-        width: '300px',
+        width: `${popupWidth}px`,
+        maxHeight: `${popupHeight}px`,
         zIndex: 99999,
         backgroundColor: 'white',
         border: '2px solid #007acc',
-        borderRadius: '8px',
-        padding: '12px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+        borderRadius: '10px',
+        padding: '16px',
+        boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
+        overflowY: 'auto' as const,
       };
       
       console.log('🎯 CMS: Final edit position:', editPosition);
@@ -157,21 +161,26 @@ export const CMSText = ({
       // Fallback positioning if ref is null
       setOriginalStyles({
         position: 'fixed' as const,
-        top: '100px',
-        left: '100px',
-        width: '300px',
+        top: '60px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '560px',
+        maxHeight: '620px',
         zIndex: 99999,
         backgroundColor: 'white',
         border: '2px solid #007acc',
-        borderRadius: '8px',
-        padding: '12px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+        borderRadius: '10px',
+        padding: '16px',
+        boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
+        overflowY: 'auto' as const,
       });
     }
     
     console.log('🎯 CMS: About to set edit state...');
     setEditValue(displayText);
     setPositioning(currentPositioning);
+    setAiBrief('');
+    preAiValueRef.current = null;
     setIsEditing(true);
     console.log('🎯 CMS: Set editing to true, edit value:', displayText);
   };
@@ -369,6 +378,55 @@ export const CMSText = ({
   const handleCancel = () => {
     setIsEditing(false);
     setEditValue('');
+    setAiBrief('');
+    preAiValueRef.current = null;
+  };
+
+  const handleGenerateWithAi = async () => {
+    if (isGenerating) return;
+    setIsGenerating(true);
+    try {
+      const entry = CMS_PAGES_BY_SLUG[page];
+      const kind = inferKind(section, contentKey);
+      const { data, error } = await supabase.functions.invoke('marketing-ai-assist', {
+        body: {
+          action: 'cms_copy',
+          page,
+          section,
+          contentKey,
+          pageTitle: entry?.title,
+          property: entry?.property ?? null,
+          currentText: editValue || fallback,
+          brief: aiBrief.trim() || undefined,
+          kind,
+        },
+      });
+      if (error) throw error;
+      const text = (data as any)?.text?.trim();
+      const errMsg = (data as any)?.error;
+      if (errMsg) {
+        toast({ title: 'AI error', description: errMsg, variant: 'destructive' });
+        return;
+      }
+      if (!text) {
+        toast({ title: 'No text returned', description: 'Try again or adjust the brief.', variant: 'destructive' });
+        return;
+      }
+      if (preAiValueRef.current === null) preAiValueRef.current = editValue;
+      setEditValue(text);
+      toast({ title: 'AI draft ready', description: 'Tweak it, then Save.' });
+    } catch (e: any) {
+      toast({ title: 'AI failed', description: e?.message || 'Unknown error', variant: 'destructive' });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleUndoAi = () => {
+    if (preAiValueRef.current !== null) {
+      setEditValue(preAiValueRef.current);
+      preAiValueRef.current = null;
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -384,7 +442,8 @@ export const CMSText = ({
   const renderEditingInterface = () => {
     if (!isEditing) return null;
     
-    const isMultiline = editValue.length > 100 || editValue.includes('\n');
+    const kindForUi = inferKind(section, contentKey);
+    const isMultiline = editValue.length > 80 || editValue.includes('\n') || kindForUi === 'body' || kindForUi === 'intro' || kindForUi === 'legal';
     
     console.log('🎯 CMS: Rendering editing interface via portal');
     
@@ -414,8 +473,8 @@ export const CMSText = ({
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="border-2 border-gray-300 bg-white text-gray-900 resize-none min-h-[80px] w-full mt-1"
-                  disabled={isSaving}
+                  className="border-2 border-gray-300 bg-white text-gray-900 resize-y min-h-[180px] w-full mt-1 text-base leading-relaxed"
+                  disabled={isSaving || isGenerating}
                   placeholder="Enter your text..."
                 />
               ) : (
@@ -424,11 +483,57 @@ export const CMSText = ({
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="border-2 border-gray-300 bg-white text-gray-900 w-full mt-1"
-                  disabled={isSaving}
+                  className="border-2 border-gray-300 bg-white text-gray-900 w-full mt-1 text-base h-11"
+                  disabled={isSaving || isGenerating}
                   placeholder="Enter your text..."
                 />
               )}
+            </div>
+
+            {/* AI assistant */}
+            <div className="space-y-2 border-t pt-3 bg-purple-50/40 -mx-4 px-4 pb-3 rounded-b">
+              <Label className="text-xs font-medium text-gray-700 flex items-center gap-1">
+                <Sparkles className="h-3 w-3 text-purple-600" />
+                Write with AI (Bears Den tone)
+              </Label>
+              <Input
+                value={aiBrief}
+                onChange={(e) => setAiBrief(e.target.value)}
+                placeholder="Optional brief, e.g. mention the log fire, skew funny..."
+                className="border border-gray-300 bg-white text-gray-900 w-full text-sm h-9"
+                disabled={isSaving || isGenerating}
+              />
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  type="button"
+                  onClick={handleGenerateWithAi}
+                  disabled={isGenerating || isSaving}
+                  className="bg-purple-600 text-white hover:bg-purple-700"
+                >
+                  {isGenerating ? (
+                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-3 w-3 mr-1" />
+                  )}
+                  {preAiValueRef.current !== null ? 'Regenerate' : 'Generate'}
+                </Button>
+                {preAiValueRef.current !== null && (
+                  <Button
+                    size="sm"
+                    type="button"
+                    variant="outline"
+                    onClick={handleUndoAi}
+                    disabled={isGenerating || isSaving}
+                  >
+                    <Undo2 className="h-3 w-3 mr-1" />
+                    Undo AI
+                  </Button>
+                )}
+                <span className="text-[10px] text-gray-500 ml-auto">
+                  {inferKind(section, contentKey)} · {CMS_PAGES_BY_SLUG[page]?.title || page}
+                </span>
+              </div>
             </div>
 
             {/* Positioning Controls */}

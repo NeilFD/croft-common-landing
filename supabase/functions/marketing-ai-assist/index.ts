@@ -41,6 +41,67 @@ async function loadSettings(): Promise<{ voice: string; hints: Record<string, st
   }
 }
 
+const CMS_RULES = `
+Hard rules for CMS website copy:
+- British English only. Never American spellings. Currency £ only, never $.
+- Never use em dashes or double hyphens. Use full stops or commas.
+- Never invent prices, dates, room counts or facts not provided.
+- Never use the term "membership tiers" (we don't have them). The members club is called "Bears Den". The paid subscription is "Bear's Den Gold" at £69/month.
+- Voice = Bears Den: short, staccato, confident, minimal. No corporate filler. No exclamation marks unless punchy.
+- No emojis, no hashtags, no markdown. Plain text only.
+- Return ONLY the finished copy. No preamble, no quotes, no labels, no explanation.
+`;
+
+const KIND_RULES: Record<string, string> = {
+  title: "Format: a single line, max 6 words, sentence case or ALL CAPS if the existing copy is ALL CAPS. No trailing punctuation.",
+  eyebrow: "Format: 1 to 3 words, ALL CAPS, no punctuation. A label that sits above a headline.",
+  intro: "Format: 1 to 2 short sentences, max 30 words total. Sits under a hero headline.",
+  body: "Format: 2 to 4 short sentences or 1 to 2 tight paragraphs. Max ~80 words.",
+  cta: "Format: a button label. Max 4 words. Imperative voice (e.g. Book a table, See rooms).",
+  legal: "Format: plain, factual, neutral British English. No brand flourish. Keep accurate and clear.",
+  label: "Format: 1 to 4 words. Sentence case. No punctuation.",
+};
+
+function buildCmsPrompt(
+  voice: string,
+  ctx: {
+    page: string;
+    section: string;
+    contentKey: string;
+    pageTitle?: string;
+    property?: string | null;
+    currentText?: string;
+    brief?: string;
+    kind?: string;
+  }
+): string {
+  const kind = (ctx.kind || "body").toLowerCase();
+  const kindRule = KIND_RULES[kind] || KIND_RULES.body;
+  const propertyLine = ctx.property === "country"
+    ? "Property: Crazy Bear Country, Stadhampton. Countryside, log fires, dogs welcome, eccentric character."
+    : ctx.property === "town"
+    ? "Property: Crazy Bear Town, Beaconsfield. Urban, polished, design-led, livelier energy."
+    : "Property: cross-site (applies to both Town and Country unless context says otherwise).";
+
+  return `${voice}
+
+${CMS_RULES}
+
+You are writing one block of website copy for the Crazy Bear CMS.
+
+Page: ${ctx.pageTitle || ctx.page} (slug: ${ctx.page})
+Section: ${ctx.section}
+Field: ${ctx.contentKey}
+Field kind: ${kind}
+${propertyLine}
+
+${kindRule}
+
+${ctx.brief ? `Editor brief: ${ctx.brief}\n` : ""}${ctx.currentText ? `Current copy (rewrite or replace):\n"""\n${ctx.currentText}\n"""` : "(No current copy. Write fresh.)"}
+
+Now write the copy. Return only the finished copy.`;
+}
+
 const ACTIONS: Record<string, (voice: string, hints: Record<string, string>, body: string, channel: string) => string> = {
   caption: (v, h, b, c) =>
     `${v}\n\nWrite a fresh ${c} caption for the post idea below. Keep it under 80 words. ${h[c] || ""}\n\nIdea:\n${b || "(no draft yet, invent something on-brand)"}`,
@@ -63,13 +124,29 @@ serve(async (req) => {
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) throw new Error("LOVABLE_API_KEY not configured");
 
-    const { action, body, channel } = await req.json();
-    const ch = (channel || "instagram").toLowerCase();
-    const builder = ACTIONS[action];
-    if (!builder) throw new Error(`Unknown action: ${action}`);
-
+    const payload = await req.json();
+    const { action } = payload;
     const { voice, hints } = await loadSettings();
-    const prompt = builder(voice, hints, body || "", ch);
+
+    let prompt: string;
+    if (action === "cms_copy") {
+      prompt = buildCmsPrompt(voice, {
+        page: payload.page || "",
+        section: payload.section || "",
+        contentKey: payload.contentKey || "",
+        pageTitle: payload.pageTitle,
+        property: payload.property,
+        currentText: payload.currentText,
+        brief: payload.brief,
+        kind: payload.kind,
+      });
+    } else {
+      const ch = (payload.channel || "instagram").toLowerCase();
+      const builder = ACTIONS[action];
+      if (!builder) throw new Error(`Unknown action: ${action}`);
+      prompt = builder(voice, hints, payload.body || "", ch);
+    }
+
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
