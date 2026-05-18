@@ -1,20 +1,51 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "sonner";
-import { Upload, Trash2, ArrowUp, ArrowDown, Image as ImageIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
-  cmsImageRegistry,
-  allPagesWithAssets,
-  slotsForPage,
-  findSlot,
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command";
+import { toast } from "sonner";
+import { Upload, Trash2, ArrowUp, ArrowDown, Image as ImageIcon, ChevronsUpDown, Check, Clock } from "lucide-react";
+import {
+  assetPagesForPicker,
+  slotsForSlug,
   type AssetSlot,
+  type AssetPageSummary,
 } from "@/data/cmsImageRegistry";
+import { cn } from "@/lib/utils";
+
+const RECENT_KEY = "cms-assets-recent-pages";
+const RECENT_MAX = 5;
+
+const loadRecent = (): string[] => {
+  try {
+    const raw = localStorage.getItem(RECENT_KEY);
+    return raw ? (JSON.parse(raw) as string[]).slice(0, RECENT_MAX) : [];
+  } catch {
+    return [];
+  }
+};
+
+const pushRecent = (slug: string) => {
+  try {
+    const cur = loadRecent().filter((s) => s !== slug);
+    cur.unshift(slug);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(cur.slice(0, RECENT_MAX)));
+  } catch {
+    /* ignore */
+  }
+};
 
 interface DbRow {
   id: string;
