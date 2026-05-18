@@ -3,6 +3,7 @@ import { goldProductSchema, organizationSchema } from "@/components/seo/CBStruct
 import { Link } from 'react-router-dom';
 import bearMark from '@/assets/crazy-bear-mark.png';
 import CBTopNav from '@/components/crazybear/CBTopNav';
+import CBHeroBackdrop from '@/components/crazybear/CBHeroBackdrop';
 import { CMSText } from '@/components/cms/CMSText';
 
 const PAGE = "bears-den";
