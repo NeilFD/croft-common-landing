@@ -153,24 +153,22 @@ const CBFooter = () => {
                 Follow
               </p>
               <div className="flex items-center gap-4">
-                <a
-                  href={IG_URL}
-                  target="_blank"
-                  rel="noreferrer"
+                <button
+                  type="button"
+                  onClick={() => openExternal(IG_URL)}
                   aria-label="Crazy Bear on Instagram"
-                  className="opacity-80 hover:opacity-100"
+                  className="opacity-80 hover:opacity-100 interactive-element"
                 >
                   <InstagramIcon className="h-6 w-6" />
-                </a>
-                <a
-                  href={TIKTOK_URL}
-                  target="_blank"
-                  rel="noreferrer"
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openExternal(TIKTOK_URL)}
                   aria-label="Crazy Bear on TikTok"
-                  className="opacity-80 hover:opacity-100"
+                  className="opacity-80 hover:opacity-100 interactive-element"
                 >
                   <TikTokIcon className="h-6 w-6" />
-                </a>
+                </button>
               </div>
             </div>
           </div>
