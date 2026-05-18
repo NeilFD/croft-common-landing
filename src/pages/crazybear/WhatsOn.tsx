@@ -64,7 +64,7 @@ const WhatsOn = () => {
     (async () => {
       const { data, error } = await supabase
         .from("cb_events" as any)
-        .select("id,title,slug,site,starts_at,ends_at,poster_url,body,external_url")
+        .select("id,title,subtitle,slug,site,starts_at,ends_at,poster_url,excerpt,body,external_url,og_image_url")
         .eq("published", true)
         .order("starts_at", { ascending: true });
       if (!error && data) setEvents(data as unknown as CBEvent[]);
