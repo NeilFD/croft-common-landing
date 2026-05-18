@@ -446,7 +446,7 @@ const App = () => {
                       <Route path="/secretkitchens" element={<DomainGuard><SecretKitchens /></DomainGuard>} />
                       <Route path="/secretkitchenadmin" element={<SecretKitchenAdmin />} />
           <Route path="/event-enquiry" element={<EventEnquiry />} />
-                      <Route path="/community" element={<Community />} />
+                      
 
                       {/* The Den - new routes */}
                       <Route path="/den" element={<MemberRoutes><CommonRoom /></MemberRoutes>} />
