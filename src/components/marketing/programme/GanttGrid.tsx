@@ -21,7 +21,10 @@ interface Props {
   readOnly?: boolean;
 }
 
-const LANE_HEIGHT = 56; // px per row
+const LANE_PADDING = 12; // top+bottom padding inside a lane
+const SUB_ROW_HEIGHT = 26; // px per stacked bar within a lane
+const SUB_ROW_GAP = 4;
+const LANE_MIN_HEIGHT = 56; // px minimum row height
 const LEFT_RAIL = 160; // px label column
 const MIN_DAY_WIDTH = 26; // px — ensures day numbers stay legible (esp. in Quarter view)
 
