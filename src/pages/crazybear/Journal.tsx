@@ -103,9 +103,13 @@ const Journal = () => {
                   <p className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60">
                     {new Date(p.published_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
                     {p.author ? ` · ${p.author}` : ""}
+                    {p.reading_minutes ? ` · ${p.reading_minutes} min read` : ""}
                   </p>
                 )}
                 <h2 className="mt-3 font-serif text-3xl uppercase group-hover:underline">{p.title}</h2>
+                {p.subtitle && (
+                  <p className="mt-2 font-cb-mono text-[11px] tracking-[0.3em] uppercase opacity-70">{p.subtitle}</p>
+                )}
                 {p.excerpt && <p className="mt-3 font-cb-sans text-lg opacity-85">{p.excerpt}</p>}
               </div>
             </Link>
