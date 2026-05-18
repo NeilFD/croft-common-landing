@@ -119,6 +119,7 @@ const PropertyPage = ({
               decoding="sync"
               fetchPriority="high"
               className={`absolute inset-0 h-full w-full ${fit === "contain" ? "object-contain" : "object-cover"}`}
+              style={heroObjectPosition ? { objectPosition: heroObjectPosition } : undefined}
             />
           )
         )}
