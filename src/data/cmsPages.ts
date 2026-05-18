@@ -58,7 +58,7 @@ const BearsDen = lazy(() => import('@/pages/crazybear/BearsDen'));
 const Curious = lazy(() => import('@/pages/crazybear/Curious'));
 const HouseRules = lazy(() => import('@/pages/HouseRules'));
 const Community = lazy(() => import('@/pages/Community'));
-const Hall = lazy(() => import('@/pages/Hall'));
+
 const EventEnquiry = lazy(() => import('@/pages/EventEnquiry'));
 const Book = lazy(() => import('@/pages/Book'));
 const Privacy = lazy(() => import('@/pages/Privacy'));
