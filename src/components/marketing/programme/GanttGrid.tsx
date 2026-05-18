@@ -10,6 +10,8 @@ import {
   type Lane,
   type ProgrammeWindow,
 } from '@/lib/marketing/programme';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
+import { CampaignTooltip } from './CampaignTooltip';
 
 interface Props {
   window: ProgrammeWindow;
@@ -345,47 +347,55 @@ const GanttBar = ({
   const title = `${campaign.name}\n${format(indexToDate(previewStart, win), 'd MMM')} – ${format(indexToDate(previewStart + previewSpan - 1, win), 'd MMM')}`;
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      title={title}
-      onClick={(e) => {
-        if (drag) return;
-        e.stopPropagation();
-        onOpen();
-      }}
-      onPointerDown={startDrag('move')}
-      className="absolute group select-none border border-foreground bg-background text-foreground shadow-[2px_2px_0_0_hsl(var(--foreground))] flex items-stretch text-[11px] font-display uppercase tracking-wider"
-      style={{
-        left: previewStart * dayWidth,
-        width: previewSpan * dayWidth - 2,
-        top,
-        height: Math.max(20, height),
-        cursor: readOnly ? 'pointer' : drag?.mode === 'move' ? 'grabbing' : 'grab',
-      }}
-    >
-      <span
-        aria-hidden
-        className="w-1.5 shrink-0"
-        style={{ background: accent }}
-      />
-      <span className="flex-1 px-2 overflow-hidden whitespace-nowrap text-ellipsis flex items-center">
-        {campaign.name}
-      </span>
-      {!readOnly && (
-        <>
-          <span
-            onPointerDown={startDrag('resize-l')}
-            className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize"
-            aria-label="Resize start"
-          />
-          <span
-            onPointerDown={startDrag('resize-r')}
-            className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize"
-            aria-label="Resize end"
-          />
-        </>
-      )}
-    </div>
+    <HoverCard openDelay={150} closeDelay={50} open={drag ? false : undefined}>
+      <HoverCardTrigger asChild>
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={(e) => {
+            if (drag) return;
+            e.stopPropagation();
+            onOpen();
+          }}
+          onPointerDown={startDrag('move')}
+          className="absolute group select-none border border-foreground bg-background text-foreground shadow-[2px_2px_0_0_hsl(var(--foreground))] flex items-stretch text-[11px] font-display uppercase tracking-wider"
+          style={{
+            left: previewStart * dayWidth,
+            width: previewSpan * dayWidth - 2,
+            top,
+            height: Math.max(20, height),
+            cursor: readOnly ? 'pointer' : drag?.mode === 'move' ? 'grabbing' : 'grab',
+          }}
+        >
+          <span aria-hidden className="w-1.5 shrink-0" style={{ background: accent }} />
+          <span className="flex-1 px-2 overflow-hidden whitespace-nowrap text-ellipsis flex items-center">
+            {campaign.name}
+          </span>
+          {!readOnly && (
+            <>
+              <span
+                onPointerDown={startDrag('resize-l')}
+                className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize"
+                aria-label="Resize start"
+              />
+              <span
+                onPointerDown={startDrag('resize-r')}
+                className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize"
+                aria-label="Resize end"
+              />
+            </>
+          )}
+        </div>
+      </HoverCardTrigger>
+      <HoverCardContent
+        side="top"
+        align="start"
+        sideOffset={8}
+        collisionPadding={16}
+        className="p-0 border-0 bg-transparent shadow-[4px_4px_0_0_hsl(var(--foreground))] w-auto z-50"
+      >
+        <CampaignTooltip campaign={campaign} />
+      </HoverCardContent>
+    </HoverCard>
   );
 };
