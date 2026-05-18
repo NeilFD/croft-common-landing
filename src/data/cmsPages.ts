@@ -421,6 +421,8 @@ export const CMS_PAGES: CmsPageEntry[] = [
  * SecretKitchens, alias routes.
  */
 export const CMS_EXCLUDED_ROUTES: string[] = [
+  '/whats-on/:slug', // dynamic event detail, content edited per-event in admin
+  '/journal/:slug', // dynamic journal detail
   '/image-picker',
   '/set-password',
   '/croft', // legacy alias to old Croft Common index
