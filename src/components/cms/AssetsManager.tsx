@@ -367,9 +367,54 @@ const SlotEditor = ({ slot }: { slot: AssetSlot }) => {
 };
 
 const AssetsManager = () => {
-  const pages = allPagesWithAssets();
-  const [page, setPage] = useState<string>(pages[0]);
-  const slots = slotsForPage(page);
+  const pages = useMemo(() => assetPagesForPicker(), []);
+  const pagesBySlug = useMemo(
+    () => Object.fromEntries(pages.map((p) => [p.slug, p])) as Record<string, AssetPageSummary>,
+    [pages]
+  );
+
+  const [slug, setSlug] = useState<string>(() => {
+    const recent = loadRecent();
+    const firstRecent = recent.find((s) => pagesBySlug[s]);
+    return firstRecent ?? pages[0]?.slug ?? "";
+  });
+  const [open, setOpen] = useState(false);
+  const [recent, setRecent] = useState<string[]>(() => loadRecent());
+
+  const slots: AssetSlot[] = useMemo(() => slotsForSlug(slug), [slug]);
+  const current = pagesBySlug[slug];
+
+  // ⌘K / Ctrl+K to open the picker
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const selectPage = (s: string) => {
+    setSlug(s);
+    setOpen(false);
+    pushRecent(s);
+    setRecent(loadRecent());
+  };
+
+  const grouped = useMemo(() => {
+    const g: Record<string, AssetPageSummary[]> = {};
+    for (const p of pages) (g[p.group] ??= []).push(p);
+    for (const key of Object.keys(g)) g[key].sort((a, b) => a.slug.localeCompare(b.slug));
+    return g;
+  }, [pages]);
+
+  const groupOrder = ["Country", "Town", "Standalone", "Members", "Global"];
+
+  const recentEntries = recent
+    .map((s) => pagesBySlug[s])
+    .filter((p): p is AssetPageSummary => Boolean(p));
 
   return (
     <div className="space-y-6">
@@ -382,26 +427,108 @@ const AssetsManager = () => {
           </p>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <span className="text-sm font-medium">Page</span>
-            <Select value={page} onValueChange={setPage}>
-              <SelectTrigger className="w-[280px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {pages.map((p) => (
-                  <SelectItem key={p} value={p}>/{p}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <span className="text-xs text-muted-foreground">{slots.length} slot{slots.length === 1 ? "" : "s"}</span>
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  className="w-[360px] justify-between font-normal"
+                >
+                  {current ? (
+                    <span className="flex items-center gap-2 truncate">
+                      <span className="font-medium truncate">{current.title}</span>
+                      <span className="text-xs text-muted-foreground font-mono truncate">{current.route}</span>
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">Choose a page…</span>
+                  )}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-60" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-[460px] p-0 bg-popover border shadow-lg"
+                align="start"
+                sideOffset={6}
+              >
+                <Command>
+                  <CommandInput placeholder="Search pages…" autoFocus />
+                  <CommandList className="max-h-[420px]">
+                    <CommandEmpty>No matching pages.</CommandEmpty>
+
+                    {recentEntries.length > 0 && (
+                      <>
+                        <CommandGroup heading="Recent">
+                          {recentEntries.map((p) => (
+                            <CommandItem
+                              key={`recent-${p.slug}`}
+                              value={`recent ${p.slug} ${p.title} ${p.route}`}
+                              onSelect={() => selectPage(p.slug)}
+                              className="flex items-center gap-2"
+                            >
+                              <Clock className="h-3.5 w-3.5 opacity-60" />
+                              <span className="font-medium truncate">{p.title}</span>
+                              <span className="text-xs text-muted-foreground font-mono truncate">{p.route}</span>
+                              <Badge variant="secondary" className="ml-auto text-[10px]">
+                                {p.slotCount} slot{p.slotCount === 1 ? "" : "s"}
+                              </Badge>
+                              {p.slug === slug && <Check className="h-3.5 w-3.5" />}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                        <CommandSeparator />
+                      </>
+                    )}
+
+                    {groupOrder
+                      .filter((gk) => grouped[gk]?.length)
+                      .map((gk) => (
+                        <CommandGroup key={gk} heading={gk}>
+                          {grouped[gk].map((p) => (
+                            <CommandItem
+                              key={p.slug}
+                              value={`${p.slug} ${p.title} ${p.route} ${p.group}`}
+                              onSelect={() => selectPage(p.slug)}
+                              className="flex items-center gap-2"
+                            >
+                              <span className={cn("font-medium truncate", p.slug === slug && "text-foreground")}>
+                                {p.title}
+                              </span>
+                              <span className="text-xs text-muted-foreground font-mono truncate">{p.route}</span>
+                              <Badge variant="outline" className="ml-auto text-[10px]">
+                                {p.slotCount} slot{p.slotCount === 1 ? "" : "s"}
+                              </Badge>
+                              {p.slug === slug && <Check className="h-3.5 w-3.5" />}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      ))}
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            <span className="text-xs text-muted-foreground">
+              {slots.length} slot{slots.length === 1 ? "" : "s"} · {pages.length} pages total
+            </span>
+            <span className="hidden md:inline text-[10px] text-muted-foreground/70 ml-auto font-mono">
+              ⌘K
+            </span>
           </div>
         </CardContent>
       </Card>
 
-      {slots.map((s) => (
-        <SlotEditor key={`${s.page}::${s.slot}`} slot={s} />
-      ))}
+      {slots.length === 0 ? (
+        <Card>
+          <CardContent className="py-8 text-sm text-muted-foreground flex items-center gap-2">
+            <ImageIcon className="h-4 w-4" />
+            No image slots configured for this page yet — upload one below once a slot is added.
+          </CardContent>
+        </Card>
+      ) : (
+        slots.map((s) => <SlotEditor key={`${s.page}::${s.slot}`} slot={s} />)
+      )}
     </div>
   );
 };
