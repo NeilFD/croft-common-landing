@@ -66,6 +66,7 @@ const CBStaticPage = ({
   path,
   jsonLd,
   cmsPage,
+  heroObjectPosition = "object-[center_0%]",
   children,
 }: Props) => {
   const { data: hero } = useCMSHeroImage(cmsPage);
