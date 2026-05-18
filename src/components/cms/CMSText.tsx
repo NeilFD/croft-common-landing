@@ -123,47 +123,34 @@ export const CMSText = ({
       // Smart positioning with viewport boundary detection
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
-      const popupWidth = 350; // Account for popup width
-      const popupHeight = 450; // Increased to account for actual popup height
-      
-      // Calculate preferred position (above and to the left)
+      const popupWidth = 560;
+      const popupHeight = 620;
+
       let topPos = rect.top - popupHeight - 10;
       let leftPos = rect.left - 50;
-      
-      // Boundary checks and adjustments
-      // If popup goes above viewport, position below element
-      if (topPos < 20) {
-        topPos = rect.bottom + 10;
+
+      if (topPos < 20) topPos = rect.bottom + 10;
+      if (topPos + popupHeight > viewportHeight - 40) {
+        topPos = Math.max(20, viewportHeight - popupHeight - 40);
       }
-      
-      // If popup goes below viewport, position at bottom with margin
-      if (topPos + popupHeight > viewportHeight - 80) {
-        topPos = viewportHeight - popupHeight - 80;
-      }
-      
-      // If popup goes too far left, adjust right
-      if (leftPos < 20) {
-        leftPos = 20;
-      }
-      
-      // If popup goes too far right, adjust left
+      if (leftPos < 20) leftPos = 20;
       if (leftPos + popupWidth > viewportWidth - 20) {
         leftPos = viewportWidth - popupWidth - 20;
       }
-      
-      console.log('🎯 CMS: Calculated position:', { topPos, leftPos });
-      
+
       const editPosition = {
         position: 'fixed' as const,
         top: `${topPos}px`,
         left: `${leftPos}px`,
-        width: '300px',
+        width: `${popupWidth}px`,
+        maxHeight: `${popupHeight}px`,
         zIndex: 99999,
         backgroundColor: 'white',
         border: '2px solid #007acc',
-        borderRadius: '8px',
-        padding: '12px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+        borderRadius: '10px',
+        padding: '16px',
+        boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
+        overflowY: 'auto' as const,
       };
       
       console.log('🎯 CMS: Final edit position:', editPosition);
