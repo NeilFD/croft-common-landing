@@ -47,6 +47,7 @@ const PropertyPage = ({
   extraJsonLd,
   children,
   cmsPage,
+  heroObjectPosition,
 }: Props) => {
   const { config } = useProperty();
   const location = useLocation();
