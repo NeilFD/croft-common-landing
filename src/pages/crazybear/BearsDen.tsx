@@ -86,7 +86,9 @@ const BearsDen = () => {
               </Link>
             ))}
           </div>
-        </section>
+            </section>
+          </div>
+        </div>
       </main>
     </>
   );
