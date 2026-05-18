@@ -443,14 +443,8 @@ const App = () => {
 
                       {/* Legacy Croft entry retained for members/secret gestures */}
                       <Route path="/croft" element={<Index />} />
-                      <Route path="/cafe" element={<Cafe />} />
-                      <Route path="/cocktails" element={<Cocktails />} />
-                      <Route path="/beer" element={<Beer />} />
-                      <Route path="/kitchens" element={<Kitchens />} />
-                      <Route path="/onekitchen-menu" element={<OneKitchenMenu />} />
                       <Route path="/secretkitchens" element={<DomainGuard><SecretKitchens /></DomainGuard>} />
                       <Route path="/secretkitchenadmin" element={<SecretKitchenAdmin />} />
-          <Route path="/hall" element={<Hall />} />
           <Route path="/event-enquiry" element={<EventEnquiry />} />
                       <Route path="/community" element={<Community />} />
 
