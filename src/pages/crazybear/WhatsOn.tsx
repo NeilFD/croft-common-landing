@@ -178,8 +178,11 @@ const WhatsOn = () => {
                     <h2 className="mt-3 font-serif text-2xl uppercase group-hover:underline">
                       {e.title}
                     </h2>
-                    {e.body && (
-                      <p className="mt-2 font-cb-sans text-sm opacity-80 line-clamp-3">{e.body}</p>
+                    {e.subtitle && (
+                      <p className="mt-1 font-cb-mono text-[10px] tracking-[0.3em] uppercase opacity-70">{e.subtitle}</p>
+                    )}
+                    {(e.excerpt || e.body) && (
+                      <p className="mt-2 font-cb-sans text-sm opacity-80 line-clamp-3">{e.excerpt || e.body}</p>
                     )}
                   </Wrapper>
                 </li>
