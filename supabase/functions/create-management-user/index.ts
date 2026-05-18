@@ -94,7 +94,8 @@ Deno.serve(async (req) => {
     // Generate a temporary password
     const tempPassword = `Cb-${crypto.randomUUID().slice(0, 12)}!9`
 
-    // Create user in auth.users using admin client
+    // Create user in auth.users using admin client; if exists, reset their password
+    let userId: string
     const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password: tempPassword,
@@ -107,55 +108,80 @@ Deno.serve(async (req) => {
     })
 
     if (authError) {
-      console.error('Auth error:', authError)
-      throw authError
+      const isExisting = (authError as any)?.code === 'email_exists' || /already been registered/i.test(authError.message || '')
+      if (!isExisting) {
+        console.error('Auth error:', authError)
+        throw authError
+      }
+
+      console.log('User exists, looking up and resetting password')
+      // Find the existing user by email
+      let foundId: string | null = null
+      let page = 1
+      while (page < 20 && !foundId) {
+        const { data: list, error: listErr } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 })
+        if (listErr) throw listErr
+        const match = list.users.find(u => (u.email || '').toLowerCase() === email.toLowerCase())
+        if (match) foundId = match.id
+        if (!list.users.length || list.users.length < 200) break
+        page++
+      }
+      if (!foundId) throw new Error('Existing user not found')
+
+      const { error: updErr } = await supabaseAdmin.auth.admin.updateUserById(foundId, {
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: { is_management_user: true, user_name, job_title }
+      })
+      if (updErr) throw updErr
+      userId = foundId
+    } else {
+      userId = authUser!.user.id
     }
 
-    console.log('Created auth user:', authUser.user.id)
+    console.log('Auth user ready:', userId)
+    const targetUserId = userId
 
     // Create management profile
     const { error: profileError } = await supabaseAdmin
       .from('management_profiles')
       .upsert({
-        user_id: authUser.user.id,
+        user_id: targetUserId,
         display_name: user_name,
         email,
-        job_title
+        job_title,
+        is_active: true
       }, { onConflict: 'user_id' })
 
     if (profileError) {
       console.error('Profile error:', profileError)
-      await supabaseAdmin.auth.admin.deleteUser(authUser.user.id)
       throw profileError
     }
 
-    // Add role
+    // Add role (idempotent)
     const { error: roleError } = await supabaseAdmin
       .from('user_roles')
-      .insert({ user_id: authUser.user.id, role: mappedRole })
+      .upsert({ user_id: targetUserId, role: mappedRole }, { onConflict: 'user_id,role' })
 
     if (roleError) {
       console.error('Role error:', roleError)
-      await supabaseAdmin.auth.admin.deleteUser(authUser.user.id)
-      await supabaseAdmin.from('management_profiles').delete().eq('user_id', authUser.user.id)
       throw roleError
     }
 
     const userData = { email, role: mappedRole, temp_password: tempPassword, created_by: callerId }
 
-    // Create password metadata entry
+    // Create/refresh password metadata entry
     const { error: pwdError } = await supabaseAdmin
       .from('user_password_metadata')
-      .insert({
-        user_id: authUser.user.id,
+      .upsert({
+        user_id: targetUserId,
         must_change_password: true,
         is_first_login: true,
         created_by: userData.created_by
-      })
+      }, { onConflict: 'user_id' })
 
     if (pwdError) {
       console.error('Password metadata error:', pwdError)
-      // Continue anyway - not critical
     }
 
     // Log audit entry
@@ -163,7 +189,7 @@ Deno.serve(async (req) => {
       .from('management_user_audit')
       .insert({
         action: 'user_created',
-        target_user_id: authUser.user.id,
+        target_user_id: targetUserId,
         actor_id: userData.created_by,
         details: { 
           email: userData.email, 
@@ -175,12 +201,11 @@ Deno.serve(async (req) => {
 
     if (auditError) {
       console.error('Audit error:', auditError)
-      // Continue anyway - not critical
     }
 
     return new Response(
       JSON.stringify({
-        user_id: authUser.user.id,
+        user_id: targetUserId,
         email: userData.email,
         role: userData.role,
         temp_password: userData.temp_password
