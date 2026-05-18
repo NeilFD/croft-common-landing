@@ -126,7 +126,7 @@ const CMSKitchens = lazy(() => import("./pages/CMSKitchens"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const SecretKitchens = lazy(() => import("./pages/SecretKitchens"));
 const SecretKitchenAdmin = lazy(() => import("./pages/SecretKitchenAdmin"));
-const OneKitchenMenu = lazy(() => import("./pages/OneKitchenMenu"));
+
 const Research = lazy(() => import("./pages/Research"));
 const UncommonStandards = lazy(() => import("./pages/UncommonStandards"));
 
