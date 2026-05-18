@@ -194,14 +194,17 @@ export const GanttGrid = ({
             )}
 
             {/* Bars */}
-            {byLane[lane].map((c, idx) => (
+            {packed[lane].items.map((item) => (
               <GanttBar
-                key={c.id}
-                campaign={c}
+                key={item.c.id}
+                campaign={item.c}
                 window={win}
                 dayWidth={dayWidth}
-                stackIndex={idx % 2}
-                onOpen={() => onOpenCampaign(c.id)}
+                subRow={item.subRow}
+                subRowHeight={SUB_ROW_HEIGHT}
+                subRowGap={SUB_ROW_GAP}
+                lanePadding={LANE_PADDING}
+                onOpen={() => onOpenCampaign(item.c.id)}
                 onCommit={onCommitDates}
                 optimistic={optimisticUpdate}
                 readOnly={readOnly}
