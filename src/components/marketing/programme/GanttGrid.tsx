@@ -277,11 +277,11 @@ const GanttBar = ({
         }
       }
     };
-    window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', onUp, { once: true });
+    globalThis.addEventListener('pointermove', onMove);
+    globalThis.addEventListener('pointerup', onUp, { once: true });
     return () => {
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
+      globalThis.removeEventListener('pointermove', onMove);
+      globalThis.removeEventListener('pointerup', onUp);
     };
   }, [drag, dayWidth, win, previewStart, previewSpan, campaign.id, campaign.start_date, campaign.end_date, onCommit, optimistic]);
 
