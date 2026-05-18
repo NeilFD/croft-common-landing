@@ -57,7 +57,7 @@ const Members = lazy(() => import('@/pages/crazybear/Members'));
 const BearsDen = lazy(() => import('@/pages/crazybear/BearsDen'));
 const Curious = lazy(() => import('@/pages/crazybear/Curious'));
 const HouseRules = lazy(() => import('@/pages/HouseRules'));
-const Community = lazy(() => import('@/pages/Community'));
+
 
 const EventEnquiry = lazy(() => import('@/pages/EventEnquiry'));
 const Book = lazy(() => import('@/pages/Book'));
@@ -220,20 +220,6 @@ export const CMS_PAGES: CmsPageEntry[] = [
       include: true,
       defaultTitle: 'Curious | Crazy Bear',
       defaultDescription: 'Curious Bear. Hidden things. Secret stuff.',
-    },
-  },
-  {
-    slug: 'community',
-    route: '/community',
-    title: 'Community',
-    description: 'Community feed and updates',
-    group: 'Standalone',
-    icon: Heart,
-    component: Community,
-    seo: {
-      include: true,
-      defaultTitle: 'Community | Crazy Bear',
-      defaultDescription: 'Community moments and updates from Crazy Bear.',
     },
   },
   {

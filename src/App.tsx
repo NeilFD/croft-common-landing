@@ -90,7 +90,7 @@ const Stories = lazy(() => import("./pages/crazybear/Stories"));
 const StoryDetail = lazy(() => import("./pages/crazybear/StoryDetail"));
 const GiftVouchers = lazy(() => import("./pages/crazybear/GiftVouchers"));
 const EventEnquiry = lazy(() => import("./pages/EventEnquiry"));
-const Community = lazy(() => import("./pages/Community"));
+
 const CommonRoom = lazy(() => import("./pages/CommonRoom"));
 const CommonRoomMain = lazy(() => import("./pages/CommonRoomMain"));
 const MemberHome = lazy(() => import("./pages/MemberHome"));
@@ -193,7 +193,7 @@ const LowercasePathGuard = () => {
       "secretkitchens",
       "secretkitchenadmin",
       "hall",
-     "community",
+     
      "common-room",
      "calendar",
      "manage-event",
@@ -446,7 +446,7 @@ const App = () => {
                       <Route path="/secretkitchens" element={<DomainGuard><SecretKitchens /></DomainGuard>} />
                       <Route path="/secretkitchenadmin" element={<SecretKitchenAdmin />} />
           <Route path="/event-enquiry" element={<EventEnquiry />} />
-                      <Route path="/community" element={<Community />} />
+                      
 
                       {/* The Den - new routes */}
                       <Route path="/den" element={<MemberRoutes><CommonRoom /></MemberRoutes>} />
