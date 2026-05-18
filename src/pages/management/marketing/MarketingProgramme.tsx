@@ -5,6 +5,7 @@ import jsPDF from 'jspdf';
 import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { GanttGrid } from '@/components/marketing/programme/GanttGrid';
 import { CampaignDrawer } from '@/components/marketing/programme/CampaignDrawer';
 import {
@@ -180,37 +181,80 @@ const MarketingProgramme = () => {
         </div>
 
         <div
-          className="flex items-center gap-3 flex-wrap border-y border-foreground/10 py-3"
+          className="flex items-center gap-3 flex-wrap"
           data-export-hide="true"
         >
-          <Input
-            placeholder="Search campaigns..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="max-w-[260px]"
-          />
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-display uppercase tracking-wider text-muted-foreground">
-              Property
-            </span>
-            {PROPERTY_TABS.map((p) => {
-              const on = property === p;
-              return (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => setProperty(p)}
-                  className={`text-[10px] uppercase font-display tracking-wider px-3 py-1.5 border ${
-                    on
-                      ? 'bg-foreground text-background border-foreground'
-                      : 'border-foreground/30 hover:border-foreground'
-                  }`}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="font-display uppercase tracking-wider text-xs">
+                Filters
+                {(property !== 'all' || search) && (
+                  <span className="ml-2 inline-block w-2 h-2 rounded-full bg-foreground" />
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              align="start"
+              sideOffset={8}
+              className="w-[320px] bg-background border border-foreground p-4 space-y-3 z-50"
+            >
+              <div>
+                <label className="text-[10px] font-display uppercase tracking-wider text-muted-foreground">
+                  Search
+                </label>
+                <Input
+                  placeholder="Search campaigns..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <span className="text-[10px] font-display uppercase tracking-wider text-muted-foreground">
+                  Property
+                </span>
+                <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                  {PROPERTY_TABS.map((p) => {
+                    const on = property === p;
+                    return (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setProperty(p)}
+                        className={`text-[10px] uppercase font-display tracking-wider px-3 py-1.5 border ${
+                          on
+                            ? 'bg-foreground text-background border-foreground'
+                            : 'border-foreground/30 hover:border-foreground'
+                        }`}
+                      >
+                        {p === 'all' ? 'All' : PROPERTY_LABELS[p as keyof typeof PROPERTY_LABELS]}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              {(property !== 'all' || search) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setProperty('all');
+                    setSearch('');
+                  }}
+                  className="w-full font-display uppercase tracking-wider text-xs"
                 >
-                  {p === 'all' ? 'All' : PROPERTY_LABELS[p as keyof typeof PROPERTY_LABELS]}
-                </button>
-              );
-            })}
-          </div>
+                  Clear filters
+                </Button>
+              )}
+            </PopoverContent>
+          </Popover>
+          {(property !== 'all' || search) && (
+            <span className="text-[10px] font-display uppercase tracking-wider text-muted-foreground">
+              {property !== 'all' && `Property: ${PROPERTY_LABELS[property as keyof typeof PROPERTY_LABELS]}`}
+              {property !== 'all' && search && ' · '}
+              {search && `Search: "${search}"`}
+            </span>
+          )}
         </div>
 
         <div ref={exportRef} className="bg-background p-6 border border-foreground/10">
