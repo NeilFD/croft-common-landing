@@ -24,7 +24,7 @@ interface Props {
 }
 
 const slugFor = (v: MenuVenue) =>
-  v.id ?? v.href.replace(/^\/+|\/+$/g, "").replace(/\//g, "-") || "venue";
+  v.id ?? (v.href.replace(/^\/+|\/+$/g, "").replace(/\//g, "-") || "venue");
 
 const CBMenusIndex = ({ venues, cmsPage }: Props) => (
   <section className="mx-auto max-w-5xl px-6 pb-24 text-foreground">
