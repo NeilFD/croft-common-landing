@@ -24,7 +24,7 @@ const Stories = () => {
     (async () => {
       const { data } = await supabase
         .from("cb_stories" as any)
-        .select("id,title,slug,excerpt,hero_url,published_at")
+        .select("id,title,subtitle,slug,excerpt,hero_url,published_at")
         .eq("published", true)
         .order("published_at", { ascending: false });
       if (data) setStories(data as unknown as Story[]);
