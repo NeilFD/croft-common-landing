@@ -89,11 +89,6 @@ const WhatsOn = lazy(() => import("./pages/crazybear/WhatsOn"));
 const Stories = lazy(() => import("./pages/crazybear/Stories"));
 const StoryDetail = lazy(() => import("./pages/crazybear/StoryDetail"));
 const GiftVouchers = lazy(() => import("./pages/crazybear/GiftVouchers"));
-const Cafe = lazy(() => import("./pages/Cafe"));
-const Cocktails = lazy(() => import("./pages/Cocktails"));
-const Beer = lazy(() => import("./pages/Beer"));
-const Kitchens = lazy(() => import("./pages/Kitchens"));
-const Hall = lazy(() => import("./pages/Hall"));
 const EventEnquiry = lazy(() => import("./pages/EventEnquiry"));
 const Community = lazy(() => import("./pages/Community"));
 const CommonRoom = lazy(() => import("./pages/CommonRoom"));
@@ -131,7 +126,7 @@ const CMSKitchens = lazy(() => import("./pages/CMSKitchens"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const SecretKitchens = lazy(() => import("./pages/SecretKitchens"));
 const SecretKitchenAdmin = lazy(() => import("./pages/SecretKitchenAdmin"));
-const OneKitchenMenu = lazy(() => import("./pages/OneKitchenMenu"));
+
 const Research = lazy(() => import("./pages/Research"));
 const UncommonStandards = lazy(() => import("./pages/UncommonStandards"));
 
@@ -448,14 +443,8 @@ const App = () => {
 
                       {/* Legacy Croft entry retained for members/secret gestures */}
                       <Route path="/croft" element={<Index />} />
-                      <Route path="/cafe" element={<Cafe />} />
-                      <Route path="/cocktails" element={<Cocktails />} />
-                      <Route path="/beer" element={<Beer />} />
-                      <Route path="/kitchens" element={<Kitchens />} />
-                      <Route path="/onekitchen-menu" element={<OneKitchenMenu />} />
                       <Route path="/secretkitchens" element={<DomainGuard><SecretKitchens /></DomainGuard>} />
                       <Route path="/secretkitchenadmin" element={<SecretKitchenAdmin />} />
-          <Route path="/hall" element={<Hall />} />
           <Route path="/event-enquiry" element={<EventEnquiry />} />
                       <Route path="/community" element={<Community />} />
 

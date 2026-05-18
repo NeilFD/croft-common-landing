@@ -58,12 +58,7 @@ const BearsDen = lazy(() => import('@/pages/crazybear/BearsDen'));
 const Curious = lazy(() => import('@/pages/crazybear/Curious'));
 const HouseRules = lazy(() => import('@/pages/HouseRules'));
 const Community = lazy(() => import('@/pages/Community'));
-const Cafe = lazy(() => import('@/pages/Cafe'));
-const Cocktails = lazy(() => import('@/pages/Cocktails'));
-const Beer = lazy(() => import('@/pages/Beer'));
-const Kitchens = lazy(() => import('@/pages/Kitchens'));
-const OneKitchenMenu = lazy(() => import('@/pages/OneKitchenMenu'));
-const Hall = lazy(() => import('@/pages/Hall'));
+
 const EventEnquiry = lazy(() => import('@/pages/EventEnquiry'));
 const Book = lazy(() => import('@/pages/Book'));
 const Privacy = lazy(() => import('@/pages/Privacy'));
@@ -239,90 +234,6 @@ export const CMS_PAGES: CmsPageEntry[] = [
       include: true,
       defaultTitle: 'Community | Crazy Bear',
       defaultDescription: 'Community moments and updates from Crazy Bear.',
-    },
-  },
-  {
-    slug: 'cafe',
-    route: '/cafe',
-    title: 'Cafe',
-    description: 'All-day cafe',
-    group: 'Standalone',
-    icon: Coffee,
-    component: Cafe,
-    seo: {
-      include: true,
-      defaultTitle: 'Cafe | Crazy Bear',
-      defaultDescription: 'All-day cafe at Crazy Bear.',
-    },
-  },
-  {
-    slug: 'cocktails',
-    route: '/cocktails',
-    title: 'Cocktails',
-    description: 'Cocktail bar',
-    group: 'Standalone',
-    icon: Martini,
-    component: Cocktails,
-    seo: {
-      include: true,
-      defaultTitle: 'Cocktails | Crazy Bear',
-      defaultDescription: 'The cocktail bar at Crazy Bear.',
-    },
-  },
-  {
-    slug: 'beer',
-    route: '/beer',
-    title: 'Beer',
-    description: 'Beer hall and tap list',
-    group: 'Standalone',
-    icon: BeerIcon,
-    component: Beer,
-    seo: {
-      include: true,
-      defaultTitle: 'Beer | Crazy Bear',
-      defaultDescription: 'Beer hall, tap list and more.',
-    },
-  },
-  {
-    slug: 'kitchens',
-    route: '/kitchens',
-    title: 'Kitchens',
-    description: 'The kitchens overview',
-    group: 'Standalone',
-    icon: ChefHat,
-    component: Kitchens,
-    seo: {
-      include: true,
-      defaultTitle: 'Kitchens | Crazy Bear',
-      defaultDescription: 'The kitchens at Crazy Bear.',
-    },
-  },
-  {
-    slug: 'onekitchen-menu',
-    route: '/onekitchen-menu',
-    title: 'One Kitchen Menu',
-    description: 'Single combined kitchen menu',
-    group: 'Standalone',
-    icon: UtensilsCrossed,
-    component: OneKitchenMenu,
-    seo: {
-      include: true,
-      defaultTitle: 'Kitchen Menu | Crazy Bear',
-      defaultDescription: 'The full kitchen menu, all in one place.',
-    },
-  },
-  {
-    slug: 'hall',
-    route: '/hall',
-    title: 'Hall',
-    description: 'The Hall venue',
-    group: 'Standalone',
-    icon: Castle,
-    component: Hall,
-    seo: {
-      include: true,
-      defaultTitle: 'The Hall | Crazy Bear',
-      defaultDescription: 'The Hall at Crazy Bear. Events and hire.',
     },
   },
   {
