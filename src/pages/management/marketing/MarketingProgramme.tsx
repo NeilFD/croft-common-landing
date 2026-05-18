@@ -80,8 +80,13 @@ const MarketingProgramme = () => {
       .eq('id', id);
     if (error) {
       toast({ title: 'Could not save dates', description: error.message, variant: 'destructive' });
+      // Roll back the optimistic update by refetching the truth from the DB.
+      qc.invalidateQueries({ queryKey: ['marketing', 'programme'] });
       throw error;
     }
+    // Resync cache so any other consumers see the new dates.
+    qc.invalidateQueries({ queryKey: ['marketing', 'programme'] });
+    qc.invalidateQueries({ queryKey: ['marketing', 'campaigns'] });
   };
 
   const snapshot = async (): Promise<string | null> => {
