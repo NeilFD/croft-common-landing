@@ -161,15 +161,18 @@ export const CMSText = ({
       // Fallback positioning if ref is null
       setOriginalStyles({
         position: 'fixed' as const,
-        top: '100px',
-        left: '100px',
-        width: '300px',
+        top: '60px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '560px',
+        maxHeight: '620px',
         zIndex: 99999,
         backgroundColor: 'white',
         border: '2px solid #007acc',
-        borderRadius: '8px',
-        padding: '12px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+        borderRadius: '10px',
+        padding: '16px',
+        boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
+        overflowY: 'auto' as const,
       });
     }
     
