@@ -42,8 +42,17 @@ export const AiAssistPanel = ({ title, currentBody, onInsert, onSeo }: Props) =>
         else body.targetMinutes = length;
       }
       const { data, error } = await supabase.functions.invoke("cb-journal-ai-write", { body });
-      if (error) throw error;
-      if (mode === "seo") {
+      if (error) {
+        let detail = error.message;
+        try {
+          const ctxResp = (error as any)?.context;
+          if (ctxResp && typeof ctxResp.json === "function") {
+            const parsed = await ctxResp.json();
+            detail = parsed?.error || parsed?.detail || detail;
+          }
+        } catch {}
+        throw new Error(detail);
+      }
         onSeo?.({
           seo_title: data?.seo_title,
           seo_description: data?.seo_description,
