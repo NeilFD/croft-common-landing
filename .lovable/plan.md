@@ -1,51 +1,55 @@
-## What's actually broken
+## Problem
 
-Every public page IS registered in the CMS (`src/data/cmsPages.ts`) and almost every page IS wired for inline copy editing (`cmsPage="..."` → `CMSText` slots in `PropertyPage` / `CBMenuPage`). The visual editor route works (e.g. `/management/cms/visual/town/food/afternoon-tea` will render the live page with click-to-edit).
+On `/whats-on` (and several other Crazy Bear pages) the top nav sits halfway down the hero, overlapping the headline, instead of being pinned to the very top of the section.
 
-The problem is the **sidebar in `src/components/cms/CMSSidebar.tsx`** only renders **two levels** deep:
+## Root cause
 
-```
-Country Home
- ├─ Country Pub        ← child of `country`        ✓ visible
- ├─ Country Food       ← child of `country`        ✓ visible
- │   ├─ Country Menus     ← grandchild             ✗ HIDDEN
- │   └─ Afternoon Tea     ← grandchild             ✗ HIDDEN
- ├─ Country Rooms
- │   ├─ Room Types        ← HIDDEN
- │   ├─ Room Gallery      ← HIDDEN
- │   ├─ Snug/Cosy/...     ← HIDDEN
- └─ Country Events
-     ├─ Weddings          ← HIDDEN
-     ├─ Birthdays         ← HIDDEN
-     └─ Business          ← HIDDEN
-```
+`CBTopNav` positions itself with `absolute top-0`. On the affected pages it is rendered inside an inner wrapper like `<div className="relative z-10">`, which becomes its offset parent. That wrapper sits **below** the section's `pt-40 md:pt-48` padding (160–192px), so the nav is pushed down by that padding instead of anchoring to the section's top edge.
 
-Pages currently unreachable from the sidebar (so you can never click into them to edit copy):
+Pages where CBTopNav is wrapped in a `relative` inner div (broken):
 
-**Country**: `country/pub/food`, `country/pub/drink`, `country/pub/hospitality`, `country/rooms/types`, `country/rooms/gallery`, `country/rooms/snug`, `country/rooms/cosy`, `country/rooms/boujee`, `country/rooms/decadent`, `country/food/menus`, `country/food/afternoon-tea`, `country/events/weddings`, `country/events/birthdays`, `country/events/business`, `country/playlist` (parentSlug `country/culture`).
+- `src/pages/crazybear/WhatsOn.tsx`
+- `src/pages/crazybear/GiftVouchers.tsx`
+- `src/pages/crazybear/BearsDen.tsx`
+- `src/components/crazybear/CBStaticPage.tsx` (powers Careers, Contact, Cookies, Curious, FAQHub, Merch, Press, SetPassword content, Terms, Treatments, etc — anything built on CBStaticPage)
+- `src/components/property/PropertyLayout.tsx` (`<div className="relative">` wraps the nav)
 
-**Town**: `town/food/black-bear`, `town/food/bnb`, `town/food/hom-thai`, `town/food/menus`, `town/food/afternoon-tea`, `town/drink/cocktails`, `town/rooms/types`, `town/rooms/gallery`, `town/rooms/snug`, `town/rooms/cosy`, `town/rooms/boujee`, `town/rooms/decadent`, `town/pool-party` (parent `town/pool`), `town/playlist` (parent `town/culture`).
+Pages where CBTopNav is already a direct child of a `relative` section (correct, no change):
 
-(The same pages appear in the public **Assets** page picker as "73 pages total" — they exist, the sidebar just hides them.)
+- `Members.tsx`, `Stories.tsx`, `JournalPost.tsx`, `StoryDetail.tsx`, `About.tsx`, `HouseRules.tsx`, `Landing.tsx`
 
 ## Fix
 
-1. **`src/components/cms/CMSSidebar.tsx`** — replace the hand-rolled two-level `renderPage` with a recursive `renderNode` driven by `childrenOf(slug)`. Nodes with children render as a `Collapsible` with the same chevron + indent treatment already in use; nodes without children render as a plain `NavLink`. No data changes required because `parentSlug` already encodes the full tree.
+For each broken file, move `<CBTopNav />` out of the inner relative wrapper so it becomes a direct child of the outer `relative` `<section>` (sibling of `CBHeroBackdrop` and the content wrapper). The content wrapper keeps its `relative z-10` for stacking above the backdrop; the nav already has `z-30` so it stays above everything.
 
-2. **Audit pass on a handful of pages that currently render hardcoded copy outside `CMSText`** so editing actually does something for every section the user can now reach:
-   - `src/pages/property/index.tsx` — `CBSectionedPage` sections (Terraces & Gardens 4 areas) and `CBMenusIndex` venue blurbs are hardcoded strings. Wire each section title/body and each venue name/blurb through `CMSText` using deterministic content keys (e.g. `country/terraces-and-gardens.fishpond.title`).
-   - `src/components/crazybear/culture/CulturePage.tsx` (Town Culture, Country Culture) — currently no `CMSText`. Wrap the rendered copy blocks so both culture pages are editable.
-   - `src/pages/crazybear/Stories.tsx`, `Journal.tsx` index intros — wrap intro copy in `CMSText` (post bodies stay in their existing post tables).
+Concretely, change:
 
-3. **Add Hospitality, Stories, Journal etc. that were missing from the sidebar list** — these come back automatically once the sidebar recurses, no separate work.
+```tsx
+<section className="relative ... pt-40 md:pt-48 ...">
+  <CBHeroBackdrop page={PAGE} />
+  <div className="relative z-10">
+    <CBTopNav tone="light" />
+    ...content
+  </div>
+</section>
+```
 
-4. **No registry / no route / no schema changes.** No DB migration. The fallback strings already in the code stay as defaults until you publish edits.
+to:
 
-## How you'll use it after
+```tsx
+<section className="relative ... pt-40 md:pt-48 ...">
+  <CBHeroBackdrop page={PAGE} />
+  <CBTopNav tone="light" />
+  <div className="relative z-10">
+    ...content
+  </div>
+</section>
+```
 
-Open `/management/cms` → the Country and Town sections in the left sidebar expand all the way down (Country → Country Food → Afternoon Tea, etc.). Click any page → click **Edit** → click any text on the rendered page to change it → **Publish**.
+Same shape applies to `BearsDen.tsx` (double-nested) and `CBStaticPage.tsx` (which fans out to many static pages, fixing them all in one edit). For `PropertyLayout.tsx`, drop the unnecessary `relative` wrapper around the nav so it anchors to the page hero below.
 
-## Out of scope
+## Verification
 
-- No changes to authentication, the database, the Assets image flow, routing, or page layouts.
-- Tightly templated micro-copy (button labels inside shared components like `CBMenusIndex`, schema-driven SEO defaults) stays as-is unless you want a second pass after this lands.
+After edits, load `/whats-on`, `/gift-vouchers`, `/bears-den`, a CBStaticPage route (e.g. `/careers`), and a property page; confirm the nav sits flush with the top of the hero on each.
+
+No CMS, data, or behavioural changes — purely DOM restructuring.
