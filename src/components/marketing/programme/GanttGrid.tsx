@@ -10,6 +10,8 @@ import {
   type Lane,
   type ProgrammeWindow,
 } from '@/lib/marketing/programme';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
+import { CampaignTooltip } from './CampaignTooltip';
 
 interface Props {
   window: ProgrammeWindow;
