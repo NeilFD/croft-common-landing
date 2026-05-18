@@ -5,6 +5,7 @@ import { CBSeo } from "@/components/seo/CBSeo";
 import { breadcrumbSchema } from "@/components/seo/CBStructuredData";
 import CBTopNav from "@/components/crazybear/CBTopNav";
 import CBFooter from "@/components/crazybear/CBFooter";
+import CBHeroBackdrop from "@/components/crazybear/CBHeroBackdrop";
 import { CMSText } from "@/components/cms/CMSText";
 
 type SiteFilter = "both" | "town" | "country";
