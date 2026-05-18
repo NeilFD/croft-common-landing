@@ -92,8 +92,8 @@ const CBStaticPage = ({
             <div className="absolute inset-0 bg-black/55" aria-hidden />
           </>
         )}
+        <CBTopNav tone="light" />
         <div className="relative z-10">
-          <CBTopNav tone="light" />
           <div className="mx-auto max-w-4xl text-center">
             {cmsPage ? (
               <CMSText
