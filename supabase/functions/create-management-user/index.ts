@@ -94,7 +94,8 @@ Deno.serve(async (req) => {
     // Generate a temporary password
     const tempPassword = `Cb-${crypto.randomUUID().slice(0, 12)}!9`
 
-    // Create user in auth.users using admin client
+    // Create user in auth.users using admin client; if exists, reset their password
+    let userId: string
     const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password: tempPassword,
@@ -107,11 +108,39 @@ Deno.serve(async (req) => {
     })
 
     if (authError) {
-      console.error('Auth error:', authError)
-      throw authError
+      const isExisting = (authError as any)?.code === 'email_exists' || /already been registered/i.test(authError.message || '')
+      if (!isExisting) {
+        console.error('Auth error:', authError)
+        throw authError
+      }
+
+      console.log('User exists, looking up and resetting password')
+      // Find the existing user by email
+      let foundId: string | null = null
+      let page = 1
+      while (page < 20 && !foundId) {
+        const { data: list, error: listErr } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 })
+        if (listErr) throw listErr
+        const match = list.users.find(u => (u.email || '').toLowerCase() === email.toLowerCase())
+        if (match) foundId = match.id
+        if (!list.users.length || list.users.length < 200) break
+        page++
+      }
+      if (!foundId) throw new Error('Existing user not found')
+
+      const { error: updErr } = await supabaseAdmin.auth.admin.updateUserById(foundId, {
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: { is_management_user: true, user_name, job_title }
+      })
+      if (updErr) throw updErr
+      userId = foundId
+    } else {
+      userId = authUser!.user.id
     }
 
-    console.log('Created auth user:', authUser.user.id)
+    console.log('Auth user ready:', userId)
+    const targetUserId = userId
 
     // Create management profile
     const { error: profileError } = await supabaseAdmin
