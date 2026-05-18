@@ -3,6 +3,7 @@ import { CBSeo } from "@/components/seo/CBSeo";
 import { breadcrumbSchema } from "@/components/seo/CBStructuredData";
 import CBTopNav from "@/components/crazybear/CBTopNav";
 import CBFooter from "@/components/crazybear/CBFooter";
+import CBHeroBackdrop from "@/components/crazybear/CBHeroBackdrop";
 import { CMSText } from "@/components/cms/CMSText";
 
 const PAGE = "gift-vouchers";
@@ -18,19 +19,22 @@ const GiftVouchers = () => (
       jsonLd={[breadcrumbSchema("/gift-vouchers")]}
     />
 
-    <section className="relative bg-black text-white pt-40 md:pt-48 pb-24 md:pb-32 px-6">
-      <CBTopNav tone="light" />
-      <div className="mx-auto max-w-4xl text-center">
-        <CMSText page={PAGE} section="hero" contentKey="eyebrow" fallback="Crazy Bear" as="p" className="font-cb-mono text-[10px] tracking-[0.5em] uppercase opacity-70" />
-        <CMSText page={PAGE} section="hero" contentKey="title" fallback="Gift Vouchers" as="h1" className="mt-4 font-serif text-5xl md:text-7xl uppercase" />
-        <CMSText
-          page={PAGE}
-          section="hero"
-          contentKey="intro"
-          fallback="Rooms. Dinner. Drinks. Whatever they fancy, on you. Posted or sent by email."
-          as="p"
-          className="mt-6 font-cb-sans text-lg md:text-xl opacity-90 max-w-2xl mx-auto"
-        />
+    <section className="relative bg-black text-white pt-40 md:pt-48 pb-24 md:pb-32 px-6 overflow-hidden">
+      <CBHeroBackdrop page={PAGE} />
+      <div className="relative z-10">
+        <CBTopNav tone="light" />
+        <div className="mx-auto max-w-4xl text-center">
+          <CMSText page={PAGE} section="hero" contentKey="eyebrow" fallback="Crazy Bear" as="p" className="font-cb-mono text-[10px] tracking-[0.5em] uppercase opacity-70" />
+          <CMSText page={PAGE} section="hero" contentKey="title" fallback="Gift Vouchers" as="h1" className="mt-4 font-serif text-5xl md:text-7xl uppercase" />
+          <CMSText
+            page={PAGE}
+            section="hero"
+            contentKey="intro"
+            fallback="Rooms. Dinner. Drinks. Whatever they fancy, on you. Posted or sent by email."
+            as="p"
+            className="mt-6 font-cb-sans text-lg md:text-xl opacity-90 max-w-2xl mx-auto"
+          />
+        </div>
       </div>
     </section>
 

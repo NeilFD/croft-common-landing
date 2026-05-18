@@ -1,6 +1,7 @@
 import { Suspense, lazy } from "react";
 import { Link } from "react-router-dom";
 import CBTopNav from "@/components/crazybear/CBTopNav";
+import CBHeroBackdrop from "@/components/crazybear/CBHeroBackdrop";
 import { CMSText } from "@/components/cms/CMSText";
 import { useSEO } from "@/hooks/useSEO";
 
@@ -18,7 +19,8 @@ const Members = () => {
   return (
     <main className="bg-black text-white font-cb-sans min-h-screen">
       {/* Hero / intro */}
-      <section className="relative w-full bg-black text-white pt-40 md:pt-48 pb-20 md:pb-28 px-6 md:px-16">
+      <section className="relative w-full bg-black text-white pt-40 md:pt-48 pb-20 md:pb-28 px-6 md:px-16 overflow-hidden">
+        <CBHeroBackdrop page={PAGE} />
         <CBTopNav tone="light" />
 
         <div className="relative z-10 mx-auto max-w-4xl">

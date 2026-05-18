@@ -54,6 +54,10 @@ const galleryFromArr = (arr: GalleryItem[]): AssetSlot["defaults"] =>
  * page key (e.g. culture pages query `town-culture` not `town/culture`).
  */
 const SLOT_OVERRIDES: Record<string, AssetSlot[]> = {
+  // Members page renders under live key "cb-members" (legacy), not its slug.
+  members: [
+    { page: "cb-members", slot: "hero", kind: "hero", label: "Members hero", defaults: [] },
+  ],
   // ----- TOWN -----
   town: [
     { page: "town", slot: "hero-carousel", kind: "carousel", label: "Town home carousel", defaults: carouselFromMap("/town") },

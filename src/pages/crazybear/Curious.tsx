@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import cbBgImage from '@/assets/den-bg-neon.jpg';
 import { CMSText } from '@/components/cms/CMSText';
+import { useCMSAssets } from '@/hooks/useCMSAssets';
 
 type Category = 'general' | 'rooms' | 'dining' | 'membership';
 
@@ -50,6 +51,8 @@ const Curious: React.FC = () => {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const { toast } = useToast();
+  const { assets: heroAssets } = useCMSAssets('curious', 'hero');
+  const bgImage = heroAssets[0]?.src ?? cbBgImage;
   const initial = (params.get('c') as Category | null) || null;
   const [category, setCategory] = useState<Category | null>(initial);
   const [submitting, setSubmitting] = useState(false);
@@ -156,7 +159,7 @@ const Curious: React.FC = () => {
         <div
           aria-hidden
           className="fixed inset-0 -z-10 bg-cover bg-center "
-          style={{ backgroundImage: `url(${cbBgImage})` }}
+          style={{ backgroundImage: `url(${bgImage})` }}
         />
         <div aria-hidden className="fixed inset-0 -z-10 bg-black/40" />
 

@@ -3,6 +3,7 @@ import { goldProductSchema, organizationSchema } from "@/components/seo/CBStruct
 import { Link } from 'react-router-dom';
 import bearMark from '@/assets/crazy-bear-mark.png';
 import CBTopNav from '@/components/crazybear/CBTopNav';
+import CBHeroBackdrop from '@/components/crazybear/CBHeroBackdrop';
 import { CMSText } from '@/components/cms/CMSText';
 
 const PAGE = "bears-den";
@@ -25,9 +26,12 @@ const BearsDen = () => {
       />
 
       <main className="min-h-screen bg-black text-white font-cb-sans">
-        <CBTopNav tone="light" />
-        <section className="px-6 pt-32 pb-24 max-w-5xl mx-auto text-center">
-          <img src={bearMark} alt="" className="h-16 w-auto mx-auto invert opacity-90" />
+        <div className="relative overflow-hidden">
+          <CBHeroBackdrop page={PAGE} overlayClassName="bg-black/65" />
+          <div className="relative z-10">
+            <CBTopNav tone="light" />
+            <section className="px-6 pt-32 pb-24 max-w-5xl mx-auto text-center">
+              <img src={bearMark} alt="" className="h-16 w-auto mx-auto invert opacity-90" />
           <CMSText
             page={PAGE}
             section="hero"
@@ -82,7 +86,9 @@ const BearsDen = () => {
               </Link>
             ))}
           </div>
-        </section>
+            </section>
+          </div>
+        </div>
       </main>
     </>
   );
