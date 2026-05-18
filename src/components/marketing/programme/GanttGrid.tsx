@@ -158,7 +158,7 @@ export const GanttGrid = ({
           <div
             key={lane}
             className="relative border-b border-foreground/20"
-            style={{ height: LANE_HEIGHT }}
+            style={{ height: laneHeight(lane) }}
           >
             {/* Vertical day separators */}
             <div
