@@ -75,6 +75,12 @@ const marketingSubModules = [
     exactMatch: false,
   },
   {
+    name: 'Programme',
+    path: '/management/marketing/programme',
+    icon: BarChart3,
+    exactMatch: false,
+  },
+  {
     name: 'Campaigns',
     path: '/management/marketing/campaigns',
     icon: BarChart3,
