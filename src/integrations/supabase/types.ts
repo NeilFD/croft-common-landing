@@ -2617,8 +2617,11 @@ export type Database = {
           hero_asset_id: string | null
           id: string
           kpi: string | null
+          lane: string
           name: string
+          notes: string | null
           owner_id: string | null
+          property_tag: string | null
           slug: string | null
           start_date: string | null
           status: string
@@ -2633,8 +2636,11 @@ export type Database = {
           hero_asset_id?: string | null
           id?: string
           kpi?: string | null
+          lane?: string
           name: string
+          notes?: string | null
           owner_id?: string | null
+          property_tag?: string | null
           slug?: string | null
           start_date?: string | null
           status?: string
@@ -2649,8 +2655,11 @@ export type Database = {
           hero_asset_id?: string | null
           id?: string
           kpi?: string | null
+          lane?: string
           name?: string
+          notes?: string | null
           owner_id?: string | null
+          property_tag?: string | null
           slug?: string | null
           start_date?: string | null
           status?: string
