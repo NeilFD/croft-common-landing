@@ -44,7 +44,7 @@ export const GanttGrid = ({
     if (!el) return;
     const update = () => {
       const w = el.getBoundingClientRect().width;
-      setDayWidth(w / win.days);
+      setDayWidth(Math.max(MIN_DAY_WIDTH, w / win.days));
     };
     update();
     const ro = new ResizeObserver(update);
