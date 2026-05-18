@@ -23,6 +23,8 @@ interface Props {
   jsonLd?: Record<string, any>[];
   /** When set, hero text + image are editable through the CMS under this page slug. */
   cmsPage?: string;
+  /** Tailwind object-position class for the hero image. Defaults to object-[center_0%]. */
+  heroObjectPosition?: string;
   children?: ReactNode;
 }
 
