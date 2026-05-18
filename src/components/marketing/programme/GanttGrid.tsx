@@ -332,8 +332,8 @@ const GanttBar = ({
   }, [drag, dayWidth, win, previewStart, previewSpan, campaign.id, campaign.start_date, campaign.end_date, onCommit, optimistic]);
 
   const accent = campaign.property_tag ? PROPERTY_ACCENT[campaign.property_tag] : '#666';
-  const top = 6 + stackIndex * 22;
-  const height = LANE_HEIGHT - 14 - stackIndex * 22;
+  const top = lanePadding / 2 + subRow * (subRowHeight + subRowGap);
+  const height = subRowHeight;
 
   const startDrag = (mode: DragMode) => (e: React.PointerEvent) => {
     if (readOnly) return;
