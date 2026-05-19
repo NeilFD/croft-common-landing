@@ -25,8 +25,7 @@
 /* ---------- Header + Footer overrides (white shell, black contents) ---------- */
 /* Header: force the legibility strip + nav to white with black text.
    CBTopNav's strip sits as a fixed sibling at top z-20; the header itself is z-30. */
-.pub-theme ~ * [aria-hidden="true"].fixed.top-0,
-body:has(.pub-theme) > div > [aria-hidden="true"].fixed.top-0 {
+.pub-theme [aria-hidden="true"].fixed.top-0 {
   background-color: #fff !important;
   backdrop-filter: none !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
