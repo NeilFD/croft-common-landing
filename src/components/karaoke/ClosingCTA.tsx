@@ -19,7 +19,7 @@ const ClosingCTA = () => (
         Last orders
       </p>
       <h2 className="kar-display mt-6 text-5xl md:text-8xl uppercase leading-[0.9] text-[hsl(var(--kar-cream))]">
-        Your booth<br />awaits.
+        Tonight Matthew<br />I'm going to be ...
       </h2>
       <button
         type="button"
