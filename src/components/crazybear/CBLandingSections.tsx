@@ -117,7 +117,7 @@ const CBLandingSections = () => {
                   Book a room
                 </Link>
                 <Link
-                  to="/country/pub/food"
+                  to="/pub/food"
                   className="inline-flex items-center border border-white/70 font-cb-mono text-[10px] tracking-[0.4em] uppercase px-4 py-2 hover:bg-white hover:text-black transition-colors"
                 >
                   Reserve a table
