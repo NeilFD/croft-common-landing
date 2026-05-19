@@ -160,7 +160,7 @@ Thai opened upstairs. Gold leaf, lanterns, proper heat. Quietly one of the best 
   ctaPrimaryLabel: "Book a room",
   ctaPrimaryHref: "/country/rooms",
   ctaSecondaryLabel: "Eat with us",
-  ctaSecondaryHref: "/country/pub/food",
+  ctaSecondaryHref: "/pub/food",
   hero: countryHero,
   collageSeed: [
     { heading: "Reception by Routemaster.", body: "Check in via the old red bus. Neon sign. Ivy round the door. The arrival sets the tone.", meta: {} },

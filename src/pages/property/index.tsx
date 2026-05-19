@@ -64,55 +64,8 @@ export const CountryHome = () => (
     cmsPage="country"
   />
 );
-export const CountryPub = () =>
-  withSecret(
-    "recipe-countrypub",
-    <MenuRoute
-      menu={countryPubMenu}
-      property="country"
-      path="/country/pub"
-      title="The Country Pub"
-      description="Real ale, proper food, fires lit. The pub at Crazy Bear Country, Stadhampton."
-      cuisine={["British", "Pub"]}
-      faqKey="/country/pub"
-      cmsPage="country/pub"
-    />
-  );
-export const CountryPubFood = () =>
-  withSecret(
-    "recipe-countrypub",
-    <MenuRoute
-      menu={countryPubMenu}
-      property="country"
-      path="/country/pub/food"
-      title="Country Pub Food"
-      description="Pub food, properly done. Lunch and dinner every day."
-      cuisine={["British", "Pub"]}
-      faqKey="/country/pub"
-      cmsPage="country/pub/food"
-    />
-  );
-export const CountryPubDrink = () =>
-  withSecret(
-    "dice-country",
-    <PropertyPage
-      title="Drink"
-      eyebrow="The Pub"
-      body="Real ale. Proper wine. Cocktails that bite back."
-      seoDescription="Real ale, proper wine, cocktails that bite back. The bar at Crazy Bear Country."
-      schemaKind="bar"
-      cmsPage="country/pub/drink"
-    />
-  );
-export const CountryPubHospitality = () => (
-  <PropertyPage
-    title="Hospitality"
-    eyebrow="The Pub"
-    body="Fires lit. Doors open. Stay as long as you like."
-    seoDescription="Fires lit. Doors open. Country pub hospitality at Crazy Bear, Stadhampton."
-    cmsPage="country/pub/hospitality"
-  />
-);
+// Country pub pages retired — see /pub enclave at src/pages/pub/*
+// Hospitality page removed entirely; food, drink, snacks now live under /pub.
 export const CountryRooms = () =>
   withSecret(
     "rooms-country",
@@ -465,11 +418,11 @@ const TOWN_MENUS = [
 const COUNTRY_MENUS = [
   {
     name: "The Pub",
-    href: "/country/pub",
+    href: "/pub",
     blurb: "Real ale, proper food, fires lit.",
     menus: [
-      { label: "Lunch & Dinner", href: "/country/pub/food", status: "live" as const },
-      { label: "Drink", href: "/country/pub/drink", status: "live" as const },
+      { label: "Lunch & Dinner", href: "/pub/food", status: "live" as const },
+      { label: "Drink", href: "/pub/drink", status: "live" as const },
       { label: "Sunday", status: "coming-soon" as const },
       { label: "Breakfast", status: "coming-soon" as const },
     ],

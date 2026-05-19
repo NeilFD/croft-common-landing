@@ -24,10 +24,12 @@ const CBMembers = lazy(() => import("./pages/crazybear/Members"));
 import { useCBMember } from "@/hooks/useCBMember";
 const SetPassword = lazy(() => import("./pages/crazybear/SetPassword"));
 const CountryHome = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryHome })));
-const CountryPub = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryPub })));
-const CountryPubFood = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryPubFood })));
-const CountryPubDrink = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryPubDrink })));
-const CountryPubHospitality = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryPubHospitality })));
+// /pub enclave (formerly /country/pub*)
+const PubLayout = lazy(() => import("./components/pub/PubLayout"));
+const PubHome = lazy(() => import("./pages/pub/PubHome"));
+const PubFood = lazy(() => import("./pages/pub/PubFood"));
+const PubDrink = lazy(() => import("./pages/pub/PubDrink"));
+const PubSnacks = lazy(() => import("./pages/pub/PubSnacks"));
 const CountryRooms = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRooms })));
 const CountryRoomTypes = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRoomTypes })));
 const CountryRoomGallery = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRoomGallery })));
@@ -360,10 +362,11 @@ const App = () => {
                       {/* Crazy Bear Country */}
                       <Route path="/country" element={<PropertyLayout property="country" />}>
                         <Route index element={<CountryHome />} />
-                        <Route path="pub" element={<CountryPub />} />
-                        <Route path="pub/food" element={<CountryPubFood />} />
-                        <Route path="pub/drink" element={<CountryPubDrink />} />
-                        <Route path="pub/hospitality" element={<CountryPubHospitality />} />
+                        {/* /country/pub* moved to top-level /pub. Hospitality retired. */}
+                        <Route path="pub" element={<Navigate to="/pub" replace />} />
+                        <Route path="pub/food" element={<Navigate to="/pub/food" replace />} />
+                        <Route path="pub/drink" element={<Navigate to="/pub/drink" replace />} />
+                        <Route path="pub/hospitality" element={<Navigate to="/pub" replace />} />
                         <Route path="rooms" element={<CountryRooms />} />
                         <Route path="rooms/types" element={<CountryRoomTypes />} />
                         <Route path="rooms/gallery" element={<CountryRoomGallery />} />
@@ -416,6 +419,16 @@ const App = () => {
                         <Route path="pool-party" element={<TownPoolParty />} />
                         <Route path="playlist" element={<TownPlaylist />} />
                       </Route>
+
+                      {/* The Pub — top-level enclave (belongs to Crazy Bear Country) */}
+                      <Route path="/pub" element={<PubLayout />}>
+                        <Route index element={<PubHome />} />
+                        <Route path="food" element={<PubFood />} />
+                        <Route path="drink" element={<PubDrink />} />
+                        <Route path="snacks" element={<PubSnacks />} />
+                      </Route>
+
+
 
                       {/* Site-wide */}
                       <Route path="/whats-on" element={<WhatsOn />} />

@@ -104,9 +104,10 @@ export const SITE_MAP: SiteMapGroup[] = [
     country: {
       eyebrow: "Country / Stadhampton",
       links: [
-        { label: "Pub Food", path: "/country/pub/food" },
-        { label: "Pub Drink", path: "/country/pub/drink" },
-        { label: "Pub Hospitality", path: "/country/pub/hospitality" },
+        { label: "The Pub", path: "/pub" },
+        { label: "Pub Food", path: "/pub/food" },
+        { label: "Pub Drink", path: "/pub/drink" },
+        { label: "Bar Snacks", path: "/pub/snacks" },
         { label: "Afternoon Tea", path: "/country/food/afternoon-tea" },
         { label: "Menus", path: "/country/food/menus" },
       ],
@@ -220,7 +221,10 @@ export const allPublicPaths = (): string[] => {
   paths.add("/bears-den");
   paths.add("/curious");
   // Property landing pages (sub-routes under PropertyLayout).
-  paths.add("/country/pub");
+  paths.add("/pub");
+  paths.add("/pub/food");
+  paths.add("/pub/drink");
+  paths.add("/pub/snacks");
   paths.add("/country/rooms");
   paths.add("/country/events");
   paths.add("/country/food");
@@ -307,12 +311,12 @@ export const SITE_TREE: { town: SiteTreeBranch; country: SiteTreeBranch; both: S
         ],
       },
       {
-        label: "Pub",
-        path: "/country/pub",
+        label: "The Pub",
+        path: "/pub",
         links: [
-          { label: "Food", path: "/country/pub/food" },
-          { label: "Drink", path: "/country/pub/drink" },
-          { label: "Hospitality", path: "/country/pub/hospitality" },
+          { label: "Food", path: "/pub/food" },
+          { label: "Drink", path: "/pub/drink" },
+          { label: "Snacks", path: "/pub/snacks" },
         ],
       },
       {

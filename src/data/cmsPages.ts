@@ -64,10 +64,11 @@ const Book = lazy(() => import('@/pages/Book'));
 const Privacy = lazy(() => import('@/pages/Privacy'));
 
 const CountryHome = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryHome })));
-const CountryPub = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryPub })));
-const CountryPubFood = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryPubFood })));
-const CountryPubDrink = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryPubDrink })));
-const CountryPubHospitality = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryPubHospitality })));
+// /pub enclave (top-level, was /country/pub*)
+const PubHome = lazy(() => import('@/pages/pub/PubHome'));
+const PubFood = lazy(() => import('@/pages/pub/PubFood'));
+const PubDrink = lazy(() => import('@/pages/pub/PubDrink'));
+const PubSnacks = lazy(() => import('@/pages/pub/PubSnacks'));
 const CountryRooms = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryRooms })));
 const CountryRoomTypes = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryRoomTypes })));
 const CountryRoomGallery = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryRoomGallery })));
@@ -268,14 +269,14 @@ export const CMS_PAGES: CmsPageEntry[] = [
   // ─── Country ──────────────────────────────────────────────────
   { slug: 'country', route: '/country', title: 'Country Home', description: 'Stadhampton landing', group: 'Country', icon: Trees, component: CountryHome, property: 'country',
     seo: { include: true, defaultTitle: 'Crazy Bear Country | Stadhampton', defaultDescription: 'Crazy Bear Country at Stadhampton.' } },
-  { slug: 'country/pub', route: '/country/pub', title: 'Country Pub', description: 'Pub, food, drink, hospitality', group: 'Country', icon: UtensilsCrossed, component: CountryPub, parentSlug: 'country', property: 'country',
-    seo: { include: true, defaultTitle: 'The Pub | Crazy Bear Country', defaultDescription: 'The Pub at Crazy Bear Country.' } },
-  { slug: 'country/pub/food', route: '/country/pub/food', title: 'Pub Food', description: 'Food at the Country pub', group: 'Country', icon: UtensilsCrossed, component: CountryPubFood, parentSlug: 'country/pub', property: 'country',
-    seo: { include: true, defaultTitle: 'Food | The Pub, Crazy Bear Country', defaultDescription: 'Food at the Country pub.' } },
-  { slug: 'country/pub/drink', route: '/country/pub/drink', title: 'Pub Drink', description: 'Drinks at the Country pub', group: 'Country', icon: Wine, component: CountryPubDrink, parentSlug: 'country/pub', property: 'country',
-    seo: { include: true, defaultTitle: 'Drink | The Pub, Crazy Bear Country', defaultDescription: 'Drinks at the Country pub.' } },
-  { slug: 'country/pub/hospitality', route: '/country/pub/hospitality', title: 'Hospitality', description: 'Country pub hospitality', group: 'Country', icon: BookOpen, component: CountryPubHospitality, parentSlug: 'country/pub', property: 'country',
-    seo: { include: true, defaultTitle: 'Hospitality | Crazy Bear Country', defaultDescription: 'Hospitality at the Country pub.' } },
+  { slug: 'pub', route: '/pub', title: 'The Pub', description: 'Top-level pub landing (Country, Stadhampton)', group: 'Country', icon: UtensilsCrossed, component: PubHome, property: 'country',
+    seo: { include: true, defaultTitle: 'The Pub | Crazy Bear Country', defaultDescription: 'Real ale, proper food, fires lit. The pub at Crazy Bear Country, Stadhampton.' } },
+  { slug: 'pub-food', route: '/pub/food', title: 'Pub Food', description: 'Food at The Pub', group: 'Country', icon: UtensilsCrossed, component: PubFood, parentSlug: 'pub', property: 'country',
+    seo: { include: true, defaultTitle: 'Pub Food | The Pub | Crazy Bear Country', defaultDescription: 'Pub food, properly done. Lunch and dinner every day.' } },
+  { slug: 'pub-drink', route: '/pub/drink', title: 'Pub Drink', description: 'The bar at The Pub', group: 'Country', icon: Wine, component: PubDrink, parentSlug: 'pub', property: 'country',
+    seo: { include: true, defaultTitle: 'Pub Drink | The Pub | Crazy Bear Country', defaultDescription: 'Cask ale, proper wine, cocktails that bite back.' } },
+  { slug: 'pub-snacks', route: '/pub/snacks', title: 'Bar Snacks', description: 'Pub snacks menu', group: 'Country', icon: UtensilsCrossed, component: PubSnacks, parentSlug: 'pub', property: 'country',
+    seo: { include: true, defaultTitle: 'Bar Snacks | The Pub | Crazy Bear Country', defaultDescription: 'Pork pie. Scotch egg. Pickled egg. Scratchings. Bar snacks done properly.' } },
   { slug: 'country/rooms', route: '/country/rooms', title: 'Country Rooms', description: 'Bedrooms and gallery', group: 'Country', icon: Bed, component: CountryRooms, parentSlug: 'country', property: 'country',
     seo: { include: true, defaultTitle: 'Rooms | Crazy Bear Country', defaultDescription: 'Rooms at Crazy Bear Country.' } },
   { slug: 'country/rooms/types', route: '/country/rooms/types', title: 'Room Types', description: 'Country room types', group: 'Country', icon: Bed, component: CountryRoomTypes, parentSlug: 'country/rooms', property: 'country',
