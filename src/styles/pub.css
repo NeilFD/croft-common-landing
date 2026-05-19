@@ -1,25 +1,67 @@
 /* Scoped theme for the /pub enclave.
  * Wraps with .pub-theme — no leak into the global Crazy Bear tokens.
- * Farrow & Ball 'Down Pipe' grey, warm cream, aged brass.
+ * Farrow & Ball 'Stiffkey Blue', warm cream, aged brass.
  */
 
 @import url("https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap");
 
 .pub-theme {
-  /* Surface palette — Down Pipe grey */
-  --pub-oxblood: 195 5% 30%;        /* Down Pipe */
-  --pub-oxblood-deep: 200 6% 18%;   /* Deeper Down Pipe */
+  /* Surface palette — Stiffkey Blue */
+  --pub-oxblood: 210 22% 32%;       /* Stiffkey Blue */
+  --pub-oxblood-deep: 212 28% 18%;  /* Deeper Stiffkey */
   --pub-cream: 40 30% 92%;
   --pub-cream-warm: 38 35% 86%;
   --pub-brass: 38 40% 56%;
   --pub-brass-deep: 34 38% 38%;
-  --pub-ink: 200 10% 12%;
+  --pub-ink: 210 12% 12%;
   --pub-chalk: 40 25% 96%;
-  --pub-board: 200 8% 16%;
+  --pub-board: 212 18% 16%;
 
   background-color: hsl(var(--pub-cream-warm));
   color: hsl(var(--pub-ink));
   font-family: "Space Grotesk", system-ui, sans-serif;
+}
+
+/* ---------- Header + Footer overrides (white shell, black contents) ---------- */
+/* Header: force the legibility strip + nav to white with black text.
+   CBTopNav's strip sits as a fixed sibling at top z-20; the header itself is z-30. */
+.pub-theme ~ * [aria-hidden="true"].fixed.top-0,
+body:has(.pub-theme) > div > [aria-hidden="true"].fixed.top-0 {
+  background-color: #fff !important;
+  backdrop-filter: none !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+.pub-theme header.fixed.top-0 {
+  color: #000 !important;
+  text-shadow: none !important;
+}
+.pub-theme header.fixed.top-0 img {
+  filter: none !important;
+}
+.pub-theme header.fixed.top-0 a[href="/book"],
+.pub-theme header.fixed.top-0 a[href^="/book"] {
+  border-color: rgba(0, 0, 0, 0.8) !important;
+  color: #000 !important;
+}
+.pub-theme header.fixed.top-0 a[href="/book"]:hover,
+.pub-theme header.fixed.top-0 a[href^="/book"]:hover {
+  background-color: #000 !important;
+  color: #fff !important;
+}
+
+/* Footer: invert the global bg-black footer to white with black text. */
+.pub-theme footer {
+  background-color: #fff !important;
+  color: #000 !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+.pub-theme footer * {
+  color: #000 !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+.pub-theme footer img {
+  filter: none !important;
 }
 
 .pub-theme .pub-display {
