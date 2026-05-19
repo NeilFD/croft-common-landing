@@ -8,6 +8,7 @@ const PLAYLISTS = {
   default: "5jryH9aMgkcQruOslKX7Fc",
   country: "4KCZQ5fOj3UauK3pTWDZo7",
   town: "7jx5ZtdeZmTP4PfSk6oRL1",
+  pub: "7umY3h92Waz1kgpS2ak44j",
 };
 
 const playlistUrl = (id: string) => `https://open.spotify.com/playlist/${id}`;
@@ -15,6 +16,7 @@ const embedSrc = (id: string) =>
   `https://open.spotify.com/embed/playlist/${id}?utm_source=generator&theme=0`;
 
 const getPlaylistIdForPath = (pathname: string) => {
+  if (pathname === "/pub" || pathname.startsWith("/pub/")) return PLAYLISTS.pub;
   if (pathname === "/country" || pathname.startsWith("/country/")) return PLAYLISTS.country;
   if (pathname === "/town" || pathname.startsWith("/town/")) return PLAYLISTS.town;
   return PLAYLISTS.default;
