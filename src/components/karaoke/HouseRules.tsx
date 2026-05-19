@@ -2,7 +2,7 @@ const rules = [
   "Two hours, no more, no less.",
   "Bring a crowd or bring nobody.",
   "Drinks in. Phones down.",
-  "The bear has the last song.",
+  "The bear has the last song. Usually Eye of the Tiger.",
 ];
 
 const HouseRules = () => (
