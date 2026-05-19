@@ -21,6 +21,7 @@ interface PageRow {
   og_image: string | null;
   keywords: string[] | null;
   noindex: boolean;
+  h1: string | null;
 }
 
 interface AuditRow {
@@ -55,6 +56,7 @@ export default function SeoPageEditor() {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [h1, setH1] = useState('');
   const [ogImage, setOgImage] = useState('');
   const [keywords, setKeywords] = useState('');
   const [noindex, setNoindex] = useState(false);
@@ -94,6 +96,7 @@ export default function SeoPageEditor() {
     if (page) {
       setTitle(page.title ?? '');
       setDescription(page.description ?? '');
+      setH1(page.h1 ?? '');
       setOgImage(page.og_image ?? '');
       setKeywords((page.keywords ?? []).join(', '));
       setNoindex(page.noindex);
@@ -119,6 +122,7 @@ export default function SeoPageEditor() {
         .update({
           title: title || null,
           description: description || null,
+          h1: h1 || null,
           og_image: ogImage || null,
           keywords: keywords
             ? keywords.split(',').map(k => k.trim()).filter(Boolean)
@@ -292,6 +296,19 @@ export default function SeoPageEditor() {
                 className="mt-1"
               />
               <div className={`text-xs mt-1 ${descHint.color}`}>{descHint.text}</div>
+            </div>
+
+            <div>
+              <Label className="font-cb-sans">Main heading on the page (H1)</Label>
+              <Input
+                value={h1}
+                onChange={e => setH1(e.target.value)}
+                placeholder="e.g. Crazy Bear Country"
+                className="mt-1"
+              />
+              <div className="text-xs text-muted-foreground mt-1">
+                Baked into the static HTML so Google sees a real H1 on the first byte. Leave blank to derive from the title.
+              </div>
             </div>
 
             <div>
