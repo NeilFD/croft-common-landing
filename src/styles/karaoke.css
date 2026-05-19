@@ -1,0 +1,185 @@
+/* Scoped theme for the /town/karaoke enclave.
+ * La Bodega Negra × Studio 54: lacquered black, velvet red, hot neon, chrome.
+ * Wraps with .karaoke-theme — does not leak into the global Crazy Bear tokens.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Allura&display=swap");
+
+.karaoke-theme {
+  --kar-black: 12 8% 6%;
+  --kar-noir: 0 0% 9%;
+  --kar-blood: 354 78% 42%;
+  --kar-neon: 352 95% 56%;
+  --kar-chrome: 220 8% 82%;
+  --kar-gold: 42 65% 58%;
+  --kar-cream: 36 28% 92%;
+
+  background-color: hsl(var(--kar-black));
+  color: hsl(var(--kar-cream));
+  font-family: "Space Grotesk", system-ui, sans-serif;
+}
+
+/* ---------- Header + Footer overrides: lacquer black, cream text ---------- */
+.karaoke-theme [aria-hidden="true"].fixed.top-0 {
+  background-color: hsl(var(--kar-black)) !important;
+  backdrop-filter: none !important;
+  border-bottom: 1px solid hsl(var(--kar-blood) / 0.4) !important;
+}
+
+.karaoke-theme header.fixed.top-0 {
+  color: hsl(var(--kar-cream)) !important;
+  text-shadow: none !important;
+}
+.karaoke-theme header.fixed.top-0 img {
+  filter: brightness(0) saturate(100%) invert(20%) sepia(86%) saturate(3210%) hue-rotate(338deg) brightness(92%) contrast(95%) !important;
+}
+.karaoke-theme header.fixed.top-0 a,
+.karaoke-theme header.fixed.top-0 button {
+  color: hsl(var(--kar-cream)) !important;
+}
+.karaoke-theme header.fixed.top-0 a[href="/book"],
+.karaoke-theme header.fixed.top-0 a[href^="/book"] {
+  border-color: hsl(var(--kar-neon)) !important;
+  color: hsl(var(--kar-cream)) !important;
+}
+.karaoke-theme header.fixed.top-0 a[href="/book"]:hover,
+.karaoke-theme header.fixed.top-0 a[href^="/book"]:hover {
+  background-color: hsl(var(--kar-blood)) !important;
+  color: hsl(var(--kar-cream)) !important;
+}
+
+.karaoke-theme footer {
+  background-color: hsl(var(--kar-black)) !important;
+  color: hsl(var(--kar-cream)) !important;
+  border-top: 1px solid hsl(var(--kar-blood) / 0.4) !important;
+}
+.karaoke-theme footer * {
+  color: hsl(var(--kar-cream)) !important;
+  border-color: hsl(var(--kar-blood) / 0.25) !important;
+}
+.karaoke-theme footer img {
+  filter: brightness(0) saturate(100%) invert(20%) sepia(86%) saturate(3210%) hue-rotate(338deg) brightness(92%) contrast(95%) !important;
+}
+
+/* ---------- Type ---------- */
+.kar-display {
+  font-family: "Bowlby One", "Alfa Slab One", Georgia, serif;
+  letter-spacing: 0.005em;
+  font-weight: 400;
+}
+.kar-condensed {
+  font-family: "Bebas Neue", "Space Grotesk", sans-serif;
+  letter-spacing: 0.08em;
+}
+.kar-script {
+  font-family: "Allura", cursive;
+  font-weight: 400;
+}
+
+/* ---------- Neon ---------- */
+.kar-neon-text {
+  color: hsl(var(--kar-cream));
+  text-shadow:
+    0 0 4px hsl(var(--kar-neon) / 0.9),
+    0 0 12px hsl(var(--kar-neon) / 0.8),
+    0 0 32px hsl(var(--kar-blood) / 0.7),
+    0 0 64px hsl(var(--kar-blood) / 0.5);
+}
+.kar-neon-stroke {
+  color: transparent;
+  -webkit-text-stroke: 1.5px hsl(var(--kar-neon));
+  text-shadow:
+    0 0 6px hsl(var(--kar-neon) / 0.8),
+    0 0 18px hsl(var(--kar-blood) / 0.6);
+}
+@keyframes kar-flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    opacity: 1;
+    text-shadow:
+      0 0 4px hsl(var(--kar-neon) / 0.9),
+      0 0 12px hsl(var(--kar-neon) / 0.8),
+      0 0 32px hsl(var(--kar-blood) / 0.7);
+  }
+  20%, 24%, 55% {
+    opacity: 0.45;
+    text-shadow: none;
+  }
+}
+.kar-flicker {
+  animation: kar-flicker 6s infinite;
+}
+
+/* ---------- Marquee ---------- */
+@keyframes kar-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.kar-marquee-track {
+  animation: kar-marquee 40s linear infinite;
+  will-change: transform;
+}
+
+/* ---------- Disco ball ---------- */
+@keyframes kar-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.kar-spin {
+  animation: kar-spin 24s linear infinite;
+  transform-origin: 50% 50%;
+}
+@keyframes kar-drift {
+  0%   { transform: translate3d(0,0,0); opacity: 0.35; }
+  50%  { transform: translate3d(8px,-12px,0); opacity: 0.6; }
+  100% { transform: translate3d(0,0,0); opacity: 0.35; }
+}
+.kar-drift {
+  animation: kar-drift 6s ease-in-out infinite;
+}
+
+/* ---------- Buttons / rules ---------- */
+.kar-rule {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--kar-blood)) 20%,
+    hsl(var(--kar-neon)) 50%,
+    hsl(var(--kar-blood)) 80%,
+    transparent
+  );
+}
+
+.kar-cta {
+  background: hsl(var(--kar-blood));
+  color: hsl(var(--kar-cream));
+  border: 1px solid hsl(var(--kar-neon));
+  box-shadow:
+    0 0 0 1px hsl(var(--kar-neon) / 0.4),
+    0 0 24px hsl(var(--kar-blood) / 0.5),
+    inset 0 0 24px hsl(0 0% 0% / 0.2);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.kar-cta:hover {
+  transform: translateY(-1px);
+  background: hsl(var(--kar-neon));
+  box-shadow:
+    0 0 0 1px hsl(var(--kar-cream)),
+    0 0 48px hsl(var(--kar-neon) / 0.8);
+}
+.kar-cta:active { transform: translateY(0); }
+
+/* ---------- Reveal on scroll ---------- */
+.kar-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.9s ease-out, transform 0.9s ease-out;
+}
+.kar-reveal.is-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kar-spin, .kar-drift, .kar-marquee-track, .kar-flicker { animation: none !important; }
+  .kar-reveal { opacity: 1; transform: none; transition: none; }
+}

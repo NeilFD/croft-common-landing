@@ -4,18 +4,25 @@ import { useHideOnScrollDown } from "@/hooks/useHideOnScrollDown";
 
 const AUTO_MINIMISE_ROUTES = ["/den/member/lunch-run"];
 
-const PLAYLISTS = {
-  default: "5jryH9aMgkcQruOslKX7Fc",
-  country: "4KCZQ5fOj3UauK3pTWDZo7",
-  town: "7jx5ZtdeZmTP4PfSk6oRL1",
-  pub: "7umY3h92Waz1kgpS2ak44j",
+type SpotifyKind = "playlist" | "track";
+interface SpotifyEntry { kind: SpotifyKind; id: string; }
+
+const PLAYLISTS: Record<string, SpotifyEntry> = {
+  default: { kind: "playlist", id: "5jryH9aMgkcQruOslKX7Fc" },
+  country: { kind: "playlist", id: "4KCZQ5fOj3UauK3pTWDZo7" },
+  town:    { kind: "playlist", id: "7jx5ZtdeZmTP4PfSk6oRL1" },
+  pub:     { kind: "playlist", id: "7umY3h92Waz1kgpS2ak44j" },
+  karaoke: { kind: "track",    id: "33LC84JgLvK2KuW43MfaNq" },
 };
 
-const playlistUrl = (id: string) => `https://open.spotify.com/playlist/${id}`;
-const embedSrc = (id: string) =>
-  `https://open.spotify.com/embed/playlist/${id}?utm_source=generator&theme=0`;
+const entryUri = (e: SpotifyEntry) => `spotify:${e.kind}:${e.id}`;
+const entryUrl = (e: SpotifyEntry) =>
+  `https://open.spotify.com/${e.kind}/${e.id}`;
+const entryEmbed = (e: SpotifyEntry) =>
+  `https://open.spotify.com/embed/${e.kind}/${e.id}?utm_source=generator&theme=0`;
 
-const getPlaylistIdForPath = (pathname: string) => {
+const getEntryForPath = (pathname: string): SpotifyEntry => {
+  if (pathname === "/town/karaoke" || pathname.startsWith("/town/karaoke/")) return PLAYLISTS.karaoke;
   if (pathname === "/pub" || pathname.startsWith("/pub/")) return PLAYLISTS.pub;
   if (pathname === "/country" || pathname.startsWith("/country/")) return PLAYLISTS.country;
   if (pathname === "/town" || pathname.startsWith("/town/")) return PLAYLISTS.town;
@@ -66,20 +73,21 @@ const CBSpotifyPlayer = () => {
   const [playlistTitle, setPlaylistTitle] = useState<string>("Crazy Bear Sessions");
 
   const location = useLocation();
-  const activePlaylistId = useMemo(
-    () => getPlaylistIdForPath(location.pathname),
+  const activeEntry = useMemo(
+    () => getEntryForPath(location.pathname),
     [location.pathname]
   );
-  const initialPlaylistIdRef = useRef(activePlaylistId);
+  const activeEntryKey = `${activeEntry.kind}:${activeEntry.id}`;
+  const initialEntryRef = useRef(activeEntry);
 
   useEffect(() => {
     isPlayingRef.current = isPlaying;
   }, [isPlaying]);
 
-  // Fetch playlist title for active playlist
+  // Fetch title for the active entry (playlist or track)
   useEffect(() => {
     let cancelled = false;
-    fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(playlistUrl(activePlaylistId))}`)
+    fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(entryUrl(activeEntry))}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (!cancelled && data?.title) setPlaylistTitle(data.title);
@@ -88,11 +96,12 @@ const CBSpotifyPlayer = () => {
     return () => {
       cancelled = true;
     };
-  }, [activePlaylistId]);
+  }, [activeEntryKey]);
 
   useEffect(() => {
     let timeoutId: number | undefined;
-    const startId = initialPlaylistIdRef.current;
+    const startEntry = initialEntryRef.current;
+    const startKey = `${startEntry.kind}:${startEntry.id}`;
 
     const init = () => {
       const IFrameAPI = window.SpotifyIframeApi;
@@ -103,13 +112,13 @@ const CBSpotifyPlayer = () => {
         IFrameAPI.createController(
           element,
           {
-            uri: `spotify:playlist:${startId}`,
+            uri: entryUri(startEntry),
             width: "100%",
             height: "80",
           },
           (EmbedController: any) => {
             controllerRef.current = EmbedController;
-            loadedPlaylistIdRef.current = startId;
+            loadedPlaylistIdRef.current = startKey;
             setReady(true);
             setFailed(false);
             EmbedController.addListener("playback_update", (e: any) => {
@@ -160,17 +169,16 @@ const CBSpotifyPlayer = () => {
     };
   }, []);
 
-  // Swap playlist when route changes
+  // Swap entry when route changes
   useEffect(() => {
     const controller = controllerRef.current;
     if (!controller || !ready) return;
-    if (loadedPlaylistIdRef.current === activePlaylistId) return;
+    if (loadedPlaylistIdRef.current === activeEntryKey) return;
     const wasPlaying = isPlayingRef.current;
     try {
-      controller.loadUri(`spotify:playlist:${activePlaylistId}`);
-      loadedPlaylistIdRef.current = activePlaylistId;
+      controller.loadUri(entryUri(activeEntry));
+      loadedPlaylistIdRef.current = activeEntryKey;
       if (wasPlaying) {
-        // Give the controller a tick to load before issuing play
         window.setTimeout(() => {
           try {
             controller.play?.();
@@ -182,7 +190,7 @@ const CBSpotifyPlayer = () => {
     } catch (err) {
       console.warn("Spotify loadUri failed", err);
     }
-  }, [activePlaylistId, ready]);
+  }, [activeEntryKey, ready]);
 
   const toggle = () => {
     try {
@@ -205,7 +213,7 @@ const CBSpotifyPlayer = () => {
     }
   }, [location.pathname, shouldAutoMinimise]);
 
-  const activePlaylistUrl = playlistUrl(activePlaylistId);
+  const activePlaylistUrl = entryUrl(activeEntry);
   const tooltipEyebrow = failed
     ? "Open in Spotify"
     : ready
@@ -317,7 +325,7 @@ const CBSpotifyPlayer = () => {
         <noscript>
           <iframe
             title={playlistTitle}
-            src={embedSrc(activePlaylistId)}
+            src={entryEmbed(activeEntry)}
             width="0"
             height="0"
             style={{ position: "absolute", left: "-9999px" }}

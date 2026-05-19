@@ -30,6 +30,9 @@ const PubHome = lazy(() => import("./pages/pub/PubHome"));
 const PubFood = lazy(() => import("./pages/pub/PubFood"));
 const PubDrink = lazy(() => import("./pages/pub/PubDrink"));
 const PubSnacks = lazy(() => import("./pages/pub/PubSnacks"));
+// /town/karaoke enclave
+const KaraokeLayout = lazy(() => import("./components/karaoke/KaraokeLayout"));
+const KaraokeHome = lazy(() => import("./pages/karaoke/KaraokeHome"));
 const CountryRooms = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRooms })));
 const CountryRoomTypes = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRoomTypes })));
 const CountryRoomGallery = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRoomGallery })));
@@ -413,7 +416,7 @@ const App = () => {
                         <Route path="rooms/decadent" element={<TownRoomDecadent />} />
                         <Route path="food/menus" element={<TownMenus />} />
                         <Route path="food/afternoon-tea" element={<TownAfternoonTea />} />
-                        <Route path="karaoke" element={<TownKaraoke />} />
+                        {/* /town/karaoke moved out to its own enclave below */}
                         <Route path="parties" element={<TownParties />} />
                         <Route path="birthdays" element={<TownBirthdays />} />
                         <Route path="pool-party" element={<TownPoolParty />} />
@@ -426,6 +429,11 @@ const App = () => {
                         <Route path="food" element={<PubFood />} />
                         <Route path="drink" element={<PubDrink />} />
                         <Route path="snacks" element={<PubSnacks />} />
+                      </Route>
+
+                      {/* Karaoke — top-level enclave (belongs to Crazy Bear Town) */}
+                      <Route path="/town/karaoke" element={<KaraokeLayout />}>
+                        <Route index element={<KaraokeHome />} />
                       </Route>
 
 
