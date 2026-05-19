@@ -69,7 +69,7 @@ const PubFood = () => {
   const sections =
     cmsMenu.length > 0
       ? cmsMenu
-      : countryPubMenu.sections.map((s) => ({ title: s.title, items: s.items }));
+      : countryPubMenu.sections.map((s: any) => ({ title: s.title, items: s.items, note: s.note }));
 
   return (
     <>
