@@ -63,24 +63,64 @@ const CBFooter = () => {
               <div className="space-y-6">
                 {SITE_MAP.map((group) => {
                   const col = group[site];
-                  const links = [...col.links, ...(col.chips ?? [])];
-                  if (links.length === 0) return null;
+                  const chips = col.chips ?? [];
+                  if (col.links.length === 0 && chips.length === 0) return null;
                   return (
                     <div key={`${site}-${group.id}`}>
                       <p className="font-cb-mono text-[9px] tracking-[0.35em] uppercase opacity-50 mb-2">
                         {group.label}
                       </p>
                       <ul className="space-y-1.5">
-                        {links.map((link) => (
-                          <li key={link.path}>
-                            <Link
-                              to={link.path}
-                              className="font-cb-sans text-sm opacity-80 hover:opacity-100 hover:underline underline-offset-4"
-                            >
-                              {link.label}
-                            </Link>
-                          </li>
-                        ))}
+                        {col.links.map((link) => {
+                          // "Room Types" collapses Snug/Cosy/Boujee/Decadent
+                          // into a disclosure so the footer doesn't list every
+                          // room twice.
+                          if (link.label === "Room Types" && chips.length > 0) {
+                            return (
+                              <li key={link.path}>
+                                <details className="group [&_summary::-webkit-details-marker]:hidden">
+                                  <summary className="list-none cursor-pointer flex items-center gap-2 select-none">
+                                    <Link
+                                      to={link.path}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="font-cb-sans text-sm opacity-80 hover:opacity-100 hover:underline underline-offset-4"
+                                    >
+                                      {link.label}
+                                    </Link>
+                                    <span
+                                      aria-hidden
+                                      className="font-cb-mono text-xs leading-none opacity-50 group-open:rotate-45 transition-transform"
+                                    >
+                                      +
+                                    </span>
+                                  </summary>
+                                  <ul className="mt-1.5 ml-3 space-y-1.5 border-l border-white/15 pl-3">
+                                    {chips.map((chip) => (
+                                      <li key={chip.path}>
+                                        <Link
+                                          to={chip.path}
+                                          className="font-cb-sans text-sm opacity-70 hover:opacity-100 hover:underline underline-offset-4"
+                                        >
+                                          {chip.label}
+                                        </Link>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </details>
+                              </li>
+                            );
+                          }
+                          return (
+                            <li key={link.path}>
+                              <Link
+                                to={link.path}
+                                className="font-cb-sans text-sm opacity-80 hover:opacity-100 hover:underline underline-offset-4"
+                              >
+                                {link.label}
+                              </Link>
+                            </li>
+                          );
+                        })}
                       </ul>
                     </div>
                   );
