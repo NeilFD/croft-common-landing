@@ -1,21 +1,21 @@
 /* Scoped theme for the /pub enclave.
  * Wraps with .pub-theme — no leak into the global Crazy Bear tokens.
- * Old-boozer feel: oxblood, cream, brass, paper grain, wood grain.
+ * Farrow & Ball 'Down Pipe' grey, warm cream, aged brass.
  */
 
 @import url("https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap");
 
 .pub-theme {
-  /* Surface palette */
-  --pub-oxblood: 8 45% 18%;
-  --pub-oxblood-deep: 8 50% 11%;
-  --pub-cream: 40 35% 92%;
-  --pub-cream-warm: 38 45% 86%;
-  --pub-brass: 40 55% 55%;
-  --pub-brass-deep: 36 50% 38%;
-  --pub-ink: 20 15% 12%;
+  /* Surface palette — Down Pipe grey */
+  --pub-oxblood: 195 5% 30%;        /* Down Pipe */
+  --pub-oxblood-deep: 200 6% 18%;   /* Deeper Down Pipe */
+  --pub-cream: 40 30% 92%;
+  --pub-cream-warm: 38 35% 86%;
+  --pub-brass: 38 40% 56%;
+  --pub-brass-deep: 34 38% 38%;
+  --pub-ink: 200 10% 12%;
   --pub-chalk: 40 25% 96%;
-  --pub-board: 150 18% 14%;
+  --pub-board: 200 8% 16%;
 
   background-color: hsl(var(--pub-cream-warm));
   color: hsl(var(--pub-ink));
