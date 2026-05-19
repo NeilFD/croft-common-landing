@@ -325,7 +325,7 @@ const CBSpotifyPlayer = () => {
         <noscript>
           <iframe
             title={playlistTitle}
-            src={embedSrc(activePlaylistId)}
+            src={entryEmbed(activeEntry)}
             width="0"
             height="0"
             style={{ position: "absolute", left: "-9999px" }}
