@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import firesideImg from "@/assets/pub/pub-fireside.jpg";
 
 interface Snack {
   name: string;
@@ -16,20 +17,39 @@ const DEFAULT_SNACKS: Snack[] = [
 ];
 
 /**
- * Horizontal scroll of pub snacks. Each card a hand-drawn price tag.
+ * Bar snacks — pinned price tags floating over a fireside photograph.
  */
 const SnacksStrip = () => {
   return (
-    <section className="bg-[hsl(var(--pub-oxblood))] py-20 px-6 overflow-hidden">
-      <div className="mx-auto max-w-6xl">
+    <section className="relative py-24 px-6 overflow-hidden">
+      {/* Photo base */}
+      <img
+        src={firesideImg}
+        alt=""
+        aria-hidden
+        className="absolute inset-0 h-full w-full object-cover"
+        loading="lazy"
+        decoding="async"
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(180deg, hsl(8 60% 6% / 0.78) 0%, hsl(8 50% 8% / 0.85) 100%)",
+        }}
+      />
+
+      <div className="relative z-10 mx-auto max-w-6xl">
         <div className="flex items-end justify-between gap-6 flex-wrap">
           <div>
-            <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase text-[hsl(var(--pub-cream))] opacity-70">
+            <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase text-[hsl(var(--pub-brass))]">
               At the bar
             </p>
-            <h2 className="pub-display mt-3 text-4xl md:text-5xl uppercase text-[hsl(var(--pub-cream))]">
+            <h2 className="pub-display mt-3 text-5xl md:text-6xl uppercase text-[hsl(var(--pub-cream))]">
               Bar snacks
             </h2>
+            <div className="pub-brass-rule mt-4 h-px w-24" />
           </div>
           <Link
             to="/pub/snacks"
@@ -39,12 +59,12 @@ const SnacksStrip = () => {
           </Link>
         </div>
 
-        <div className="mt-10 -mx-6 px-6 overflow-x-auto scrollbar-none">
-          <ul className="flex gap-5 pb-2">
+        <div className="mt-12 -mx-6 px-6 overflow-x-auto scrollbar-none">
+          <ul className="flex gap-5 pb-4">
             {DEFAULT_SNACKS.map((snack, i) => (
               <li
                 key={snack.name}
-                className={`pub-pinned pub-grain shrink-0 w-44 md:w-52 px-5 py-6 ${
+                className={`pub-pinned shrink-0 w-44 md:w-52 px-5 py-6 ${
                   i % 2 === 0 ? "pub-pinned-tilt-l" : "pub-pinned-tilt-r"
                 }`}
               >
