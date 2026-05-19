@@ -25,7 +25,7 @@ const KaraokeHome = () => {
         items={[
           "Tonight",
           "Two-hour slots",
-          "Noon till eight",
+          "Noon till late",
           "Bring your worst",
           "No encores refused",
           "Crazy Bear Town",
