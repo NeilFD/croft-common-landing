@@ -8,11 +8,9 @@ const PropertyLayout = ({ property }: { property: PropertyKey }) => {
   return (
     <PropertyProvider property={property}>
       <div className="relative min-h-screen bg-background text-foreground flex flex-col">
-        <div className="relative">
-          <CBTopNav tone="dark" />
-          {/* spacer so content sits below the absolute nav */}
-          <div className="h-24 md:h-28" aria-hidden="true" />
-        </div>
+        {/* Nav is fixed (legibility-primitive strip + scroll solidification),
+            so the hero below renders straight at the top of the page. */}
+        <CBTopNav />
         <main className="flex-1">
           <Outlet />
         </main>
