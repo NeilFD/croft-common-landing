@@ -53,14 +53,13 @@ const KaraokeHero = () => {
             textShadow:
               "0 2px 0 hsl(12 8% 4% / 0.4), 0 0 32px hsl(354 78% 42% / 0.5)",
           }}
+          aria-label="Karaoke"
         >
-          <CMSText
-            page="karaoke"
-            section="hero"
-            contentKey="title"
-            fallback="KARAOKE"
-            as="span"
-          />
+          {"KARAOKE".split("").map((ch, i) => (
+            <span key={i} className="kar-letter" aria-hidden="true">
+              {ch}
+            </span>
+          ))}
         </h1>
         <div className="kar-rule mt-8 h-px w-56" />
         <CMSText
