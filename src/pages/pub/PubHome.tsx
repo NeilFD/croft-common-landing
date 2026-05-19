@@ -10,7 +10,7 @@ import PinnedSpecials from "@/components/pub/PinnedSpecials";
 import DoorSignHours from "@/components/pub/DoorSignHours";
 
 const PubHome = () => {
-  const faqEntry = cbFaqs["/country/pub"];
+  const faqEntry = cbFaqs["/country/pub"] ?? cbFaqs["/pub"];
   const ld: Record<string, any>[] = [
     breadcrumbSchema("/pub"),
     barSchema({
