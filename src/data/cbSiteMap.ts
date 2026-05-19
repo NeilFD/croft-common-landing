@@ -221,7 +221,10 @@ export const allPublicPaths = (): string[] => {
   paths.add("/bears-den");
   paths.add("/curious");
   // Property landing pages (sub-routes under PropertyLayout).
-  paths.add("/country/pub");
+  paths.add("/pub");
+  paths.add("/pub/food");
+  paths.add("/pub/drink");
+  paths.add("/pub/snacks");
   paths.add("/country/rooms");
   paths.add("/country/events");
   paths.add("/country/food");
