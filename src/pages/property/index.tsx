@@ -418,11 +418,11 @@ const TOWN_MENUS = [
 const COUNTRY_MENUS = [
   {
     name: "The Pub",
-    href: "/country/pub",
+    href: "/pub",
     blurb: "Real ale, proper food, fires lit.",
     menus: [
-      { label: "Lunch & Dinner", href: "/country/pub/food", status: "live" as const },
-      { label: "Drink", href: "/country/pub/drink", status: "live" as const },
+      { label: "Lunch & Dinner", href: "/pub/food", status: "live" as const },
+      { label: "Drink", href: "/pub/drink", status: "live" as const },
       { label: "Sunday", status: "coming-soon" as const },
       { label: "Breakfast", status: "coming-soon" as const },
     ],
