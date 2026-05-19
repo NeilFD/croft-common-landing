@@ -37,10 +37,6 @@ const KaraokeHero = () => {
         }}
       />
 
-      {/* Disco ball decoration */}
-      <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 opacity-90">
-        <DiscoBall size={520} className="kar-drift" />
-      </div>
 
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center">
         <CMSText
