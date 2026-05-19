@@ -420,6 +420,16 @@ const App = () => {
                         <Route path="playlist" element={<TownPlaylist />} />
                       </Route>
 
+                      {/* The Pub — top-level enclave (belongs to Crazy Bear Country) */}
+                      <Route path="/pub" element={<PubLayout />}>
+                        <Route index element={<PubHome />} />
+                        <Route path="food" element={<PubFood />} />
+                        <Route path="drink" element={<PubDrink />} />
+                        <Route path="snacks" element={<PubSnacks />} />
+                      </Route>
+
+
+
                       {/* Site-wide */}
                       <Route path="/whats-on" element={<WhatsOn />} />
                       <Route path="/whats-on/:slug" element={<WhatsOnDetail />} />
