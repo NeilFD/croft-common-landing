@@ -69,7 +69,7 @@ const PubFood = () => {
   const sections =
     cmsMenu.length > 0
       ? cmsMenu
-      : countryPubMenu.sections.map((s) => ({ title: s.title, items: s.items }));
+      : countryPubMenu.sections.map((s: any) => ({ title: s.title, items: s.items, note: s.note }));
 
   return (
     <>
@@ -96,36 +96,43 @@ const PubFood = () => {
       />
       <section className="bg-[hsl(var(--pub-cream-warm))] py-16 px-6">
         <div className="mx-auto max-w-3xl space-y-14">
-          {sections.map((section) => (
+          {sections.map((section: any) => (
             <div key={section.title}>
               <h2 className="pub-display text-3xl md:text-4xl uppercase text-[hsl(var(--pub-oxblood))]">
                 {section.title}
               </h2>
               <div className="pub-brass-rule mt-3 h-px w-24" />
-              <ul className="mt-6 space-y-5">
-                {section.items.map((item, i) => (
-                  <li
-                    key={`${section.title}-${i}`}
-                    className="flex items-baseline justify-between gap-4 border-b border-dashed border-[hsl(var(--pub-ink)/0.2)] pb-4"
-                  >
-                    <div>
-                      <p className="pub-display text-xl uppercase text-[hsl(var(--pub-ink))] leading-tight">
-                        {item.name}
-                      </p>
-                      {item.description && (
-                        <p className="font-cb-sans text-sm opacity-75 mt-1">
-                          {item.description}
+              {section.note && (
+                <p className="mt-5 font-cb-sans text-sm whitespace-pre-line text-[hsl(var(--pub-ink)/0.8)]">
+                  {section.note}
+                </p>
+              )}
+              {Array.isArray(section.items) && section.items.length > 0 && (
+                <ul className="mt-6 space-y-5">
+                  {section.items.map((item: any, i: number) => (
+                    <li
+                      key={`${section.title}-${i}`}
+                      className="flex items-baseline justify-between gap-4 border-b border-dashed border-[hsl(var(--pub-ink)/0.2)] pb-4"
+                    >
+                      <div>
+                        <p className="pub-display text-xl uppercase text-[hsl(var(--pub-ink))] leading-tight">
+                          {item.name}
+                        </p>
+                        {item.description && (
+                          <p className="font-cb-sans text-sm opacity-75 mt-1">
+                            {item.description}
+                          </p>
+                        )}
+                      </div>
+                      {item.price && (
+                        <p className="font-cb-mono text-lg whitespace-nowrap text-[hsl(var(--pub-brass-deep))]">
+                          {item.price}
                         </p>
                       )}
-                    </div>
-                    {item.price && (
-                      <p className="font-cb-mono text-lg whitespace-nowrap text-[hsl(var(--pub-brass-deep))]">
-                        {item.price}
-                      </p>
-                    )}
-                  </li>
-                ))}
-              </ul>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           ))}
         </div>
