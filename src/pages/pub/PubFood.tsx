@@ -4,6 +4,8 @@ import { CMSText } from "@/components/cms/CMSText";
 import { useCMSAssets } from "@/hooks/useCMSAssets";
 import { useCMSMenuData } from "@/hooks/useCMSMenuData";
 import { countryPubMenu } from "@/data/menus";
+import fishChipsImg from "@/assets/pub/pub-fish-chips.jpg";
+import interiorImg from "@/assets/pub/pub-interior.jpg";
 
 interface SubPageShellProps {
   page: string;
@@ -64,6 +66,36 @@ const SubHero = ({ page, eyebrow, title, manifesto }: SubPageShellProps) => {
   );
 };
 
+const Intro = () => (
+  <section className="bg-[hsl(var(--pub-oxblood-deep))] text-[hsl(var(--pub-cream))]">
+    <div className="mx-auto max-w-6xl grid lg:grid-cols-2">
+      <div className="relative min-h-[360px] lg:min-h-[480px]">
+        <img
+          src={fishChipsImg}
+          alt="Fish and chips at the bar"
+          className="absolute inset-0 h-full w-full object-cover"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+      <div className="px-8 py-16 md:px-14 md:py-20">
+        <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase text-[hsl(var(--pub-brass))]">
+          The kitchen
+        </p>
+        <h2 className="pub-display mt-3 text-4xl md:text-5xl uppercase leading-none">
+          Two kitchens. One pass.
+        </h2>
+        <div className="mt-5 h-px w-12 bg-[hsl(var(--pub-brass))]" />
+        <p className="mt-8 font-cb-sans text-base md:text-lg leading-relaxed text-[hsl(var(--pub-cream)/0.85)]">
+          Pub on one side. Wok on the other. Eat from either, or both, in any order.
+          Pies, chops, Sunday roast. Pad krapow, jungle curry, whole seabass.
+          Lunch and dinner, every day.
+        </p>
+      </div>
+    </div>
+  </section>
+);
+
 const PubFood = () => {
   const { data: cmsMenu } = useCMSMenuData("pub-food");
   const sections =
@@ -94,39 +126,46 @@ const PubFood = () => {
         title="Pub Food"
         manifesto="Pies. Roasts. Chops. Fish. Lunch and dinner, every day."
       />
-      <section className="bg-[hsl(var(--pub-cream-warm))] py-16 px-6">
-        <div className="mx-auto max-w-3xl space-y-14">
-          {sections.map((section: any) => (
+      <Intro />
+
+      <section className="bg-[hsl(var(--pub-cream))] text-[hsl(var(--pub-ink))] py-20 md:py-28 px-6">
+        <div className="mx-auto max-w-5xl space-y-20">
+          {sections.map((section: any, idx: number) => (
             <div key={section.title}>
-              <h2 className="pub-display text-3xl md:text-4xl uppercase text-[hsl(var(--pub-oxblood))]">
-                {section.title}
-              </h2>
-              <div className="pub-brass-rule mt-3 h-px w-24" />
+              <div className="flex items-baseline gap-6">
+                <p className="font-cb-mono text-[10px] tracking-[0.4em] uppercase text-[hsl(var(--pub-brass-deep))] tabular-nums">
+                  {String(idx + 1).padStart(2, "0")}
+                </p>
+                <h2 className="pub-display text-3xl md:text-4xl uppercase text-[hsl(var(--pub-oxblood))] leading-none">
+                  {section.title}
+                </h2>
+              </div>
+              <div className="mt-5 h-px w-full bg-[hsl(var(--pub-ink)/0.15)]" />
+
               {section.note && (
-                <p className="mt-5 font-cb-sans text-sm whitespace-pre-line text-[hsl(var(--pub-ink)/0.8)]">
+                <p className="mt-6 font-cb-sans text-sm whitespace-pre-line text-[hsl(var(--pub-ink)/0.8)] leading-relaxed">
                   {section.note}
                 </p>
               )}
+
               {Array.isArray(section.items) && section.items.length > 0 && (
-                <ul className="mt-6 space-y-5">
+                <ul className="mt-8 grid gap-x-12 gap-y-1 sm:grid-cols-2">
                   {section.items.map((item: any, i: number) => (
                     <li
                       key={`${section.title}-${i}`}
-                      className="flex items-baseline justify-between gap-4 border-b border-dashed border-[hsl(var(--pub-ink)/0.2)] pb-4"
+                      className="grid grid-cols-[1fr_auto] gap-x-6 py-4 border-b border-[hsl(var(--pub-ink)/0.08)]"
                     >
-                      <div>
-                        <p className="pub-display text-xl uppercase text-[hsl(var(--pub-ink))] leading-tight">
-                          {item.name}
-                        </p>
-                        {item.description && (
-                          <p className="font-cb-sans text-sm opacity-75 mt-1">
-                            {item.description}
-                          </p>
-                        )}
-                      </div>
+                      <p className="pub-display text-base md:text-lg uppercase text-[hsl(var(--pub-oxblood))] leading-tight">
+                        {item.name}
+                      </p>
                       {item.price && (
-                        <p className="font-cb-mono text-lg whitespace-nowrap text-[hsl(var(--pub-brass-deep))]">
-                          {item.price}
+                        <p className="font-cb-mono text-sm tracking-wider text-[hsl(var(--pub-brass-deep))] tabular-nums whitespace-nowrap">
+                          £{String(item.price).replace(/^£/, "")}
+                        </p>
+                      )}
+                      {item.description && (
+                        <p className="font-cb-sans text-sm text-[hsl(var(--pub-ink)/0.7)] col-span-2 mt-1">
+                          {item.description}
                         </p>
                       )}
                     </li>
@@ -135,6 +174,18 @@ const PubFood = () => {
               )}
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="bg-[hsl(var(--pub-oxblood-deep))]">
+        <div className="relative h-[280px] md:h-[360px] overflow-hidden">
+          <img
+            src={interiorImg}
+            alt="The pub interior"
+            className="absolute inset-0 h-full w-full object-cover opacity-80"
+            loading="lazy"
+            decoding="async"
+          />
         </div>
       </section>
     </>
