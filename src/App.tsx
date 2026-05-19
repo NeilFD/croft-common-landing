@@ -362,10 +362,11 @@ const App = () => {
                       {/* Crazy Bear Country */}
                       <Route path="/country" element={<PropertyLayout property="country" />}>
                         <Route index element={<CountryHome />} />
-                        <Route path="pub" element={<CountryPub />} />
-                        <Route path="pub/food" element={<CountryPubFood />} />
-                        <Route path="pub/drink" element={<CountryPubDrink />} />
-                        <Route path="pub/hospitality" element={<CountryPubHospitality />} />
+                        {/* /country/pub* moved to top-level /pub. Hospitality retired. */}
+                        <Route path="pub" element={<Navigate to="/pub" replace />} />
+                        <Route path="pub/food" element={<Navigate to="/pub/food" replace />} />
+                        <Route path="pub/drink" element={<Navigate to="/pub/drink" replace />} />
+                        <Route path="pub/hospitality" element={<Navigate to="/pub" replace />} />
                         <Route path="rooms" element={<CountryRooms />} />
                         <Route path="rooms/types" element={<CountryRoomTypes />} />
                         <Route path="rooms/gallery" element={<CountryRoomGallery />} />
