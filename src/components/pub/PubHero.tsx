@@ -12,7 +12,7 @@ const PubHero = () => {
   const heroAlt = assets[0]?.alt ?? "Dark wood pub interior with warm globe lights";
 
   return (
-    <section className="relative h-[92vh] min-h-[600px] w-full overflow-hidden bg-[hsl(var(--pub-oxblood-deep))]">
+    <section className="relative h-screen min-h-[760px] w-full overflow-hidden bg-[hsl(var(--pub-oxblood-deep))]">
       <img
         src={heroImage}
         alt={heroAlt}
