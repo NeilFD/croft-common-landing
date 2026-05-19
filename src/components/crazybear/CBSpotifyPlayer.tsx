@@ -73,20 +73,21 @@ const CBSpotifyPlayer = () => {
   const [playlistTitle, setPlaylistTitle] = useState<string>("Crazy Bear Sessions");
 
   const location = useLocation();
-  const activePlaylistId = useMemo(
-    () => getPlaylistIdForPath(location.pathname),
+  const activeEntry = useMemo(
+    () => getEntryForPath(location.pathname),
     [location.pathname]
   );
-  const initialPlaylistIdRef = useRef(activePlaylistId);
+  const activeEntryKey = `${activeEntry.kind}:${activeEntry.id}`;
+  const initialEntryRef = useRef(activeEntry);
 
   useEffect(() => {
     isPlayingRef.current = isPlaying;
   }, [isPlaying]);
 
-  // Fetch playlist title for active playlist
+  // Fetch title for the active entry (playlist or track)
   useEffect(() => {
     let cancelled = false;
-    fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(playlistUrl(activePlaylistId))}`)
+    fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(entryUrl(activeEntry))}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (!cancelled && data?.title) setPlaylistTitle(data.title);
@@ -95,11 +96,12 @@ const CBSpotifyPlayer = () => {
     return () => {
       cancelled = true;
     };
-  }, [activePlaylistId]);
+  }, [activeEntryKey]);
 
   useEffect(() => {
     let timeoutId: number | undefined;
-    const startId = initialPlaylistIdRef.current;
+    const startEntry = initialEntryRef.current;
+    const startKey = `${startEntry.kind}:${startEntry.id}`;
 
     const init = () => {
       const IFrameAPI = window.SpotifyIframeApi;
@@ -110,13 +112,13 @@ const CBSpotifyPlayer = () => {
         IFrameAPI.createController(
           element,
           {
-            uri: `spotify:playlist:${startId}`,
+            uri: entryUri(startEntry),
             width: "100%",
             height: "80",
           },
           (EmbedController: any) => {
             controllerRef.current = EmbedController;
-            loadedPlaylistIdRef.current = startId;
+            loadedPlaylistIdRef.current = startKey;
             setReady(true);
             setFailed(false);
             EmbedController.addListener("playback_update", (e: any) => {
@@ -167,17 +169,16 @@ const CBSpotifyPlayer = () => {
     };
   }, []);
 
-  // Swap playlist when route changes
+  // Swap entry when route changes
   useEffect(() => {
     const controller = controllerRef.current;
     if (!controller || !ready) return;
-    if (loadedPlaylistIdRef.current === activePlaylistId) return;
+    if (loadedPlaylistIdRef.current === activeEntryKey) return;
     const wasPlaying = isPlayingRef.current;
     try {
-      controller.loadUri(`spotify:playlist:${activePlaylistId}`);
-      loadedPlaylistIdRef.current = activePlaylistId;
+      controller.loadUri(entryUri(activeEntry));
+      loadedPlaylistIdRef.current = activeEntryKey;
       if (wasPlaying) {
-        // Give the controller a tick to load before issuing play
         window.setTimeout(() => {
           try {
             controller.play?.();
@@ -189,7 +190,7 @@ const CBSpotifyPlayer = () => {
     } catch (err) {
       console.warn("Spotify loadUri failed", err);
     }
-  }, [activePlaylistId, ready]);
+  }, [activeEntryKey, ready]);
 
   const toggle = () => {
     try {
@@ -212,7 +213,7 @@ const CBSpotifyPlayer = () => {
     }
   }, [location.pathname, shouldAutoMinimise]);
 
-  const activePlaylistUrl = playlistUrl(activePlaylistId);
+  const activePlaylistUrl = entryUrl(activeEntry);
   const tooltipEyebrow = failed
     ? "Open in Spotify"
     : ready
