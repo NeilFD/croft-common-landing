@@ -308,12 +308,12 @@ export const SITE_TREE: { town: SiteTreeBranch; country: SiteTreeBranch; both: S
         ],
       },
       {
-        label: "Pub",
-        path: "/country/pub",
+        label: "The Pub",
+        path: "/pub",
         links: [
-          { label: "Food", path: "/country/pub/food" },
-          { label: "Drink", path: "/country/pub/drink" },
-          { label: "Hospitality", path: "/country/pub/hospitality" },
+          { label: "Food", path: "/pub/food" },
+          { label: "Drink", path: "/pub/drink" },
+          { label: "Snacks", path: "/pub/snacks" },
         ],
       },
       {
