@@ -8,6 +8,7 @@
     "check:cms-registry": "bunx tsx scripts/check-cms-registry.ts",
     "prebuild": "bunx tsx scripts/check-cms-registry.ts",
     "build": "vite build",
+    "postbuild": "bunx tsx scripts/prerender.ts",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview"
