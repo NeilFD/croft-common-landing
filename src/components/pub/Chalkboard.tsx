@@ -1,3 +1,7 @@
+import caskImg from "@/assets/pub/pub-cask-ales.jpg";
+import interiorImg from "@/assets/pub/pub-interior.jpg";
+import windowImg from "@/assets/pub/pub-window.jpg";
+
 interface Pour {
   name: string;
   origin: string;
@@ -14,44 +18,66 @@ const DEFAULT_POURS: Pour[] = [
 ];
 
 /**
- * Chalkboard listing of what's pouring at the bar. Hand-drawn feel.
+ * On the bar today — editorial two-column list on deep ink.
+ * No frames, no dashed leaders, no chalk dust.
  */
 const Chalkboard = () => {
   return (
-    <section className="bg-[hsl(var(--pub-cream-warm))] py-20 px-6">
-      <div className="mx-auto max-w-4xl">
-        <div className="pub-chalkboard p-10 md:p-14 rounded-sm">
-          <p className="pub-display text-center text-[hsl(var(--pub-brass))] text-xs tracking-[0.5em] uppercase">
-            On the bar today
+    <section className="bg-[hsl(var(--pub-ink))] text-[hsl(var(--pub-cream))] py-20 md:py-28 px-6">
+      <div className="mx-auto max-w-5xl">
+        <div className="flex items-end justify-between gap-6 flex-wrap">
+          <div>
+            <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase text-[hsl(var(--pub-brass))]">
+              01 / Cellar
+            </p>
+            <h2 className="pub-display mt-3 text-5xl md:text-6xl uppercase leading-none">
+              On the bar today
+            </h2>
+          </div>
+          <p className="font-cb-mono text-[10px] tracking-[0.4em] uppercase text-[hsl(var(--pub-cream)/0.5)]">
+            Rotates weekly
           </p>
-          <h2 className="pub-display mt-4 text-center text-4xl md:text-6xl uppercase">
-            What's pouring
-          </h2>
+        </div>
 
-          <ul className="mt-10 space-y-5">
-            {DEFAULT_POURS.map((pour) => (
-              <li
-                key={pour.name}
-                className="flex items-baseline justify-between gap-4 border-b border-dashed border-[hsl(40_25%_70%_/_0.25)] pb-3"
-              >
-                <div>
-                  <p className="pub-display text-2xl md:text-3xl uppercase leading-tight">
-                    {pour.name}
-                  </p>
-                  <p className="font-cb-sans text-sm opacity-70 mt-1">
-                    {pour.origin}
-                  </p>
-                </div>
-                <p className="font-cb-mono text-lg tracking-wider text-[hsl(var(--pub-brass))] whitespace-nowrap">
-                  {pour.abv}
+        <div className="mt-8 h-px w-full bg-[hsl(var(--pub-brass)/0.5)]" />
+
+        <ul className="mt-10 grid gap-x-12 gap-y-1 sm:grid-cols-2">
+          {DEFAULT_POURS.map((pour) => (
+            <li
+              key={pour.name}
+              className="flex items-baseline gap-4 py-4 border-b border-[hsl(var(--pub-cream)/0.08)]"
+            >
+              <div className="flex-1 min-w-0">
+                <p className="pub-display text-lg md:text-xl uppercase leading-tight">
+                  {pour.name}
                 </p>
-              </li>
-            ))}
-          </ul>
+                <p className="font-cb-sans text-sm mt-1 text-[hsl(var(--pub-cream)/0.6)]">
+                  {pour.origin}
+                </p>
+              </div>
+              <p className="font-cb-mono text-sm tracking-wider text-[hsl(var(--pub-brass))] tabular-nums whitespace-nowrap">
+                {pour.abv}
+              </p>
+            </li>
+          ))}
+        </ul>
 
-          <p className="mt-8 text-center font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-60">
-            Rotates with the seasons. And the landlord's mood.
-          </p>
+        <div className="mt-14 grid grid-cols-3 gap-3">
+          {[caskImg, interiorImg, windowImg].map((src, i) => (
+            <div
+              key={i}
+              className="relative aspect-[16/10] overflow-hidden border border-[hsl(var(--pub-brass)/0.4)]"
+            >
+              <img
+                src={src}
+                alt=""
+                aria-hidden
+                className="absolute inset-0 h-full w-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          ))}
         </div>
       </div>
     </section>
