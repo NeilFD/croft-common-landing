@@ -64,10 +64,11 @@ const Book = lazy(() => import('@/pages/Book'));
 const Privacy = lazy(() => import('@/pages/Privacy'));
 
 const CountryHome = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryHome })));
-const CountryPub = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryPub })));
-const CountryPubFood = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryPubFood })));
-const CountryPubDrink = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryPubDrink })));
-const CountryPubHospitality = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryPubHospitality })));
+// /pub enclave (top-level, was /country/pub*)
+const PubHome = lazy(() => import('@/pages/pub/PubHome'));
+const PubFood = lazy(() => import('@/pages/pub/PubFood'));
+const PubDrink = lazy(() => import('@/pages/pub/PubDrink'));
+const PubSnacks = lazy(() => import('@/pages/pub/PubSnacks'));
 const CountryRooms = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryRooms })));
 const CountryRoomTypes = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryRoomTypes })));
 const CountryRoomGallery = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryRoomGallery })));
