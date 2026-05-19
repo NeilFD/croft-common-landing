@@ -200,6 +200,7 @@ const CBLandingSections = () => {
 };
 
 const Column = ({ column, inverted }: { column: SiteMapColumn; inverted: boolean }) => {
+  const hasChips = !!column.chips && column.chips.length > 0;
   return (
     <div>
       <p
@@ -210,30 +211,27 @@ const Column = ({ column, inverted }: { column: SiteMapColumn; inverted: boolean
         {column.eyebrow}
       </p>
       <ul className="space-y-0">
-        {column.links.map((link) => (
-          <li key={link.path}>
-            <Row link={link} inverted={inverted} />
-          </li>
-        ))}
+        {column.links.map((link) => {
+          // "Room Types" becomes a toggle that reveals the Snug/Cosy/Boujee/
+          // Decadent chips inline. Chips no longer render as a flat list.
+          if (hasChips && link.label === "Room Types") {
+            return (
+              <li key={link.path}>
+                <RoomTypesToggle
+                  link={link}
+                  chips={column.chips!}
+                  inverted={inverted}
+                />
+              </li>
+            );
+          }
+          return (
+            <li key={link.path}>
+              <Row link={link} inverted={inverted} />
+            </li>
+          );
+        })}
       </ul>
-
-      {column.chips && column.chips.length > 0 && (
-        <div className="mt-5 flex flex-wrap gap-2">
-          {column.chips.map((chip) => (
-            <Link
-              key={chip.path}
-              to={chip.path}
-              className={`inline-flex items-center font-cb-mono text-[10px] tracking-[0.3em] uppercase px-3 py-1.5 border transition-colors ${
-                inverted
-                  ? "border-black/30 hover:bg-black hover:text-white"
-                  : "border-white/30 hover:bg-white hover:text-black"
-              }`}
-            >
-              {chip.label}
-            </Link>
-          ))}
-        </div>
-      )}
 
       {column.seeAll && (
         <div className="mt-6">
