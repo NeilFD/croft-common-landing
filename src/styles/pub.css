@@ -1,0 +1,99 @@
+/* Scoped theme for the /pub enclave.
+ * Wraps with .pub-theme — no leak into the global Crazy Bear tokens.
+ * Old-boozer feel: oxblood, cream, brass, paper grain, wood grain.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap");
+
+.pub-theme {
+  /* Surface palette */
+  --pub-oxblood: 8 45% 18%;
+  --pub-oxblood-deep: 8 50% 11%;
+  --pub-cream: 40 35% 92%;
+  --pub-cream-warm: 38 45% 86%;
+  --pub-brass: 40 55% 55%;
+  --pub-brass-deep: 36 50% 38%;
+  --pub-ink: 20 15% 12%;
+  --pub-chalk: 40 25% 96%;
+  --pub-board: 150 18% 14%;
+
+  background-color: hsl(var(--pub-cream-warm));
+  color: hsl(var(--pub-ink));
+  font-family: "Space Grotesk", system-ui, sans-serif;
+}
+
+.pub-theme .pub-display {
+  font-family: "Alfa Slab One", "Bowlby One", Georgia, serif;
+  letter-spacing: 0.01em;
+}
+
+/* Subtle warm paper grain on cards / panels. */
+.pub-grain {
+  background-image:
+    radial-gradient(hsl(var(--pub-ink) / 0.08) 1px, transparent 1px),
+    radial-gradient(hsl(var(--pub-brass) / 0.06) 1px, transparent 1px);
+  background-size: 3px 3px, 7px 7px;
+  background-position: 0 0, 1px 2px;
+}
+
+/* Wood-grain panel for the three doors. */
+.pub-wood {
+  background-color: hsl(28 35% 22%);
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      hsl(28 40% 18%) 0,
+      hsl(28 40% 18%) 2px,
+      hsl(28 35% 24%) 2px,
+      hsl(28 35% 24%) 6px,
+      hsl(28 30% 20%) 6px,
+      hsl(28 30% 20%) 11px,
+      hsl(28 40% 16%) 11px,
+      hsl(28 40% 16%) 14px
+    ),
+    linear-gradient(180deg, hsl(28 35% 24%) 0%, hsl(28 40% 16%) 100%);
+}
+
+/* Chalkboard panel for ales / specials. */
+.pub-chalkboard {
+  background-color: hsl(var(--pub-board));
+  background-image:
+    radial-gradient(hsl(40 20% 80% / 0.04) 1px, transparent 1px),
+    radial-gradient(hsl(40 20% 80% / 0.03) 1px, transparent 1px);
+  background-size: 4px 4px, 9px 9px;
+  color: hsl(var(--pub-chalk));
+  box-shadow:
+    inset 0 0 0 6px hsl(28 35% 18%),
+    inset 0 0 0 10px hsl(40 55% 45%),
+    inset 0 0 0 14px hsl(28 30% 12%);
+}
+
+/* Hand-pinned label feel: very slight rotation, cream paper, soft shadow. */
+.pub-pinned {
+  background-color: hsl(var(--pub-cream));
+  color: hsl(var(--pub-ink));
+  border: 2px solid hsl(var(--pub-ink) / 0.85);
+  box-shadow: 0 6px 18px hsl(var(--pub-ink) / 0.18);
+}
+.pub-pinned-tilt-l { transform: rotate(-0.6deg); }
+.pub-pinned-tilt-r { transform: rotate(0.5deg); }
+
+/* Brass rule — used for section dividers + price tag underlines. */
+.pub-brass-rule {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--pub-brass)) 20%,
+    hsl(var(--pub-brass-deep)) 50%,
+    hsl(var(--pub-brass)) 80%,
+    transparent
+  );
+}
+
+/* Etched glass H1 effect for the hero. */
+.pub-etched {
+  color: hsl(var(--pub-cream));
+  text-shadow:
+    0 1px 0 hsl(var(--pub-ink) / 0.4),
+    0 0 24px hsl(var(--pub-brass) / 0.35);
+}
