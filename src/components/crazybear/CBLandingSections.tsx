@@ -265,4 +265,61 @@ const Row = ({ link, inverted }: { link: SiteMapLink; inverted: boolean }) => (
   </Link>
 );
 
+/**
+ * Disclosure for the "Room Types" row. Toggling reveals the per-room
+ * chips (Snug / Cosy / Boujee / Decadent). The label still links through
+ * to the Room Types overview page; the + button toggles the chip panel.
+ */
+const RoomTypesToggle = ({
+  link,
+  chips,
+  inverted,
+}: {
+  link: SiteMapLink;
+  chips: SiteMapLink[];
+  inverted: boolean;
+}) => {
+  return (
+    <details
+      className={`group border-b ${
+        inverted ? "border-black/15" : "border-white/15"
+      } [&_summary::-webkit-details-marker]:hidden`}
+    >
+      <summary
+        className="list-none cursor-pointer py-3 flex items-center justify-between gap-3 select-none"
+        aria-label={`Toggle ${link.label}`}
+      >
+        <Link
+          to={link.path}
+          onClick={(e) => e.stopPropagation()}
+          className="font-cb-sans text-base tracking-wide hover:underline underline-offset-4"
+        >
+          <h3 className="inline">{link.label}</h3>
+        </Link>
+        <span
+          aria-hidden
+          className="font-cb-mono text-base leading-none opacity-60 group-open:rotate-45 transition-transform"
+        >
+          +
+        </span>
+      </summary>
+      <div className="pb-4 pt-1 flex flex-wrap gap-2">
+        {chips.map((chip) => (
+          <Link
+            key={chip.path}
+            to={chip.path}
+            className={`inline-flex items-center font-cb-mono text-[10px] tracking-[0.3em] uppercase px-3 py-1.5 border transition-colors ${
+              inverted
+                ? "border-black/30 hover:bg-black hover:text-white"
+                : "border-white/30 hover:bg-white hover:text-black"
+            }`}
+          >
+            {chip.label}
+          </Link>
+        ))}
+      </div>
+    </details>
+  );
+};
+
 export default CBLandingSections;
