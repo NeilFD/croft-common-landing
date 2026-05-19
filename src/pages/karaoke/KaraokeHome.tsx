@@ -16,7 +16,12 @@ const KaraokeHome = () => {
     <>
       <CBSeo
         title="Karaoke | Crazy Bear Town"
-        description="Two-hour private karaoke booths at Crazy Bear Town. Noon till eight. Bring your worst, no encores refused."
+        description="Two-hour private karaoke booths at Crazy Bear Town. Noon till late. Bring your worst, no encores refused."
+... keep existing code
+          "Two-hour slots",
+          "Noon till late",
+          "Bring your worst",
+          "No encores refused",
         path="/town/karaoke"
         jsonLd={ld}
       />
