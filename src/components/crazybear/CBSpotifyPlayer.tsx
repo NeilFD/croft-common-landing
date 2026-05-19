@@ -12,7 +12,7 @@ const PLAYLISTS: Record<string, SpotifyEntry> = {
   country: { kind: "playlist", id: "4KCZQ5fOj3UauK3pTWDZo7" },
   town:    { kind: "playlist", id: "7jx5ZtdeZmTP4PfSk6oRL1" },
   pub:     { kind: "playlist", id: "7umY3h92Waz1kgpS2ak44j" },
-  karaoke: { kind: "track",    id: "33LC84JgLvK2KuW43MfaNq" },
+  karaoke: { kind: "track",    id: "2KH16WveTQWT6KOG9Rg6e2" },
 };
 
 const entryUri = (e: SpotifyEntry) => `spotify:${e.kind}:${e.id}`;
