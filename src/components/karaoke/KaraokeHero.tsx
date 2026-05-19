@@ -48,7 +48,7 @@ const KaraokeHero = () => {
           className="kar-condensed text-xs md:text-sm tracking-[0.5em] uppercase text-[hsl(var(--kar-neon))]"
         />
         <h1
-          className="kar-display mt-6 text-7xl md:text-[11rem] uppercase leading-[0.85] text-[hsl(var(--kar-cream))]"
+          className="kar-display mt-6 text-[3.5rem] sm:text-7xl md:text-[11rem] uppercase leading-[0.85] text-[hsl(var(--kar-cream))] whitespace-nowrap"
           style={{
             textShadow:
               "0 2px 0 hsl(12 8% 4% / 0.4), 0 0 32px hsl(354 78% 42% / 0.5)",
