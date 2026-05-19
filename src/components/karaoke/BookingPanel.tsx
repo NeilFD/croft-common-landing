@@ -104,7 +104,7 @@ const BookingPanel = () => {
           <span className="kar-neon-text">slot.</span>
         </h2>
         <p className="mt-6 max-w-xl font-cb-sans text-base md:text-lg opacity-80">
-          Two-hour booths, every day, noon till late. Pick a day. Pick a time. We'll hold it.
+          Two-hour booths, every day, noon till late. Pick a day. Pick a time.
         </p>
 
         {submitted ? (
