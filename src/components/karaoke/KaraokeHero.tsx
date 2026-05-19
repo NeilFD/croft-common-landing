@@ -51,18 +51,21 @@ const KaraokeHero = () => {
           as="p"
           className="kar-condensed text-xs md:text-sm tracking-[0.5em] uppercase text-[hsl(var(--kar-neon))]"
         />
-        <CMSText
-          page="karaoke"
-          section="hero"
-          contentKey="title"
-          fallback="KARAOKE"
-          as="h1"
+        <h1
           className="kar-display mt-6 text-7xl md:text-[11rem] uppercase leading-[0.85] text-[hsl(var(--kar-cream))]"
           style={{
             textShadow:
               "0 2px 0 hsl(12 8% 4% / 0.4), 0 0 32px hsl(354 78% 42% / 0.5)",
           }}
-        />
+        >
+          <CMSText
+            page="karaoke"
+            section="hero"
+            contentKey="title"
+            fallback="KARAOKE"
+            as="span"
+          />
+        </h1>
         <div className="kar-rule mt-8 h-px w-56" />
         <CMSText
           page="karaoke"
