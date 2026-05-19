@@ -4,18 +4,25 @@ import { useHideOnScrollDown } from "@/hooks/useHideOnScrollDown";
 
 const AUTO_MINIMISE_ROUTES = ["/den/member/lunch-run"];
 
-const PLAYLISTS = {
-  default: "5jryH9aMgkcQruOslKX7Fc",
-  country: "4KCZQ5fOj3UauK3pTWDZo7",
-  town: "7jx5ZtdeZmTP4PfSk6oRL1",
-  pub: "7umY3h92Waz1kgpS2ak44j",
+type SpotifyKind = "playlist" | "track";
+interface SpotifyEntry { kind: SpotifyKind; id: string; }
+
+const PLAYLISTS: Record<string, SpotifyEntry> = {
+  default: { kind: "playlist", id: "5jryH9aMgkcQruOslKX7Fc" },
+  country: { kind: "playlist", id: "4KCZQ5fOj3UauK3pTWDZo7" },
+  town:    { kind: "playlist", id: "7jx5ZtdeZmTP4PfSk6oRL1" },
+  pub:     { kind: "playlist", id: "7umY3h92Waz1kgpS2ak44j" },
+  karaoke: { kind: "track",    id: "33LC84JgLvK2KuW43MfaNq" },
 };
 
-const playlistUrl = (id: string) => `https://open.spotify.com/playlist/${id}`;
-const embedSrc = (id: string) =>
-  `https://open.spotify.com/embed/playlist/${id}?utm_source=generator&theme=0`;
+const entryUri = (e: SpotifyEntry) => `spotify:${e.kind}:${e.id}`;
+const entryUrl = (e: SpotifyEntry) =>
+  `https://open.spotify.com/${e.kind}/${e.id}`;
+const entryEmbed = (e: SpotifyEntry) =>
+  `https://open.spotify.com/embed/${e.kind}/${e.id}?utm_source=generator&theme=0`;
 
-const getPlaylistIdForPath = (pathname: string) => {
+const getEntryForPath = (pathname: string): SpotifyEntry => {
+  if (pathname === "/town/karaoke" || pathname.startsWith("/town/karaoke/")) return PLAYLISTS.karaoke;
   if (pathname === "/pub" || pathname.startsWith("/pub/")) return PLAYLISTS.pub;
   if (pathname === "/country" || pathname.startsWith("/country/")) return PLAYLISTS.country;
   if (pathname === "/town" || pathname.startsWith("/town/")) return PLAYLISTS.town;
