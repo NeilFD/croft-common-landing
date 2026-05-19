@@ -24,10 +24,12 @@ const CBMembers = lazy(() => import("./pages/crazybear/Members"));
 import { useCBMember } from "@/hooks/useCBMember";
 const SetPassword = lazy(() => import("./pages/crazybear/SetPassword"));
 const CountryHome = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryHome })));
-const CountryPub = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryPub })));
-const CountryPubFood = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryPubFood })));
-const CountryPubDrink = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryPubDrink })));
-const CountryPubHospitality = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryPubHospitality })));
+// /pub enclave (formerly /country/pub*)
+const PubLayout = lazy(() => import("./components/pub/PubLayout"));
+const PubHome = lazy(() => import("./pages/pub/PubHome"));
+const PubFood = lazy(() => import("./pages/pub/PubFood"));
+const PubDrink = lazy(() => import("./pages/pub/PubDrink"));
+const PubSnacks = lazy(() => import("./pages/pub/PubSnacks"));
 const CountryRooms = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRooms })));
 const CountryRoomTypes = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRoomTypes })));
 const CountryRoomGallery = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRoomGallery })));
