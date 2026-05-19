@@ -183,3 +183,29 @@
   .kar-spin, .kar-drift, .kar-marquee-track, .kar-flicker { animation: none !important; }
   .kar-reveal { opacity: 1; transform: none; transition: none; }
 }
+
+/* ---------- Per-letter neon hover ---------- */
+.karaoke-theme .kar-letter {
+  display: inline-block;
+  color: hsl(var(--kar-cream));
+  transition: color 0.18s ease, text-shadow 0.25s ease, transform 0.25s ease;
+  cursor: default;
+}
+.karaoke-theme .kar-letter:hover {
+  color: hsl(var(--kar-neon));
+  transform: translateY(-2px);
+  text-shadow:
+    0 0 6px hsl(var(--kar-neon) / 0.95),
+    0 0 18px hsl(var(--kar-neon) / 0.85),
+    0 0 36px hsl(var(--kar-neon) / 0.7),
+    0 0 72px hsl(var(--kar-neon) / 0.55);
+  animation: kar-letter-flicker 0.9s steps(2, end) 1;
+}
+@keyframes kar-letter-flicker {
+  0%, 100% { opacity: 1; }
+  10% { opacity: 0.55; }
+  20% { opacity: 1; }
+  35% { opacity: 0.75; }
+  50% { opacity: 1; }
+  70% { opacity: 0.85; }
+}
