@@ -6,9 +6,7 @@ import { blackBearMenu, bnbMenu, countryPubMenu, type Menu } from "@/data/menus"
 import SecretGestureHost, { type SecretVariant } from "@/components/secrets/SecretGestureHost";
 import { CBSeo } from "@/components/seo/CBSeo";
 import CBFAQ from "@/components/seo/CBFAQ";
-import PullQuoteSerif from "@/components/brand2026/PullQuoteSerif";
-import AccentButton from "@/components/brand2026/AccentButton";
-import AccentRule from "@/components/brand2026/AccentRule";
+import QuoteScene from "@/components/brand2026/QuoteScene";
 import {
   restaurantSchema,
   breadcrumbSchema,
