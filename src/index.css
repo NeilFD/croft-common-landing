@@ -882,6 +882,24 @@ h1 {
   color: hsl(0 0% 5%);
 }
 
+/* Floating round CTAs (Curious? / Book). Hover picks up the active
+   property accent (Town Red Inferno / Country Pesto). Outside a
+   property scope we fall back to the accent-pink-dark token so the
+   global shell still has a deliberate hover state. */
+.cb-floating-cta {
+  background: hsl(0 0% 0%);
+  color: hsl(0 0% 100%);
+  border-color: hsl(0 0% 100% / 0.4);
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+.cb-floating-cta:hover {
+  background: hsl(var(--cb-accent, var(--accent-pink-dark)));
+  border-color: hsl(var(--cb-accent, var(--accent-pink-dark)));
+  color: hsl(0 0% 100%);
+}
+
+
+
 /* Scene CTA — for full-bleed dark QuoteScene moments. Big, slab-feel,
    arrow nudges right on hover. Property accent fills the button. */
 .cb-scene-cta {
