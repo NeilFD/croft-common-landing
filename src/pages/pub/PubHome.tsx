@@ -36,13 +36,12 @@ const PubHome = () => {
       <ThreeDoors />
       <SnacksStrip />
       <QuoteScene
-        eyebrow="8ish"
+        headline="Lunch runs into dinner. Dinner runs into the night."
+        body="Eight-ish till late-ish. Stay as long as you mean to."
         ctaLabel="See the food"
         ctaTo="/pub/food"
         align="center"
-      >
-        Lunch runs into dinner. Dinner runs into the night.
-      </QuoteScene>
+      />
       <Chalkboard />
       <PinnedSpecials />
       <DoorSignHours />

@@ -881,3 +881,33 @@ h1 {
   background: hsl(var(--cb-accent-on-dark, var(--cb-accent, var(--foreground))));
   color: hsl(0 0% 5%);
 }
+
+/* Scene CTA — for full-bleed dark QuoteScene moments. Big, slab-feel,
+   arrow nudges right on hover. Property accent fills the button. */
+.cb-scene-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 2rem;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: hsl(0 0% 100%);
+  background: hsl(var(--cb-accent, var(--foreground)));
+  border: 1px solid hsl(var(--cb-accent, var(--foreground)));
+  transition: transform 0.25s ease, background 0.25s ease;
+}
+.cb-scene-cta:hover {
+  transform: translateY(-2px);
+  background: hsl(var(--cb-accent-on-dark, var(--cb-accent, var(--foreground))));
+  color: hsl(0 0% 5%);
+  border-color: hsl(var(--cb-accent-on-dark, var(--cb-accent, var(--foreground))));
+}
+.cb-scene-cta__arrow {
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+.cb-scene-cta:hover .cb-scene-cta__arrow {
+  transform: translateX(4px);
+}
