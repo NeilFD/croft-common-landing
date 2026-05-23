@@ -65,12 +65,11 @@ export const CountryHome = () => (
     cmsPage="country"
   >
     <QuoteScene
-      eyebrow="Since 1500-and-something"
+      headline="Older than your grandmother. Twice as much fun."
+      body="A 16th century inn that never grew up. Rooms, restaurants and a pub spirit that refuses to behave."
       ctaLabel="Book a room"
       ctaTo="/country/rooms"
-    >
-      Older than your grandmother. Twice as much fun.
-    </QuoteScene>
+    />
   </PropertyPage>
 );
 // Country pub pages retired — see /pub enclave at src/pages/pub/*
@@ -87,12 +86,11 @@ export const CountryRooms = () =>
       cmsPage="country/rooms"
     >
       <QuoteScene
-        eyebrow="The 90s"
+        headline="Many memories. No evidence."
+        body="Theatrical. Warm. Never the same twice. Sleep where the stories happened."
         ctaLabel="Pick your character"
         ctaTo="/country/rooms/types"
-      >
-        Many memories. No evidence.
-      </QuoteScene>
+      />
     </PropertyPage>
   );
 export const CountryRoomTypes = () =>
