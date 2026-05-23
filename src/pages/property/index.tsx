@@ -86,13 +86,13 @@ export const CountryRooms = () =>
       schemaKind="hotel"
       cmsPage="country/rooms"
     >
-      <section className="mx-auto max-w-3xl px-6 pb-16">
-        <PullQuoteSerif eyebrow="The 90s">
-          Many memories. No evidence.
-        </PullQuoteSerif>
-        <AccentRule width="w-16" className="mb-8" />
-        <AccentButton to="/country/rooms/types">Pick your character</AccentButton>
-      </section>
+      <QuoteScene
+        eyebrow="The 90s"
+        ctaLabel="Pick your character"
+        ctaTo="/country/rooms/types"
+      >
+        Many memories. No evidence.
+      </QuoteScene>
     </PropertyPage>
   );
 export const CountryRoomTypes = () =>
