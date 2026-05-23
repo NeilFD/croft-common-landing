@@ -64,16 +64,13 @@ export const CountryHome = () => (
     schemaKind="hotel"
     cmsPage="country"
   >
-    <section className="mx-auto max-w-3xl px-6 pb-20">
-      <PullQuoteSerif eyebrow="Since 1500-and-something">
-        Older than your grandmother. Twice as much fun.
-      </PullQuoteSerif>
-      <AccentRule width="w-16" className="mb-8" />
-      <div className="flex flex-wrap gap-4">
-        <AccentButton to="/country/rooms">Book a room</AccentButton>
-        <AccentButton to="/pub" variant="ghost">Visit the pub</AccentButton>
-      </div>
-    </section>
+    <QuoteScene
+      eyebrow="Since 1500-and-something"
+      ctaLabel="Book a room"
+      ctaTo="/country/rooms"
+    >
+      Older than your grandmother. Twice as much fun.
+    </QuoteScene>
   </PropertyPage>
 );
 // Country pub pages retired — see /pub enclave at src/pages/pub/*
