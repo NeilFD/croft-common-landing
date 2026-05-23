@@ -281,13 +281,13 @@ export const TownRooms = () =>
       faqKey="/town/rooms"
       cmsPage="town/rooms"
     >
-      <section className="mx-auto max-w-3xl px-6 pb-16">
-        <PullQuoteSerif eyebrow="Do not disturb">
-          Late checkout strongly advised.
-        </PullQuoteSerif>
-        <AccentRule width="w-16" className="mb-8" />
-        <AccentButton to="/town/rooms/types">Pick your character</AccentButton>
-      </section>
+      <QuoteScene
+        eyebrow="Do not disturb"
+        ctaLabel="Pick your character"
+        ctaTo="/town/rooms/types"
+      >
+        Late checkout strongly advised.
+      </QuoteScene>
     </PropertyPage>
   );
 export const TownRoomTypes = () =>
