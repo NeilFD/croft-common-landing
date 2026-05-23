@@ -183,16 +183,13 @@ export const TownHome = () => (
     schemaKind="hotel"
     cmsPage="town"
   >
-    <section className="mx-auto max-w-3xl px-6 pb-20">
-      <PullQuoteSerif eyebrow="You look like trouble">
-        Velvet. Mirror. Marble. The townhouse where the rules loosen.
-      </PullQuoteSerif>
-      <AccentRule width="w-16" className="mb-8" />
-      <div className="flex flex-wrap gap-4">
-        <AccentButton to="/town/rooms">Book a room</AccentButton>
-        <AccentButton to="/town/food" variant="ghost">See the kitchens</AccentButton>
-      </div>
-    </section>
+    <QuoteScene
+      eyebrow="You look like trouble"
+      ctaLabel="Book a room"
+      ctaTo="/town/rooms"
+    >
+      Velvet. Mirror. Marble. The townhouse where the rules loosen.
+    </QuoteScene>
   </PropertyPage>
 );
 export const TownFood = () =>
