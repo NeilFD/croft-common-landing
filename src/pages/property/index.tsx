@@ -90,7 +90,15 @@ export const CountryRooms = () =>
       faqKey="/country/rooms"
       schemaKind="hotel"
       cmsPage="country/rooms"
-    />
+    >
+      <section className="mx-auto max-w-3xl px-6 pb-16">
+        <PullQuoteSerif eyebrow="The 90s">
+          Many memories. No evidence.
+        </PullQuoteSerif>
+        <AccentRule width="w-16" className="mb-8" />
+        <AccentButton to="/country/rooms/types">Pick your character</AccentButton>
+      </section>
+    </PropertyPage>
   );
 export const CountryRoomTypes = () =>
   withSecret(
@@ -280,7 +288,15 @@ export const TownRooms = () =>
       schemaKind="hotel"
       faqKey="/town/rooms"
       cmsPage="town/rooms"
-    />
+    >
+      <section className="mx-auto max-w-3xl px-6 pb-16">
+        <PullQuoteSerif eyebrow="Do not disturb">
+          Late checkout strongly advised.
+        </PullQuoteSerif>
+        <AccentRule width="w-16" className="mb-8" />
+        <AccentButton to="/town/rooms/types">Pick your character</AccentButton>
+      </section>
+    </PropertyPage>
   );
 export const TownRoomTypes = () =>
   withSecret(
