@@ -750,3 +750,43 @@ h1 {
   background: hsl(var(--muted));
   padding: 0.15em 0.4em;
 }
+
+/* ──────────────────────────────────────────────────────────────────
+ * BRAND 2026 — scoped accent helpers
+ * Opt-in classes that read the active property palette. They only
+ * resolve to a real colour inside a [data-property] subtree, so they
+ * stay invisible on the global B&W shell.
+ * ────────────────────────────────────────────────────────────────── */
+
+[data-property="town"] {
+  --cb-accent: var(--cb-town-accent);
+  --cb-accent-soft: var(--cb-town-accent-soft);
+  --cb-ink: var(--cb-town-ink);
+  --cb-metal: var(--cb-town-gold);
+}
+[data-property="country"] {
+  --cb-accent: var(--cb-country-accent);
+  --cb-accent-soft: var(--cb-country-accent-soft);
+  --cb-ink: var(--cb-country-ink);
+  --cb-metal: var(--cb-country-copper);
+}
+
+.cb-accent-rule {
+  height: 2px;
+  width: 64px;
+  background: hsl(var(--cb-accent, var(--foreground)));
+  display: block;
+}
+.cb-accent-text { color: hsl(var(--cb-accent, var(--foreground))); }
+.cb-accent-bg   { background: hsl(var(--cb-accent, var(--foreground))); }
+
+/* Italic serif pull-quote for editorial moments (handwritten energy
+ * from the brand deck: "You look like trouble", "8ish"). */
+.cb-pullquote {
+  font-family: 'Instrument Serif', 'Cormorant Garamond', 'Bowlby One', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: hsl(var(--cb-accent, var(--foreground)));
+}
