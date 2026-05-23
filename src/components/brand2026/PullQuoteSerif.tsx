@@ -20,7 +20,7 @@ const PullQuoteSerif = ({
   children,
   eyebrow,
   className = "",
-  size = "text-4xl md:text-6xl",
+  size = "text-5xl md:text-7xl lg:text-8xl",
   onLight = false,
 }: Props) => (
   <figure className={`my-12 md:my-16 ${className}`}>
