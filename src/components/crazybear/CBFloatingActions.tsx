@@ -40,7 +40,7 @@ interface CBFloatingButtonProps {
   hidden: boolean;
 }
 
-const CBFloatingButton: React.FC<CBFloatingButtonProps> = ({ label, to, bottomClass, hidden }) => {
+const CBFloatingButton: React.FC<CBFloatingButtonProps & { property: 'town' | 'country' | null }> = ({ label, to, bottomClass, hidden, property }) => {
   const navigate = useNavigate();
 
   return (
@@ -50,6 +50,7 @@ const CBFloatingButton: React.FC<CBFloatingButtonProps> = ({ label, to, bottomCl
       aria-hidden={hidden}
       tabIndex={hidden ? -1 : 0}
       onClick={() => navigate(to)}
+      data-property={property ?? undefined}
       className={`cb-floating-cta fixed ${bottomClass} right-3 md:right-8 z-40 w-14 h-14 md:w-20 md:h-20 rounded-full flex items-center justify-center border-2 shadow-lg ${
         hidden ? 'translate-x-[140%] motion-reduce:translate-x-0' : 'translate-x-0'
       }`}
@@ -60,6 +61,7 @@ const CBFloatingButton: React.FC<CBFloatingButtonProps> = ({ label, to, bottomCl
     </button>
   );
 };
+
 
 const CBFloatingActions: React.FC = () => {
   const { pathname } = useLocation();
