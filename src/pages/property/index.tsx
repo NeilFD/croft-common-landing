@@ -6,6 +6,9 @@ import { blackBearMenu, bnbMenu, countryPubMenu, type Menu } from "@/data/menus"
 import SecretGestureHost, { type SecretVariant } from "@/components/secrets/SecretGestureHost";
 import { CBSeo } from "@/components/seo/CBSeo";
 import CBFAQ from "@/components/seo/CBFAQ";
+import PullQuoteSerif from "@/components/brand2026/PullQuoteSerif";
+import AccentButton from "@/components/brand2026/AccentButton";
+import AccentRule from "@/components/brand2026/AccentRule";
 import {
   restaurantSchema,
   breadcrumbSchema,
@@ -62,7 +65,18 @@ export const CountryHome = () => (
     faqKey="/country"
     schemaKind="hotel"
     cmsPage="country"
-  />
+  >
+    <section className="mx-auto max-w-3xl px-6 pb-20">
+      <PullQuoteSerif eyebrow="Since 1500-and-something">
+        Older than your grandmother. Twice as much fun.
+      </PullQuoteSerif>
+      <AccentRule width="w-16" className="mb-8" />
+      <div className="flex flex-wrap gap-4">
+        <AccentButton to="/country/rooms">Book a room</AccentButton>
+        <AccentButton to="/pub" variant="ghost">Visit the pub</AccentButton>
+      </div>
+    </section>
+  </PropertyPage>
 );
 // Country pub pages retired — see /pub enclave at src/pages/pub/*
 // Hospitality page removed entirely; food, drink, snacks now live under /pub.
@@ -76,7 +90,15 @@ export const CountryRooms = () =>
       faqKey="/country/rooms"
       schemaKind="hotel"
       cmsPage="country/rooms"
-    />
+    >
+      <section className="mx-auto max-w-3xl px-6 pb-16">
+        <PullQuoteSerif eyebrow="The 90s">
+          Many memories. No evidence.
+        </PullQuoteSerif>
+        <AccentRule width="w-16" className="mb-8" />
+        <AccentButton to="/country/rooms/types">Pick your character</AccentButton>
+      </section>
+    </PropertyPage>
   );
 export const CountryRoomTypes = () =>
   withSecret(
@@ -165,7 +187,18 @@ export const TownHome = () => (
     faqKey="/town"
     schemaKind="hotel"
     cmsPage="town"
-  />
+  >
+    <section className="mx-auto max-w-3xl px-6 pb-20">
+      <PullQuoteSerif eyebrow="You look like trouble">
+        Velvet. Mirror. Marble. The townhouse where the rules loosen.
+      </PullQuoteSerif>
+      <AccentRule width="w-16" className="mb-8" />
+      <div className="flex flex-wrap gap-4">
+        <AccentButton to="/town/rooms">Book a room</AccentButton>
+        <AccentButton to="/town/food" variant="ghost">See the kitchens</AccentButton>
+      </div>
+    </section>
+  </PropertyPage>
 );
 export const TownFood = () =>
   withSecret(
@@ -255,7 +288,15 @@ export const TownRooms = () =>
       schemaKind="hotel"
       faqKey="/town/rooms"
       cmsPage="town/rooms"
-    />
+    >
+      <section className="mx-auto max-w-3xl px-6 pb-16">
+        <PullQuoteSerif eyebrow="Do not disturb">
+          Late checkout strongly advised.
+        </PullQuoteSerif>
+        <AccentRule width="w-16" className="mb-8" />
+        <AccentButton to="/town/rooms/types">Pick your character</AccentButton>
+      </section>
+    </PropertyPage>
   );
 export const TownRoomTypes = () =>
   withSecret(
