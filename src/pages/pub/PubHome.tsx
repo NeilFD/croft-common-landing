@@ -24,7 +24,7 @@ const PubHome = () => {
   if (faqEntry) ld.push(faqSchema(faqEntry.faqs));
 
   return (
-    <>
+    <div data-property="country">
       <CBSeo
         title="The Pub | Crazy Bear Country"
         description="Real ale, proper food, fires lit. The pub at Crazy Bear Country, Stadhampton. Cask ale, pub snacks, Sunday roast."
@@ -46,7 +46,7 @@ const PubHome = () => {
           />
         </div>
       )}
-    </>
+    </div>
   );
 };
 
