@@ -2,17 +2,18 @@
  * BRAND 2026 — Editorial italic serif pull-quote.
  * Used sparingly for handwritten-feel moments lifted from the 2026 deck
  * ("You look like trouble", "8ish", "The 90s. Many memories. No evidence.").
- * Picks up the active property accent colour automatically.
+ * Picks up the active property accent colour automatically. On dark
+ * surfaces it uses the on-dark variant (Gold / Copper) for contrast;
+ * pass onLight when sitting on a light background.
  */
 import type { ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
-  /** Optional small label above the quote (mono caps). */
   eyebrow?: string;
   className?: string;
-  /** Tailwind size override for the quote text. */
   size?: string;
+  onLight?: boolean;
 }
 
 const PullQuoteSerif = ({
@@ -20,6 +21,7 @@ const PullQuoteSerif = ({
   eyebrow,
   className = "",
   size = "text-4xl md:text-6xl",
+  onLight = false,
 }: Props) => (
   <figure className={`my-12 md:my-16 ${className}`}>
     {eyebrow && (
@@ -27,7 +29,9 @@ const PullQuoteSerif = ({
         {eyebrow}
       </figcaption>
     )}
-    <blockquote className={`cb-pullquote ${size}`}>{children}</blockquote>
+    <blockquote className={`cb-pullquote ${onLight ? "on-light" : ""} ${size}`}>
+      {children}
+    </blockquote>
   </figure>
 );
 

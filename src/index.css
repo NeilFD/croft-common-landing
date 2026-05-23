@@ -763,12 +763,18 @@ h1 {
   --cb-accent-soft: var(--cb-town-accent-soft);
   --cb-ink: var(--cb-town-ink);
   --cb-metal: var(--cb-town-gold);
+  /* Red Inferno fails WCAG on near-black. Gold is the legible stand-in
+   * whenever the accent must render as TEXT on the dark shell. */
+  --cb-accent-on-dark: var(--cb-town-gold);
 }
 [data-property="country"] {
   --cb-accent: var(--cb-country-accent);
   --cb-accent-soft: var(--cb-country-accent-soft);
   --cb-ink: var(--cb-country-ink);
   --cb-metal: var(--cb-country-copper);
+  /* Pesto on near-black passes at body weight; Copper is the warmer
+   * text-friendly variant. */
+  --cb-accent-on-dark: var(--cb-country-copper);
 }
 
 .cb-accent-rule {
@@ -779,14 +785,99 @@ h1 {
 }
 .cb-accent-text { color: hsl(var(--cb-accent, var(--foreground))); }
 .cb-accent-bg   { background: hsl(var(--cb-accent, var(--foreground))); }
+.cb-accent-on-dark { color: hsl(var(--cb-accent-on-dark, var(--cb-accent, var(--foreground)))); }
 
-/* Italic serif pull-quote for editorial moments (handwritten energy
- * from the brand deck: "You look like trouble", "8ish"). */
+/* ── Branded chrome: header + footer inside a property scope ──────── */
+
+/* Thin accent bar pinned to the very top, riding above the fixed nav
+ * strip. Always uses the raw accent (Red / Pesto) since it's a fill,
+ * not text. Only renders inside a [data-property] subtree. */
+[data-property="town"] .cb-property-scope::before,
+[data-property="country"] .cb-property-scope::before,
+.cb-property-scope[data-property]::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: hsl(var(--cb-accent));
+  z-index: 40;
+  pointer-events: none;
+}
+
+/* Footer chrome — CBFooter markup left untouched; we just retint the
+ * hairlines it already renders and warm up the link hover. */
+[data-property] footer {
+  border-top-color: hsl(var(--cb-accent)) !important;
+  border-top-width: 3px;
+}
+[data-property] footer .border-t.border-white\/15 {
+  border-top-color: hsl(var(--cb-accent) / 0.35) !important;
+}
+[data-property] footer a:hover,
+[data-property] footer button:hover {
+  color: hsl(var(--cb-accent-on-dark));
+}
+/* Section eyebrows in footer pick up a small accent square bullet.
+ * Scoped to mb-6 / mb-3 variants so the bottom-bar utility links
+ * (no margin) stay clean. */
+[data-property] footer p.font-cb-mono.uppercase.mb-6,
+[data-property] footer p.font-cb-mono.uppercase.mb-3 {
+  position: relative;
+  padding-left: 14px;
+}
+[data-property] footer p.font-cb-mono.uppercase.mb-6::before,
+[data-property] footer p.font-cb-mono.uppercase.mb-3::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 6px;
+  height: 6px;
+  background: hsl(var(--cb-accent));
+}
+
+/* Italic serif pull-quote for editorial moments. On the dark global
+ * shell it must use the on-dark variant (Red Inferno fails contrast). */
 .cb-pullquote {
   font-family: 'Instrument Serif', 'Cormorant Garamond', 'Bowlby One', Georgia, serif;
   font-style: italic;
   font-weight: 400;
   line-height: 1.05;
   letter-spacing: -0.01em;
+  color: hsl(var(--cb-accent-on-dark, var(--cb-accent, var(--foreground))));
+}
+/* When the quote sits on a light surface, use full-strength accent. */
+.cb-pullquote.on-light {
   color: hsl(var(--cb-accent, var(--foreground)));
+}
+
+/* Accent button — filled by default, ghost variant for dark surfaces. */
+.cb-accent-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  background: hsl(var(--cb-accent, var(--foreground)));
+  color: hsl(0 0% 100%);
+  border: 1px solid hsl(var(--cb-accent, var(--foreground)));
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.cb-accent-btn:hover {
+  background: transparent;
+  color: hsl(var(--cb-accent-on-dark, var(--cb-accent, var(--foreground))));
+}
+.cb-accent-btn--ghost {
+  background: transparent;
+  color: hsl(var(--cb-accent-on-dark, var(--cb-accent, var(--foreground))));
+  border-color: hsl(var(--cb-accent-on-dark, var(--cb-accent, var(--foreground))));
+}
+.cb-accent-btn--ghost:hover {
+  background: hsl(var(--cb-accent-on-dark, var(--cb-accent, var(--foreground))));
+  color: hsl(0 0% 5%);
 }
