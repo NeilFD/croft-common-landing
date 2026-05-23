@@ -182,12 +182,11 @@ export const TownHome = () => (
     cmsPage="town"
   >
     <QuoteScene
-      eyebrow="You look like trouble"
+      headline="You look like trouble."
+      body="Velvet. Mirror. Marble. The townhouse where the rules loosen."
       ctaLabel="Book a room"
       ctaTo="/town/rooms"
-    >
-      Velvet. Mirror. Marble. The townhouse where the rules loosen.
-    </QuoteScene>
+    />
   </PropertyPage>
 );
 export const TownFood = () =>
@@ -280,12 +279,11 @@ export const TownRooms = () =>
       cmsPage="town/rooms"
     >
       <QuoteScene
-        eyebrow="Do not disturb"
+        headline="Late checkout strongly advised."
+        body="Roll-top bath. Theatrical bedhead. Do-not-disturb practically printed on the door."
         ctaLabel="Pick your character"
         ctaTo="/town/rooms/types"
-      >
-        Late checkout strongly advised.
-      </QuoteScene>
+      />
     </PropertyPage>
   );
 export const TownRoomTypes = () =>
