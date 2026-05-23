@@ -40,7 +40,7 @@ export const cbFaqs: Record<string, { title?: string; faqs: FAQ[] }> = {
       },
       {
         question: "What makes a Crazy Bear room?",
-        answer: "Velvet, mirror, marble. Theatrical. Indulgent. Never the same twice.",
+        answer: "Velvet, mirror, marble. Theatrical. Warm. Never the same twice.",
       },
       {
         question: "Family rooms?",
@@ -158,7 +158,7 @@ export const cbFaqs: Record<string, { title?: string; faqs: FAQ[] }> = {
     faqs: [
       {
         question: "What kind of rooms?",
-        answer: "Theatrical. Indulgent. Never the same twice.",
+        answer: "Theatrical. Warm. Never the same twice.",
       },
       {
         question: "Pets?",
