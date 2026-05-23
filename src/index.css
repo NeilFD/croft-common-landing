@@ -86,6 +86,30 @@
     --gold-pale: 48 95% 86%;
     --gold-ink: 30 40% 8%;
     --gradient-gold: linear-gradient(135deg, hsl(var(--gold-deep)) 0%, hsl(var(--gold-base)) 35%, hsl(var(--gold-bright)) 70%, hsl(var(--gold-base)) 100%);
+
+    /* ─────────────────────────────────────────────────────────────
+     * BRAND 2026 — property-scoped palettes
+     * Globally B&W stays untouched. These tokens activate only inside
+     * [data-property="town"] and [data-property="country"] subtrees so
+     * existing pages and the homepage are unaffected.
+     * ──────────────────────────────────────────────────────────── */
+
+    /* Town — glamour, after-hours, townhouse */
+    --cb-town-ink: 200 18% 8%;            /* Moonless Night */
+    --cb-town-accent: 4 70% 40%;           /* Red Inferno */
+    --cb-town-accent-soft: 4 55% 28%;
+    --cb-town-aubergine: 290 35% 18%;      /* Aubergine Gleam */
+    --cb-town-clay: 22 55% 48%;            /* Potters Clay */
+    --cb-town-coffee: 25 35% 22%;          /* Coffee Bean */
+    --cb-town-gold: 41 70% 52%;            /* Gold Coast */
+
+    /* Country — nostalgic, garden, wild luxe */
+    --cb-country-ink: 200 18% 8%;          /* shared Moonless Night */
+    --cb-country-accent: 100 38% 36%;      /* Pesto #4A7E39 */
+    --cb-country-accent-soft: 100 28% 26%;
+    --cb-country-copper: 22 55% 42%;       /* Copper Brown */
+    --cb-country-sand: 35 25% 78%;         /* Desert Mirage */
+    --cb-country-rose: 357 88% 22%;        /* Midnight Rose #6A0409 */
   }
 
   @keyframes gold-shimmer {
