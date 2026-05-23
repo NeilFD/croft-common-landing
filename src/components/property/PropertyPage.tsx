@@ -135,10 +135,10 @@ const PropertyPage = ({
                 contentKey="eyebrow"
                 fallback={eyebrowText}
                 as="p"
-                className="cb-accent-text text-[10px] tracking-[0.4em] uppercase opacity-90"
+                className="cb-accent-on-dark text-[10px] tracking-[0.4em] uppercase opacity-90"
               />
             ) : (
-              <p className="cb-accent-text text-[10px] tracking-[0.4em] uppercase opacity-90">
+              <p className="cb-accent-on-dark text-[10px] tracking-[0.4em] uppercase opacity-90">
                 {eyebrowText}
               </p>
             )}
