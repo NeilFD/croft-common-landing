@@ -1,96 +1,136 @@
-## /town/karaoke — Disco Enclave
+# Brand 2026 — Evolution Plan
 
-A standalone visual world for karaoke, modelled on the `/pub` enclave but loud, glitzy and red. Single bold scrolling page with a mock booking flow built in. No backend yet — slot picker is a UI prototype that submits to a console + toast.
+The current site is a confident B&W system (Bowlby One + Space Grotesk, "Bears Den" staccato voice). The 2026 deck doesn't replace that — it **adds warmth, property-specific colour, and a more grown-up voice**. The recommendation is evolution, not redesign: keep the B&W chassis as the global frame, and let Town and Country each bloom inside it.
 
-### Design language
+## What changes, what stays
 
-- **Mood**: La Bodega Negra meets Studio 54. Velvet red, lacquered black, hot chrome, neon glow. Decadent, irreverent, after-hours.
-- **Palette tokens** (scoped to `.karaoke-theme`):
-  - `--kar-black` near-black `12 8% 6%`
-  - `--kar-noir` lacquer `0 0% 9%`
-  - `--kar-blood` Studio 54 red `354 78% 42%`
-  - `--kar-neon` hot neon red `352 95% 56%`
-  - `--kar-chrome` mirror silver `220 8% 82%`
-  - `--kar-gold` brass accent `42 65% 58%`
-  - `--kar-cream` off-white `36 28% 92%`
-- **Type**: keep Bowlby One for slab headlines, Space Grotesk for body. Add a single condensed display accent (Bebas Neue) for marquee/ticker rows. Italic script reserved for one neon-sign moment.
-- **Motion**:
-  - Disco-ball loop in hero (slow rotating SVG mirror-ball + drifting light specks behind the type).
-  - Marquee ticker bar ("TONIGHT • TONIGHT • TONIGHT") scrolling under the hero.
-  - Neon flicker on the "BOOK YOUR SLOT" CTA (subtle, not seizure-y).
-  - Section reveals on scroll (fade + slight rise), parallax on the chandelier and bar shelves photos.
-  - Slot tiles have a press-down + glow on hover.
-- **Header/footer**: scoped overrides — black header with red logo + cream menu text; black footer with cream text. Pub-style scoped, no global change.
+**Stays (the chassis)**
 
-### Page structure (single scroll)
+- Bowlby One display + Space Grotesk body + Space Mono labels
+- High-contrast B&W as the global / homepage / shared system (CBLandingSections, footer, nav, Bear's Den)
+- Editorial layout language (mono eyebrows, big numbered sections, thin rules)
 
-1. **Hero** — full-bleed dancers/mirror-ball photo, rotating SVG disco-ball overlay, huge `KARAOKE` slab headline, kicker "Crazy Bear Town // After Dark", manifesto line, primary CTA → scrolls to booking. Step-in cue at bottom.
-2. **Marquee ticker** — thin red band, condensed type scrolling: "Two-hour slots · Noon till eight · Bring your worst · No encores refused".
-3. **The Room** — split: chandelier photo left, copy right. Three short stat blocks (capacity, slot length, song count).
-4. **Neon manifesto** — neon-peep image as backdrop with a single short Bears Den line in cream + a red neon-styled sub-line. Pure mood.
-5. **Back bar** — bar-shelves photo split with a tight drinks shortlist (4–6 signatures, price chips in gold).
-6. **Book your slot** (the centrepiece) — described below.
-7. **House rules** — 4 short staccato rules, numbered, on lacquer black.
-8. **Closing** — full-bleed return to the disco photo, repeat CTA, end.
+**Evolves**
 
-### Booking flow (mock)
-
-A two-step picker rendered inline in the page (no separate route).
-
-- **Step 1 — pick a day**: horizontal row of 7 day chips (today + 6). Active = filled red, others = chrome outline.
-- **Step 2 — pick a slot**: 4 tiles for `12–2pm`, `2–4pm`, `4–6pm`, `6–8pm`. Each tile shows status badge: AVAILABLE / LAST FEW / GONE. Status is deterministic from day-index so it looks alive but is stable.
-- **Step 3 — details**: name, email, party size (2–12), one optional message line. Submit button = neon "RESERVE THE BOOTH".
-- **Submit**: client-side validation, console.log the payload, show a full-card success state ("Booth held. We'll be in touch.") with a "Book another" reset. No backend, no DB writes — explicitly mock per request.
-
-### File plan
-
-New:
-
-- `src/styles/karaoke.css` — palette tokens, scoped header/footer overrides, marquee + flicker keyframes, disco-ball spin.
-- `src/components/karaoke/KaraokeLayout.tsx` — wraps `.karaoke-theme`, mounts CSS, renders `Outlet` (future-proof for sub-pages).
-- `src/components/karaoke/KaraokeHero.tsx` — hero + rotating SVG mirror-ball + headline.
-- `src/components/karaoke/MarqueeTicker.tsx` — infinite scroll band.
-- `src/components/karaoke/DiscoBall.tsx` — pure SVG/CSS mirror-ball used in hero and as decoration.
-- `src/components/karaoke/RoomSection.tsx`, `NeonManifesto.tsx`, `BackBar.tsx`, `HouseRules.tsx`, `ClosingCTA.tsx`.
-- `src/components/karaoke/BookingPanel.tsx` — the 3-step mock booking flow (local state, no network).
-- `src/pages/karaoke/KaraokeHome.tsx` — composes the sections above.
-
-Edited:
-
-- `src/App.tsx` — change the `/town/karaoke` route to render the new `KaraokeLayout` + `KaraokeHome` (replacing the current `TownKaraoke` page). The old `TownKaraoke` export stays in `pages/property/index.tsx` untouched but no longer routed.
-- `src/data/cmsPages.ts` — point the `town/karaoke` entry at the new page component so CMS editing still works.
-
-Assets already on disk:
-
-- `src/assets/karaoke/disco-1.jpg` (hero)
-- `src/assets/karaoke/chandelier.jpg` (room)
-- `src/assets/karaoke/neon-peep.jpg` (neon manifesto)
-- `src/assets/karaoke/bar-shelves.jpg` (back bar)
-
-### Copy direction (Bears Den voice)
-
-Short. Staccato. Confident.
-
-- Hero kicker: `CRAZY BEAR TOWN // AFTER DARK`
-- Hero title: `KARAOKE`
-- Hero manifesto: `Two hours. One booth. No shame.`
-- Ticker: `TONIGHT · TONIGHT · TONIGHT · BRING YOUR WORST · NO ENCORES REFUSED`
-- Room headline: `THE BOOTH`
-- Neon line: `Sing like nobody's recording.`
-- Booking headline: `BOOK YOUR SLOT`
-- Submit success: `Booth held. We'll be in touch.`
-- House rules: 4 lines, e.g. `01 Two hours, no more, no less.` / `02 Bring a crowd or bring nobody.` / `03 Drinks in. Phones down.` / `04 The bear has the last song.`  
+- Two new property-scoped palettes layered on top of B&W
+- Tone of voice softened and warmed (still punchy, less cold)
+- Photography moves from product/architectural to candid, Nick Tucker–style event
+- New visual motifs: door hangers, wax seals, neon, disco balls, "Press for Champagne" buttons
+- One naming conflict to resolve: **"Decadent"** is one of our room types and is on the brand's words-to-avoid list  
   
+IGNORE THE DECADENT ROOM TYPOE CONFLICT - THIS IS STRUCTURAL AND NEEDS TO BE KEPT FOR NOW. JUST DONT USE THE WORD IN ADDITIONAL CONTENT AND COPY
+
+---
+
+## 1. Colour — property-scoped accents
+
+Keep `--background` / `--foreground` as B&W globally. Introduce two scoped token sets that only activate inside `/town/*` and `/country/*` route trees (via a `data-property="town|country"` attribute on the layout wrapper). Components keep using semantic tokens; the values swap by scope.
+
+**Town — glamour, after-hours, townhouse**
+
+- Moonless Night `#0F1418` (deep ink base)
+- Red Inferno `#B0271E` (signature accent)
+- Aubergine Gleam (deep plum support)
+- Potters Clay (warm orange highlight)
+- Coffee Bean (rich brown neutral)
+- Gold Coast (rare metallic accent — buttons, seals)
+
+**Country — nostalgic, garden, wild luxe**
+
+- Moonless Night `#0F1418` (shared anchor)
+- Pesto `#4A7E39` (signature accent)
+- Copper Brown (warm support)
+- Desert Mirage (sand neutral)
+- Midnight Rose `#6A0409` (rare deep accent)
+
+The homepage, `/curious`, Bear's Den, members, journal, gallery, footer stay pure B&W — they're the cross-brand layer.
+
+## 2. Typography — no changes, light additions
+
+Bowlby + Space Grotesk + Space Mono already match the deck's bold/editorial register. Two small additions:
+
+- Allow an **italic serif** (e.g. PP Editorial / Instrument Serif) for handwritten-style pull quotes ("You look like trouble", "8ish") — used sparingly, only on Town pages and journal posts
+- A **brush/marker script** as an image asset only (not a webfont) for poster-style overlays — matches the "Garden Groove" / "Pop Up Party" collateral
+
+## 3. Tone of voice — recalibrate "Bears Den"
+
+Current voice is short, staccato, confident — good foundation, but currently a touch cold and slightly nightclub. The deck explicitly says **not** nightclub-heavy, not gimmicky, not overly luxurious. Shift the dial:
+
+- Keep: punchy, short lines, confident, irreverent
+- Add: warmth, welcome, dry wit, understatement, references to 33-year history
+- Drop from copy across the site: *decadent, indulgent, hidden gem, unforgettable, hedonistic, exclusive, vibrant atmosphere, luxury escape, escape, "fear not", "we got you covered"*
+
+**Rewrites to schedule** (audit pass, not destroy):
+
+- Hero subtitles on `/town`, `/country`, `/town/karaoke`, `/town/food/*`, `/country/food/*`
+- Bear's Den / Gold subscription copy ("25% off everywhere" is on-brand; "membership" framing already aligned)
+- Footer subscribe line
+- House Rules pages (deck supplies a finished set — see §6)
+
+## 4. Photography & imagery — yes, use the deck
+
+The deck imagery (event shots, door hanger, champagne button, neon karaoke, disco ball in water, vinyl, fire pit, fur coats, balloon) is on-brand reference material and can be brought into the site. Recommended use:
+
+- **Town hero carousel**: swap to glamour/after-hours frames (champagne button, late checkout phone, neon karaoke, red door hanger)
+- **Country hero carousel**: nostalgic/garden frames (fire pit + string lights, vinyl, long table, disco ball in dark)
+- **Karaoke page**: lean into the neon + disco ball assets — already fits
+- **Journal / Stories**: Nick Tucker event photography becomes the house photo style
+- **Social / OG images**: the "SUGGESTIVE NOT EXPLICIT / GLAMOUR NOT GARISH / TASTEFUL NOT TACKY" triptych is a great share card
+- **Visual motifs as SVG/PNG accents**: wax seal "B", three-lips illustration, martini trio, bear-in-crown mark — usable as section dividers, loading marks, button stamps
+
+Caveat: the deck is a mood board. Several images are sourced references (Rodial, Almost Friday, Chateau Marmont note, Studio 54 poster) — those are **inspiration only**, not for direct publication. Safe to use: anything credited to Nick Tucker, generic textures, and any Crazy Bear property shots. I'd recommend a quick rights pass before pushing the mood images live; happy to flag each one.  
   
-Also, ensur ethat when navigated to, [https://open.spotify.com/track/33LC84JgLvK2KuW43MfaNq?si=b4a8b4cbf9c14dd1](https://open.spotify.com/track/33LC84JgLvK2KuW43MfaNq?si=b4a8b4cbf9c14dd1) this is teh playlist song playing for /karaoke  
+IGNORE RIGHTS ISSUES FOR NOW.THIS IS DRAFT NOT FOR PUBLIC.CAN YOU SOURCE ADDITIONAL SIMILAR IMAGERY ONLINE SO WE ARE NOT RESTRICTED PLEASE - STRICT KEEP ON TEH STYLEING OF TEH IMAGERY THO
 
+## 5. New visual components to introduce
 
-### CMS
+Small, additive — no existing component gets destroyed:
 
-The page registers under the existing `town/karaoke` CMS slug. Hero photo, hero copy, ticker text, and house-rules lines are wired through `useCMSAssets` / `CMSText` so the page slots into the existing management system the same way the `/pub` enclave does. No new admin UI.
+- **PropertyAccentBar** — thin top rule in the property's signature colour, replaces the current white/black hairline inside `/town` and `/country`
+- **PressForChampagne button variant** — ornate gold-framed CTA, used once per Town page (booking, concierge)
+- **DoorHangerCard** — vertical card with a tassel motif, for "Late Checkout", "Do Not Disturb", "Press for Champagne" feature blocks
+- **PosterTile** — bold-type event poster style for What's On entries (matches Sunday Club / Shrimp Party / Garden Groove collateral)
+- **WaxSealMark** — small "B" wax seal as a section terminator
+- **PullQuoteSerif** — italic serif pull-quote block for editorial moments
 
-### Out of scope (call out)
+## 6. House Rules — adopt the deck's set
 
-- Real availability / database / payment — explicitly mocked.
-- No new sub-routes (e.g. `/town/karaoke/songbook`) in this pass; layout is sub-page-ready if added later.
-- The global Crazy Bear `CBTopNav` / `CBFooter` are not modified; the enclave only re-skins them locally via scoped CSS.
+The deck supplies a finished, on-brand House Rules list ("Read once. Never think twice."). Replace the current Karaoke HouseRules copy and the standalone `/house-rules` page with this canonical set, styled as a numbered editorial list on Moonless Night.  
+  
+LEAVE KARAOKE AS A STANDALONE PIECE OF DESIGN. DO NOT CHANGE. DO NOT CHANGE TEH HOUSE RULES PAGE EITHER. THE PUB PAGES USE THE NEW COUNTRY COLOUR PALLETE, KEEP PAGE STRUCTURE
+
+## 7. Naming conflict to resolve
+
+The current room-type taxonomy is **Snug / Cosy / Boujee / Decadent**. "Decadent" is on the brand's words-to-avoid list. Suggested rename of that single tier — options to choose from: **Grand, Lavish, Hideaway, Suite, Headliner, Top Floor**. This needs your call before we touch the room pages, nav data, and CMS.
+
+## 8. Rollout — staged, non-destructive
+
+```text
+Phase 1  Tokens + scope    Add Town/Country token sets, scope wrapper, no visual change yet
+Phase 2  Town pages        Apply Town palette + new motifs to /town tree
+Phase 3  Country pages     Apply Country palette + nostalgia imagery to /country tree
+Phase 4  TOV audit         Rewrite hero/sub copy site-wide against the new word list
+Phase 5  House Rules       Replace with deck-canonical set
+Phase 6  Photography swap  Carousels, journal, social cards
+Phase 7  Room rename       Resolve "Decadent" + update CMS + nav data
+```
+
+Each phase is independently shippable and reversible.
+
+---
+
+## Technical notes
+
+- Token scoping uses `[data-property="town"] { --primary: ... }` blocks in `index.css`. No tailwind config change needed — semantic tokens already map through HSL.
+- New colours must be added as HSL triplets to keep with project convention.
+- Property scope wrapper goes in the `town/` and `country/` layout components (already exist).
+- Deck images extracted to `parsed-documents://...` — for live use, copy chosen ones into `src/assets/brand-2026/` and import as ES6 modules; carousel data files (`src/data/heroCarousels.ts`) get the new entries.
+- CMS: any new page or rename (room type) will need matching CMS editing surfaces per project rules.
+- All copy edits will use Anglicised spellings, £ only, no em dashes.
+
+## Open questions for you
+
+1. Approve property-scoped colour (Town red/aubergine, Country pesto/copper) — or keep one global palette?
+2. Pick a replacement for the "Decadent" room tier.
+3. Confirm we can use the Nick Tucker event photography from the deck on the live site (rights).
+4. Want me to start with Phase 1+2 (Town) as the first build, or audit copy site-wide first?

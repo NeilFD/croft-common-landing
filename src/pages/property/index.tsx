@@ -71,8 +71,8 @@ export const CountryRooms = () =>
     "rooms-country",
     <PropertyPage
       title="Rooms"
-      body="Theatrical. Indulgent. Never the same twice."
-      seoDescription="Bedrooms at Crazy Bear Country. Theatrical, indulgent, never the same twice."
+      body="Theatrical. Warm. Never the same twice."
+      seoDescription="Bedrooms at Crazy Bear Country. Theatrical, warm, never the same twice."
       faqKey="/country/rooms"
       schemaKind="hotel"
       cmsPage="country/rooms"
@@ -97,7 +97,7 @@ export const CountryRoomGallery = () =>
       title="Bedroom Gallery"
       eyebrow="Rooms"
       body="A look behind the bedroom doors."
-      seoDescription="Bedroom gallery at Crazy Bear Country, Stadhampton. Theatrical, indulgent, never the same twice. A look behind the doors."
+      seoDescription="Bedroom gallery at Crazy Bear Country, Stadhampton. Theatrical, warm, never the same twice. A look behind the doors."
       extraJsonLd={[imageGallerySchema(countryGallery, `${CB_SITE}/country/rooms/gallery`)]}
       cmsPage="country/rooms/gallery"
     >
