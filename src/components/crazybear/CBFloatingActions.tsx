@@ -50,7 +50,7 @@ const CBFloatingButton: React.FC<CBFloatingButtonProps> = ({ label, to, bottomCl
       aria-hidden={hidden}
       tabIndex={hidden ? -1 : 0}
       onClick={() => navigate(to)}
-      className={`fixed ${bottomClass} right-3 md:right-8 z-40 w-14 h-14 md:w-20 md:h-20 rounded-full flex items-center justify-center border-2 border-white/40 bg-black text-white hover:bg-accent-pink hover:text-white hover:border-accent-pink shadow-lg transition-[transform,colors] duration-300 ease-out motion-reduce:transition-none ${
+      className={`cb-floating-cta fixed ${bottomClass} right-3 md:right-8 z-40 w-14 h-14 md:w-20 md:h-20 rounded-full flex items-center justify-center border-2 shadow-lg ${
         hidden ? 'translate-x-[140%] motion-reduce:translate-x-0' : 'translate-x-0'
       }`}
     >
