@@ -18,9 +18,6 @@ const NeonManifesto = () => (
         Sing like nobody's<br />
         <span className="kar-neon-text kar-flicker">listening.</span>
       </h2>
-      <p className="kar-script mt-10 text-3xl md:text-5xl text-[hsl(var(--kar-neon))] kar-flicker">
-        because nobody is
-      </p>
     </div>
   </section>
 );
