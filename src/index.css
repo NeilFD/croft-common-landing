@@ -819,12 +819,16 @@ h1 {
 [data-property] footer button:hover {
   color: hsl(var(--cb-accent-on-dark));
 }
-/* Section eyebrows in footer pick up a small accent square bullet. */
-[data-property] footer p.font-cb-mono.uppercase {
+/* Section eyebrows in footer pick up a small accent square bullet.
+ * Scoped to mb-6 / mb-3 variants so the bottom-bar utility links
+ * (no margin) stay clean. */
+[data-property] footer p.font-cb-mono.uppercase.mb-6,
+[data-property] footer p.font-cb-mono.uppercase.mb-3 {
   position: relative;
   padding-left: 14px;
 }
-[data-property] footer p.font-cb-mono.uppercase::before {
+[data-property] footer p.font-cb-mono.uppercase.mb-6::before,
+[data-property] footer p.font-cb-mono.uppercase.mb-3::before {
   content: "";
   position: absolute;
   left: 0;
