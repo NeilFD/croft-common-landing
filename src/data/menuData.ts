@@ -89,7 +89,7 @@ export const cafeMenu: MenuSection[] = [
     items: [
       { name: "Polenta & Orange Cake", description: "moist, citrus sharp, almond bite.", price: "5" },
       { name: "Pistachio & Rose Cake", description: "nutty, floral, light sponge.", price: "6" },
-      { name: "Chocolate Babka", description: "dark, glossy, indulgent.", price: "4" },
+      { name: "Chocolate Babka", description: "dark, glossy, slow.", price: "4" },
       { name: "Date & Walnut Slice", description: "sticky, rich, wholesome.", price: "4" }
     ]
   }

@@ -435,7 +435,7 @@ export const oneKitchenMenuData: MenuSection[] = [
       },
       {
         name: "Sticky Toffee Pudding, Salted Caramel, Ice Cream",
-        description: "indulgent, soft sponge.",
+        description: "soft, glossy sponge.",
         price: "£9"
       },
       {
@@ -625,7 +625,7 @@ export const oneKitchenMenuData: MenuSection[] = [
       },
       {
         name: "Chocolate Babka",
-        description: "dark, glossy, indulgent.",
+        description: "dark, glossy, slow.",
         price: "£4"
       },
       {
@@ -830,7 +830,7 @@ export const oneKitchenMenuData: MenuSection[] = [
       },
       {
         name: "Sticky Toffee Pudding, Salted Caramel, Ice Cream",
-        description: "indulgent, soft sponge.",
+        description: "soft, glossy sponge.",
         price: "£9"
       },
       {
