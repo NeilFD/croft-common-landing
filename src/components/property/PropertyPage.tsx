@@ -97,7 +97,7 @@ const PropertyPage = ({
   const bodyText = body ?? "More soon. Worth the wait.";
 
   return (
-    <>
+    <div data-property={property}>
       <CBSeo
         title={fullTitle}
         description={description.slice(0, 158)}
@@ -124,6 +124,8 @@ const PropertyPage = ({
           )
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+        {/* Brand 2026: thin property-accent rule sits flush at the top of the hero */}
+        <span aria-hidden className="absolute top-0 left-0 h-[2px] w-full cb-accent-bg z-10" />
         <div className="relative z-10 flex h-full items-end px-6 pb-24 md:px-12 md:pb-28">
           <div>
             {cmsPage ? (
@@ -133,10 +135,10 @@ const PropertyPage = ({
                 contentKey="eyebrow"
                 fallback={eyebrowText}
                 as="p"
-                className="text-[10px] tracking-[0.4em] uppercase opacity-80"
+                className="cb-accent-text text-[10px] tracking-[0.4em] uppercase opacity-90"
               />
             ) : (
-              <p className="text-[10px] tracking-[0.4em] uppercase opacity-80">
+              <p className="cb-accent-text text-[10px] tracking-[0.4em] uppercase opacity-90">
                 {eyebrowText}
               </p>
             )}
@@ -152,6 +154,7 @@ const PropertyPage = ({
             ) : (
               <h1 className="mt-3 font-serif text-5xl md:text-7xl uppercase">{title}</h1>
             )}
+            <span aria-hidden className="cb-accent-rule mt-5" />
           </div>
         </div>
         <a
@@ -191,7 +194,7 @@ const PropertyPage = ({
           title={faqEntry?.title ?? "Asked and answered."}
         />
       )}
-    </>
+    </div>
   );
 };
 
