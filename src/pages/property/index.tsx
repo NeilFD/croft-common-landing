@@ -71,8 +71,8 @@ export const CountryRooms = () =>
     "rooms-country",
     <PropertyPage
       title="Rooms"
-      body="Theatrical. Indulgent. Never the same twice."
-      seoDescription="Bedrooms at Crazy Bear Country. Theatrical, indulgent, never the same twice."
+      body="Theatrical. Warm. Never the same twice."
+      seoDescription="Bedrooms at Crazy Bear Country. Theatrical, warm, never the same twice."
       faqKey="/country/rooms"
       schemaKind="hotel"
       cmsPage="country/rooms"
