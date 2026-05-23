@@ -20,7 +20,8 @@ const isChunkLoadFailure = (text: string) => (
   text.includes('Failed to fetch dynamically imported module') ||
   text.includes('Importing a module script failed') ||
   text.includes('error loading dynamically imported module') ||
-  /\/assets\/.*\.js/.test(text) ||
+  text.includes('Unable to preload CSS') ||
+  /\/assets\/.*\.(js|css)/.test(text) ||
   /\/node_modules\/\.vite\/deps\/.*\.js/.test(text)
 );
 
