@@ -8,8 +8,7 @@ import SnacksStrip from "@/components/pub/SnacksStrip";
 import Chalkboard from "@/components/pub/Chalkboard";
 import PinnedSpecials from "@/components/pub/PinnedSpecials";
 import DoorSignHours from "@/components/pub/DoorSignHours";
-import PullQuoteSerif from "@/components/brand2026/PullQuoteSerif";
-import AccentButton from "@/components/brand2026/AccentButton";
+import QuoteScene from "@/components/brand2026/QuoteScene";
 
 const PubHome = () => {
   const faqEntry = cbFaqs["/country/pub"] ?? cbFaqs["/pub"];
@@ -36,17 +35,14 @@ const PubHome = () => {
       <PubHero />
       <ThreeDoors />
       <SnacksStrip />
-      <section className="bg-[hsl(var(--pub-oxblood-deep))] py-20 px-6 text-center text-[hsl(var(--pub-cream))]">
-        <div className="mx-auto max-w-2xl">
-          <PullQuoteSerif eyebrow="8ish" onLight={false}>
-            Lunch runs into dinner. Dinner runs into the night.
-          </PullQuoteSerif>
-          <div className="mt-2 flex justify-center gap-4">
-            <AccentButton to="/pub/food">See the food</AccentButton>
-            <AccentButton to="/pub/drink" variant="ghost">See the drink</AccentButton>
-          </div>
-        </div>
-      </section>
+      <QuoteScene
+        eyebrow="8ish"
+        ctaLabel="See the food"
+        ctaTo="/pub/food"
+        align="center"
+      >
+        Lunch runs into dinner. Dinner runs into the night.
+      </QuoteScene>
       <Chalkboard />
       <PinnedSpecials />
       <DoorSignHours />

@@ -6,9 +6,7 @@ import { blackBearMenu, bnbMenu, countryPubMenu, type Menu } from "@/data/menus"
 import SecretGestureHost, { type SecretVariant } from "@/components/secrets/SecretGestureHost";
 import { CBSeo } from "@/components/seo/CBSeo";
 import CBFAQ from "@/components/seo/CBFAQ";
-import PullQuoteSerif from "@/components/brand2026/PullQuoteSerif";
-import AccentButton from "@/components/brand2026/AccentButton";
-import AccentRule from "@/components/brand2026/AccentRule";
+import QuoteScene from "@/components/brand2026/QuoteScene";
 import {
   restaurantSchema,
   breadcrumbSchema,
@@ -66,16 +64,13 @@ export const CountryHome = () => (
     schemaKind="hotel"
     cmsPage="country"
   >
-    <section className="mx-auto max-w-3xl px-6 pb-20">
-      <PullQuoteSerif eyebrow="Since 1500-and-something">
-        Older than your grandmother. Twice as much fun.
-      </PullQuoteSerif>
-      <AccentRule width="w-16" className="mb-8" />
-      <div className="flex flex-wrap gap-4">
-        <AccentButton to="/country/rooms">Book a room</AccentButton>
-        <AccentButton to="/pub" variant="ghost">Visit the pub</AccentButton>
-      </div>
-    </section>
+    <QuoteScene
+      eyebrow="Since 1500-and-something"
+      ctaLabel="Book a room"
+      ctaTo="/country/rooms"
+    >
+      Older than your grandmother. Twice as much fun.
+    </QuoteScene>
   </PropertyPage>
 );
 // Country pub pages retired — see /pub enclave at src/pages/pub/*
@@ -91,13 +86,13 @@ export const CountryRooms = () =>
       schemaKind="hotel"
       cmsPage="country/rooms"
     >
-      <section className="mx-auto max-w-3xl px-6 pb-16">
-        <PullQuoteSerif eyebrow="The 90s">
-          Many memories. No evidence.
-        </PullQuoteSerif>
-        <AccentRule width="w-16" className="mb-8" />
-        <AccentButton to="/country/rooms/types">Pick your character</AccentButton>
-      </section>
+      <QuoteScene
+        eyebrow="The 90s"
+        ctaLabel="Pick your character"
+        ctaTo="/country/rooms/types"
+      >
+        Many memories. No evidence.
+      </QuoteScene>
     </PropertyPage>
   );
 export const CountryRoomTypes = () =>
@@ -188,16 +183,13 @@ export const TownHome = () => (
     schemaKind="hotel"
     cmsPage="town"
   >
-    <section className="mx-auto max-w-3xl px-6 pb-20">
-      <PullQuoteSerif eyebrow="You look like trouble">
-        Velvet. Mirror. Marble. The townhouse where the rules loosen.
-      </PullQuoteSerif>
-      <AccentRule width="w-16" className="mb-8" />
-      <div className="flex flex-wrap gap-4">
-        <AccentButton to="/town/rooms">Book a room</AccentButton>
-        <AccentButton to="/town/food" variant="ghost">See the kitchens</AccentButton>
-      </div>
-    </section>
+    <QuoteScene
+      eyebrow="You look like trouble"
+      ctaLabel="Book a room"
+      ctaTo="/town/rooms"
+    >
+      Velvet. Mirror. Marble. The townhouse where the rules loosen.
+    </QuoteScene>
   </PropertyPage>
 );
 export const TownFood = () =>
@@ -289,13 +281,13 @@ export const TownRooms = () =>
       faqKey="/town/rooms"
       cmsPage="town/rooms"
     >
-      <section className="mx-auto max-w-3xl px-6 pb-16">
-        <PullQuoteSerif eyebrow="Do not disturb">
-          Late checkout strongly advised.
-        </PullQuoteSerif>
-        <AccentRule width="w-16" className="mb-8" />
-        <AccentButton to="/town/rooms/types">Pick your character</AccentButton>
-      </section>
+      <QuoteScene
+        eyebrow="Do not disturb"
+        ctaLabel="Pick your character"
+        ctaTo="/town/rooms/types"
+      >
+        Late checkout strongly advised.
+      </QuoteScene>
     </PropertyPage>
   );
 export const TownRoomTypes = () =>
