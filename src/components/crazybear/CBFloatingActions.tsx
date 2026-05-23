@@ -68,14 +68,21 @@ const CBFloatingActions: React.FC = () => {
   const hidden = useHideOnScrollDown();
   if (isHidden(pathname)) return null;
 
+  const property: 'town' | 'country' | null = pathname.startsWith('/town')
+    ? 'town'
+    : pathname.startsWith('/country') || pathname.startsWith('/pub') || pathname.startsWith('/karaoke')
+    ? 'country'
+    : null;
+
   return (
     <>
       {/* Flickering button — hidden for now, revisit later */}
       {false && <CBFlickerButton hidden={hidden} bottomClass="bottom-[23rem] md:bottom-[22rem]" />}
-      <CBFloatingButton label="Curious?" to="/curious" bottomClass="bottom-[19rem] md:bottom-64" hidden={hidden} />
-      <CBFloatingButton label="Book" to="/book" bottomClass="bottom-[15rem] md:bottom-40" hidden={hidden} />
+      <CBFloatingButton label="Curious?" to="/curious" bottomClass="bottom-[19rem] md:bottom-64" hidden={hidden} property={property} />
+      <CBFloatingButton label="Book" to="/book" bottomClass="bottom-[15rem] md:bottom-40" hidden={hidden} property={property} />
     </>
   );
 };
+
 
 export default CBFloatingActions;
