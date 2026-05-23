@@ -39,7 +39,7 @@ const pageSEOData: Record<string, Partial<SEOData>> = {
   },
   '/cocktails': {
     title: 'Craft Cocktails & Premium Spirits | Croft Common',
-    description: 'Experience expertly crafted cocktails and premium spirits at Croft Common. Our skilled bartenders create exceptional drinks in a vibrant atmosphere.',
+    description: 'Expertly crafted cocktails and proper spirits at Croft Common. Stirred with intent, served without apology.',
     keywords: [...baseKeywords, 'cocktails', 'spirits', 'bartender', 'drinks', 'evening', 'nightlife'],
     type: 'restaurant'
   },
