@@ -13,16 +13,14 @@ const PROPERTY_ACCENTS = {
 } as const;
 
 interface CBTopNavProps {
-  /**
-   * Hero tone the nav sits on top of, BEFORE the user scrolls.
-   * "light" = white text (use on dark / photographic heroes — the Crazy Bear default).
-   * "dark"  = black text (use on bright / white backgrounds — rare).
-   *
-   * Legibility is guaranteed on ANY background via the frosted backdrop
-   * strip + dual text-shadow primitive below — the tone is just the
-   * aesthetic baseline, not a contrast guess.
-   */
   tone?: "light" | "dark";
+  /**
+   * Force the property wordmark ("Crazy Bear Town" / "Crazy Bear Country")
+   * in the header without activating the tinted accent backdrop. Used by
+   * sub-enclaves like /town/karaoke and /pub that sit under a property
+   * but keep their own visual theming.
+   */
+  wordmark?: "town" | "country";
 }
 
 const SCROLL_SOLID_THRESHOLD = 60;
