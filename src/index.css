@@ -96,8 +96,8 @@
 
     /* Town — glamour, after-hours, townhouse */
     --cb-town-ink: 200 18% 8%;            /* Moonless Night */
-    --cb-town-accent: 4 70% 40%;           /* Red Inferno */
-    --cb-town-accent-soft: 4 55% 28%;
+    --cb-town-accent: 0 100% 15%;          /* Red Inferno #4E0000 */
+    --cb-town-accent-soft: 0 100% 11%;     /* deeper companion */
     --cb-town-aubergine: 290 35% 18%;      /* Aubergine Gleam */
     --cb-town-clay: 22 55% 48%;            /* Potters Clay */
     --cb-town-coffee: 25 35% 22%;          /* Coffee Bean */
