@@ -100,7 +100,7 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
           textShadow: scrolled ? "none" : textShadow,
         }}
       >
-        <Link to={accent ? `/${propertyKey}` : "/"} className="flex items-center gap-3 md:gap-4 group" aria-label={accent ? `Crazy Bear ${accent.label} home` : "Crazy Bear home"}>
+        <Link to="/" className="flex items-center gap-3 md:gap-4 group" aria-label={accent ? `Crazy Bear ${accent.label} home` : "Crazy Bear home"}>
           {accent ? (
             <span
               aria-hidden="true"
