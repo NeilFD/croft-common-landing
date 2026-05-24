@@ -260,6 +260,55 @@ const SlotEditor = ({ slot }: { slot: AssetSlot }) => {
     await refresh();
   };
 
+  // Seed bundled defaults into cms_images as draft rows so they can be
+  // individually deleted, reordered, or edited. Returns inserted rows.
+  const seedDefaultsAsDrafts = async (): Promise<DbRow[]> => {
+    const payload = slot.defaults.map((d, i) => ({
+      page: slot.page,
+      slot: slot.slot,
+      section: slot.slot,
+      image_url: d.src,
+      alt_text: d.alt ?? null,
+      caption: d.caption ?? null,
+      sort_order: i,
+      published: false,
+      is_draft: true,
+    }));
+    if (payload.length === 0) return [];
+    const { data, error } = await (supabase as any)
+      .from("cms_images")
+      .insert(payload)
+      .select("id, page, slot, section, image_url, alt_text, caption, sort_order, published, is_draft");
+    if (error) {
+      toast.error(error.message);
+      return [];
+    }
+    return (data as DbRow[]) ?? [];
+  };
+
+  const customiseSlides = async () => {
+    const seeded = await seedDefaultsAsDrafts();
+    if (seeded.length === 0) return;
+    await refresh();
+    window.dispatchEvent(new CustomEvent("draftContentChanged", { detail: { page: slot.page, section: slot.slot } }));
+    toast.success("Slides ready to edit — publish to go live");
+  };
+
+  const removeDefaultAt = async (defaultIndex: number) => {
+    if (!confirm("Remove this slide? Publish to apply.")) return;
+    const seeded = await seedDefaultsAsDrafts();
+    const target = seeded.find((r) => r.sort_order === defaultIndex);
+    if (!target) {
+      await refresh();
+      return;
+    }
+    const { error } = await (supabase as any).from("cms_images").delete().eq("id", target.id);
+    if (error) return toast.error(error.message);
+    await refresh();
+    window.dispatchEvent(new CustomEvent("draftContentChanged", { detail: { page: slot.page, section: slot.slot } }));
+    toast.success("Slide removed — publish to apply");
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0">
@@ -285,6 +334,11 @@ const SlotEditor = ({ slot }: { slot: AssetSlot }) => {
               {slot.kind === "hero" ? "Replace" : "Add"}
             </span>
           </label>
+          {showingDefaults && slot.kind !== "hero" && (
+            <Button size="sm" variant="outline" onClick={customiseSlides}>
+              Customise slides
+            </Button>
+          )}
           {hasDrafts && (
             <>
               <Button size="sm" variant="outline" onClick={discardDrafts}>Discard drafts</Button>
@@ -350,6 +404,19 @@ const SlotEditor = ({ slot }: { slot: AssetSlot }) => {
                       </Button>
                     </div>
                   </>
+                )}
+                {isDefault && slot.kind !== "hero" && (
+                  <div className="flex items-center gap-1">
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="h-7 w-7 ml-auto"
+                      title="Remove slide"
+                      onClick={() => removeDefaultAt(i)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
                 )}
               </div>
               );
