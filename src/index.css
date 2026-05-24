@@ -789,9 +789,8 @@ h1 {
 
 /* ── Branded chrome: header + footer inside a property scope ──────── */
 
-/* Thin accent bar pinned to the very top, riding above the fixed nav
- * strip. Always uses the raw accent (Red / Pesto) since it's a fill,
- * not text. Only renders inside a [data-property] subtree. */
+/* Thin white hairline pinned above the (now-tinted) fixed nav for crisp
+ * separation. Only renders inside a [data-property] subtree. */
 [data-property="town"] .cb-property-scope::before,
 [data-property="country"] .cb-property-scope::before,
 .cb-property-scope[data-property]::before {
@@ -800,28 +799,40 @@ h1 {
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  background: hsl(var(--cb-accent));
+  height: 1px;
+  background: hsl(0 0% 100% / 0.25);
   z-index: 40;
   pointer-events: none;
 }
 
-/* Footer chrome — CBFooter markup left untouched; we just retint the
- * hairlines it already renders and warm up the link hover. */
+/* Header chrome — tint the sticky nav, its dropdown panels, and the
+ * full-screen mobile menu drawer with the scope accent. */
+[data-property] nav.sticky,
+[data-property] nav.sticky .bg-black,
+[data-property] .fixed.inset-0.bg-black {
+  background: hsl(var(--cb-accent)) !important;
+}
+[data-property] nav.sticky {
+  border-bottom-color: hsl(0 0% 100% / 0.15) !important;
+}
+
+/* Footer chrome — tint the full footer surface; use a thin white
+ * hairline at the top to separate from page content above. */
 [data-property] footer {
-  border-top-color: hsl(var(--cb-accent)) !important;
-  border-top-width: 3px;
+  background: hsl(var(--cb-accent)) !important;
+  border-top-color: hsl(0 0% 100% / 0.2) !important;
+  border-top-width: 1px;
 }
 [data-property] footer .border-t.border-white\/15 {
-  border-top-color: hsl(var(--cb-accent) / 0.35) !important;
+  border-top-color: hsl(0 0% 100% / 0.2) !important;
 }
 [data-property] footer a:hover,
 [data-property] footer button:hover {
   color: hsl(var(--cb-accent-on-dark));
 }
-/* Section eyebrows in footer pick up a small accent square bullet.
- * Scoped to mb-6 / mb-3 variants so the bottom-bar utility links
- * (no margin) stay clean. */
+/* Section eyebrows in footer pick up a small white square bullet on the
+ * tinted background. Scoped to mb-6 / mb-3 variants so bottom-bar utility
+ * links (no margin) stay clean. */
 [data-property] footer p.font-cb-mono.uppercase.mb-6,
 [data-property] footer p.font-cb-mono.uppercase.mb-3 {
   position: relative;
@@ -835,7 +846,7 @@ h1 {
   top: 0.5em;
   width: 6px;
   height: 6px;
-  background: hsl(var(--cb-accent));
+  background: hsl(0 0% 100%);
 }
 
 /* Italic serif pull-quote for editorial moments. On the dark global
