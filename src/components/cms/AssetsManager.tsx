@@ -387,6 +387,15 @@ const SlotEditor = ({ slot }: { slot: AssetSlot }) => {
               Customise slides
             </Button>
           )}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => autoFillAltText("missing")}
+            disabled={autoAltBusy}
+            title="Generate alt text for any images without it"
+          >
+            {autoAltBusy ? "Writing alt text…" : "AI alt text"}
+          </Button>
           {hasDrafts && (
             <>
               <Button size="sm" variant="outline" onClick={discardDrafts}>Discard drafts</Button>
