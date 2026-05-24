@@ -90,10 +90,10 @@ const CBTopNav = ({ tone = "light", wordmark }: CBTopNavProps) => {
           property accent inside /town and /country scopes. */}
       <div
         aria-hidden="true"
-        className={`pointer-events-none fixed top-0 left-0 right-0 z-20 transition-colors duration-200 ${accent ? "backdrop-blur-md border-b border-white/10" : stripCls}`}
+        className={`pointer-events-none fixed top-0 left-0 right-0 z-20 transition-colors duration-200 ${accent && tintBackdrop ? "backdrop-blur-md border-b border-white/10" : stripCls}`}
         style={{
           height: "calc(env(safe-area-inset-top) + 96px)",
-          backgroundColor: accent
+          backgroundColor: accent && tintBackdrop
             ? scrolled
               ? `${accent.color}8C`
               : `${accent.color}4D`
