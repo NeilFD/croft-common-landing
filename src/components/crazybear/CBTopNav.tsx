@@ -32,6 +32,9 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
   const [loginOpen, setLoginOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const propertyCtx = useOptionalProperty();
+  const propertyKey = propertyCtx?.property as keyof typeof PROPERTY_ACCENTS | undefined;
+  const accent = propertyKey ? PROPERTY_ACCENTS[propertyKey] : null;
 
   // Scroll-aware solidification (Apple / Hermès pattern).
   useEffect(() => {
