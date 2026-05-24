@@ -175,8 +175,8 @@ export const TownHome = () => (
   <PropertyPage
     title="Crazy Bear Town"
     eyebrow="Beaconsfield, Buckinghamshire"
-    body="Townhouse glamour, almost in London. Three restaurants, crisp cocktails, signature bedrooms and a hidden pool."
-    seoDescription="Crazy Bear Town. Beaconsfield townhouse. Three restaurants, cocktails, signature rooms, hidden pool."
+    body="Velvet. Mirror. Marble.\n\nA townhouse just outside London built on late nights, sharp cocktails and bad ideas that usually make good stories. \n\nThree restaurants. Signature bedrooms. A hidden pool. Karaoke somewhere downstairs. Breakfast somewhere much later.\n\nNineteen years in and still refusing to behave."
+    seoDescription="Crazy Bear Town. Velvet, mirror, marble. A townhouse just outside London built on late nights and good stories. Restaurants, rooms, pool and karaoke."
     faqKey="/town"
     schemaKind="hotel"
     cmsPage="town"

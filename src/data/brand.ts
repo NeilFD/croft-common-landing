@@ -14,7 +14,7 @@ export const PROPERTIES = {
     key: "town" as const,
     name: "Crazy Bear Town",
     location: "Beaconsfield",
-    tagline: "Townhouse glamour, almost in London.",
+    tagline: "Velvet. Mirror. Marble. A townhouse just outside London built on late nights and good stories.",
     basePath: "/town",
   },
 };
