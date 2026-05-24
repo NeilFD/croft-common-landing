@@ -116,7 +116,7 @@ const CBTopNav = ({ tone = "light", wordmark }: CBTopNavProps) => {
           />
           {accent && (
             <span
-              className="font-display uppercase leading-none text-[15px] md:text-[18px] tracking-[0.08em] text-white"
+              className={`font-display uppercase leading-none text-[15px] md:text-[18px] tracking-[0.08em] ${isLight ? "text-white" : "text-foreground"}`}
               style={{ textShadow: "none" }}
             >
               Crazy Bear <span className="block md:inline">{accent.label}</span>
