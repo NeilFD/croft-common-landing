@@ -94,7 +94,7 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
           backgroundColor: accent
             ? scrolled
               ? accent.color
-              : `${accent.color}E6`
+              : `${accent.color}4D`
             : undefined,
         }}
       />
