@@ -405,6 +405,19 @@ const SlotEditor = ({ slot }: { slot: AssetSlot }) => {
                     </div>
                   </>
                 )}
+                {isDefault && slot.kind !== "hero" && (
+                  <div className="flex items-center gap-1">
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="h-7 w-7 ml-auto"
+                      title="Remove slide"
+                      onClick={() => removeDefaultAt(i)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
               </div>
               );
             })}
