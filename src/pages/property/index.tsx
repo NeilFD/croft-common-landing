@@ -58,8 +58,8 @@ export const CountryHome = () => (
   <PropertyPage
     title="Crazy Bear Country"
     eyebrow="Stadhampton, Oxfordshire"
-    body="The original Crazy Bear. A 16th century inn with rooms, restaurants and a country pub spirit that refuses to behave."
-    seoDescription="Crazy Bear Country. 16th century inn in Stadhampton, Oxfordshire. Rooms, restaurants, a pub that refuses to behave."
+    body="Long lunches. Loud dinners. Hazy summer evenings that somehow become 2am.\n\nThe original Crazy Bear. A sixteenth-century Oxfordshire pub with rooms, fire-cooked food, Thai spice, spilled wine and stories in every corner. \n\nLocals. Old souls. London escapees. Dogs under tables. Music in the garden. One more bottle nobody needed.\n\nLess polished countryside retreat. More rebellious village pub with very good taste."
+    seoDescription="Crazy Bear Country. A sixteenth-century Oxfordshire pub with rooms, fire-cooked food, Thai spice, spilled wine and stories in every corner."
     faqKey="/country"
     schemaKind="hotel"
     cmsPage="country"
