@@ -183,7 +183,7 @@ export const TownHome = () => (
   >
     <QuoteScene
       headline="You look like trouble."
-      body="Velvet. Mirror. Marble. The townhouse where the rules loosen."
+      body="Velvet. Mirror. Marble. The townhouse where the rules were never set in stone."
       ctaLabel="Book a room"
       ctaTo="/town/rooms"
     />
