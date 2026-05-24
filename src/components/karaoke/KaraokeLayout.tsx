@@ -9,7 +9,7 @@ import "@/styles/karaoke.css";
  */
 const KaraokeLayout = () => (
   <div className="karaoke-theme min-h-screen flex flex-col">
-    <CBTopNav tone="dark" />
+    <CBTopNav tone="dark" wordmark="town" />
     <main className="flex-1">
       <Outlet />
     </main>
