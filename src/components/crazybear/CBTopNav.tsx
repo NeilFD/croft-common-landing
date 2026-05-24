@@ -13,28 +13,30 @@ const PROPERTY_ACCENTS = {
 } as const;
 
 interface CBTopNavProps {
-  /**
-   * Hero tone the nav sits on top of, BEFORE the user scrolls.
-   * "light" = white text (use on dark / photographic heroes — the Crazy Bear default).
-   * "dark"  = black text (use on bright / white backgrounds — rare).
-   *
-   * Legibility is guaranteed on ANY background via the frosted backdrop
-   * strip + dual text-shadow primitive below — the tone is just the
-   * aesthetic baseline, not a contrast guess.
-   */
   tone?: "light" | "dark";
+  /**
+   * Force the property wordmark ("Crazy Bear Town" / "Crazy Bear Country")
+   * in the header without activating the tinted accent backdrop. Used by
+   * sub-enclaves like /town/karaoke and /pub that sit under a property
+   * but keep their own visual theming.
+   */
+  wordmark?: "town" | "country";
 }
 
 const SCROLL_SOLID_THRESHOLD = 60;
 
-const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
+const CBTopNav = ({ tone = "light", wordmark }: CBTopNavProps) => {
   const isLight = tone === "light";
   const [loginOpen, setLoginOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const propertyCtx = useOptionalProperty();
-  const propertyKey = propertyCtx?.property as keyof typeof PROPERTY_ACCENTS | undefined;
+  const propertyKey = (wordmark ?? (propertyCtx?.property as keyof typeof PROPERTY_ACCENTS | undefined)) as keyof typeof PROPERTY_ACCENTS | undefined;
   const accent = propertyKey ? PROPERTY_ACCENTS[propertyKey] : null;
+  // Only tint the backdrop strip when the property is active via context
+  // (i.e. /town and /country shells). Sub-enclaves passing `wordmark` keep
+  // their own theming and just get the wordmark label.
+  const tintBackdrop = !!propertyCtx;
 
   // Scroll-aware solidification (Apple / Hermès pattern).
   useEffect(() => {
@@ -88,10 +90,10 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
           property accent inside /town and /country scopes. */}
       <div
         aria-hidden="true"
-        className={`pointer-events-none fixed top-0 left-0 right-0 z-20 transition-colors duration-200 ${accent ? "backdrop-blur-md border-b border-white/10" : stripCls}`}
+        className={`pointer-events-none fixed top-0 left-0 right-0 z-20 transition-colors duration-200 ${accent && tintBackdrop ? "backdrop-blur-md border-b border-white/10" : stripCls}`}
         style={{
           height: "calc(env(safe-area-inset-top) + 96px)",
-          backgroundColor: accent
+          backgroundColor: accent && tintBackdrop
             ? scrolled
               ? `${accent.color}8C`
               : `${accent.color}4D`
@@ -114,7 +116,7 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
           />
           {accent && (
             <span
-              className="font-display uppercase leading-none text-[15px] md:text-[18px] tracking-[0.08em] text-white"
+              className={`font-display uppercase leading-none text-[15px] md:text-[18px] tracking-[0.08em] ${isLight ? "text-white" : "text-foreground"}`}
               style={{ textShadow: "none" }}
             >
               Crazy Bear <span className="block md:inline">{accent.label}</span>
