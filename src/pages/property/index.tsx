@@ -86,7 +86,7 @@ export const CountryRooms = () =>
       cmsPage="country/rooms"
     >
       <QuoteScene
-        headline="Many memories. No evidence."
+        headline={<>So many memories.<br />No evidence.</>}
         body="Theatrical. Warm. Never the same twice. Sleep where the stories happened."
         ctaLabel="Pick your character"
         ctaTo="/country/rooms/types"
