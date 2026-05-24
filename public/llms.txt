@@ -13,7 +13,7 @@
 
 ## Crazy Bear Country, Stadhampton
 
-- [Country](/country): 16th century inn in Stadhampton, Oxfordshire.
+- [Country](/country): A sixteenth-century Oxfordshire pub with rooms, fire-cooked food, Thai spice, spilled wine and stories in every corner.
 - [Country Food](/country/food): The kitchens, the pub, the menus.
 - [Country Menus](/country/food/menus): Every menu, in one place.
 - [Country Afternoon Tea](/country/food/afternoon-tea): Cake stand. Cocktail optional.

@@ -67,7 +67,7 @@ export const hotelSchema = (property: "town" | "country") => ({
   description:
     property === "town"
       ? "Velvet. Mirror. Marble. A townhouse just outside London built on late nights and good stories. Three restaurants, signature bedrooms, hidden pool."
-      : "A 16th century inn in Stadhampton, Oxfordshire. Rooms, restaurants and a country pub spirit.",
+      : "A sixteenth-century Oxfordshire pub with rooms, fire-cooked food, Thai spice, spilled wine and stories in every corner.",
   address: addrFor(property),
   geo: geoFor(property),
   hasMap: mapFor(property),
