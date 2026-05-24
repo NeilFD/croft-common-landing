@@ -309,6 +309,54 @@ const SlotEditor = ({ slot }: { slot: AssetSlot }) => {
     toast.success("Slide removed — publish to apply");
   };
 
+  const [autoAltBusy, setAutoAltBusy] = useState(false);
+  const autoFillAltText = async (mode: "missing" | "all") => {
+    setAutoAltBusy(true);
+    try {
+      // Make sure we're working on real DB rows, not bundled defaults
+      let workingRows = display;
+      if (showingDefaults) {
+        const seeded = await seedDefaultsAsDrafts();
+        if (seeded.length === 0) return;
+        workingRows = seeded;
+      }
+      const targets = workingRows.filter((r) =>
+        mode === "all" ? true : !((r.alt_text ?? "").trim())
+      );
+      if (targets.length === 0) {
+        toast.info("Nothing to do — all images already have alt text");
+        return;
+      }
+      const context = `${slot.label} (${slot.page} ${slot.slot})`;
+      let ok = 0;
+      let fail = 0;
+      for (const r of targets) {
+        try {
+          const { data, error } = await supabase.functions.invoke("cms-alt-text", {
+            body: { imageUrl: r.image_url, context },
+          });
+          if (error) throw error;
+          const altText: string | undefined = (data as any)?.altText;
+          if (!altText) { fail++; continue; }
+          const { error: upErr } = await (supabase as any)
+            .from("cms_images").update({ alt_text: altText }).eq("id", r.id);
+          if (upErr) throw upErr;
+          ok++;
+        } catch (e: any) {
+          console.error("alt-text failed", e);
+          fail++;
+        }
+      }
+      await refresh();
+      window.dispatchEvent(new CustomEvent("draftContentChanged", { detail: { page: slot.page, section: slot.slot } }));
+      if (ok && !fail) toast.success(`Alt text added to ${ok} image${ok === 1 ? "" : "s"}`);
+      else if (ok && fail) toast.warning(`${ok} done, ${fail} failed`);
+      else toast.error("Alt text generation failed");
+    } finally {
+      setAutoAltBusy(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0">
