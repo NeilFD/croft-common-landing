@@ -328,12 +328,30 @@ const SlotEditor = ({ slot }: { slot: AssetSlot }) => {
         return;
       }
       const context = `${slot.label} (${slot.page} ${slot.slot})`;
+
+      const toDataUrl = async (url: string): Promise<string> => {
+        // Already a data URL — pass straight through
+        if (url.startsWith("data:")) return url;
+        // Resolve relative paths (bundled Vite assets) against the current origin
+        const absolute = /^https?:\/\//i.test(url) ? url : new URL(url, window.location.origin).toString();
+        const res = await fetch(absolute);
+        if (!res.ok) throw new Error(`Fetch ${absolute} -> ${res.status}`);
+        const blob = await res.blob();
+        return await new Promise((resolve, reject) => {
+          const fr = new FileReader();
+          fr.onload = () => resolve(fr.result as string);
+          fr.onerror = () => reject(fr.error);
+          fr.readAsDataURL(blob);
+        });
+      };
+
       let ok = 0;
       let fail = 0;
       for (const r of targets) {
         try {
+          const imageUrl = await toDataUrl(r.image_url);
           const { data, error } = await supabase.functions.invoke("cms-alt-text", {
-            body: { imageUrl: r.image_url, context },
+            body: { imageUrl, context },
           });
           if (error) throw error;
           const altText: string | undefined = (data as any)?.altText;
