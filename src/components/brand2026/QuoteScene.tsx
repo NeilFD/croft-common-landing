@@ -26,7 +26,7 @@ const QuoteScene = ({ headline, body, ctaLabel, ctaTo, align = "left" }: Props) 
       }`}
     >
       <h2
-        className={`font-serif italic text-white leading-[0.95] tracking-tight
+        className={`font-serif text-white leading-[0.95] tracking-tight
           text-[clamp(2.5rem,6.5vw,6rem)]
           ${align === "center" ? "max-w-4xl mx-auto" : "max-w-4xl"}`}
       >
