@@ -3,8 +3,14 @@ import { Suspense, lazy, useEffect, useState } from "react";
 import bearMark from "@/assets/crazy-bear-mark.png";
 import CBNavOverlay from "@/components/crazybear/CBNavOverlay";
 import { PRIMARY_CTAS } from "@/data/cbSiteMap";
+import { useOptionalProperty } from "@/contexts/PropertyContext";
 const CBMemberNavItems = lazy(() => import("@/components/crazybear/CBMemberNavItems"));
 const CBMemberLoginModal = lazy(() => import("@/components/crazybear/CBMemberLoginModal"));
+
+const PROPERTY_ACCENTS = {
+  town: { color: "#4E0000", label: "Town" },
+  country: { color: "#063F47", label: "Country" },
+} as const;
 
 interface CBTopNavProps {
   /**
@@ -26,6 +32,9 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
   const [loginOpen, setLoginOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const propertyCtx = useOptionalProperty();
+  const propertyKey = propertyCtx?.property as keyof typeof PROPERTY_ACCENTS | undefined;
+  const accent = propertyKey ? PROPERTY_ACCENTS[propertyKey] : null;
 
   // Scroll-aware solidification (Apple / Hermès pattern).
   useEffect(() => {
@@ -91,12 +100,43 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
           textShadow: scrolled ? "none" : textShadow,
         }}
       >
-        <Link to="/" className="flex items-center group" aria-label="Crazy Bear home">
-          <img
-            src={bearMark}
-            alt="Crazy Bear"
-            className={`h-12 w-12 md:h-14 md:w-14 ${markFilter}`}
-          />
+        <Link to={accent ? `/${propertyKey}` : "/"} className="flex items-center gap-3 md:gap-4 group" aria-label={accent ? `Crazy Bear ${accent.label} home` : "Crazy Bear home"}>
+          {accent ? (
+            <span
+              aria-hidden="true"
+              className="block h-12 w-12 md:h-14 md:w-14"
+              style={{
+                backgroundColor: accent.color,
+                WebkitMaskImage: `url(${bearMark})`,
+                maskImage: `url(${bearMark})`,
+                WebkitMaskSize: "contain",
+                maskSize: "contain",
+                WebkitMaskRepeat: "no-repeat",
+                maskRepeat: "no-repeat",
+                WebkitMaskPosition: "center",
+                maskPosition: "center",
+              }}
+            />
+          ) : (
+            <img
+              src={bearMark}
+              alt="Crazy Bear"
+              className={`h-12 w-12 md:h-14 md:w-14 ${markFilter}`}
+            />
+          )}
+          {accent && (
+            <span
+              className="font-display uppercase leading-none text-[15px] md:text-[18px] tracking-[0.08em]"
+              style={{
+                color: accent.color,
+                textShadow: scrolled
+                  ? "0 0 1px rgba(255,255,255,0.35)"
+                  : "0 1px 2px rgba(255,255,255,0.55), 0 0 14px rgba(255,255,255,0.35)",
+              }}
+            >
+              Crazy Bear <span className="block md:inline">{accent.label}</span>
+            </span>
+          )}
         </Link>
         <nav className="flex items-center gap-3 sm:gap-5 md:gap-7">
           <Link
