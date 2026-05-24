@@ -3,8 +3,14 @@ import { Suspense, lazy, useEffect, useState } from "react";
 import bearMark from "@/assets/crazy-bear-mark.png";
 import CBNavOverlay from "@/components/crazybear/CBNavOverlay";
 import { PRIMARY_CTAS } from "@/data/cbSiteMap";
+import { useOptionalProperty } from "@/contexts/PropertyContext";
 const CBMemberNavItems = lazy(() => import("@/components/crazybear/CBMemberNavItems"));
 const CBMemberLoginModal = lazy(() => import("@/components/crazybear/CBMemberLoginModal"));
+
+const PROPERTY_ACCENTS = {
+  town: { color: "#4E0000", label: "Town" },
+  country: { color: "#063F47", label: "Country" },
+} as const;
 
 interface CBTopNavProps {
   /**
