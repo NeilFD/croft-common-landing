@@ -84,12 +84,18 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
   return (
     <>
       {/* Fixed legibility strip — sits behind the nav across the full width.
-          Frosted when over the hero, solid once scrolled. */}
+          Frosted when over the hero, solid once scrolled. Tinted with the
+          property accent inside /town and /country scopes. */}
       <div
         aria-hidden="true"
-        className={`pointer-events-none fixed top-0 left-0 right-0 z-20 transition-colors duration-200 ${stripCls}`}
+        className={`pointer-events-none fixed top-0 left-0 right-0 z-20 transition-colors duration-200 ${accent ? "backdrop-blur-md border-b border-white/10" : stripCls}`}
         style={{
           height: "calc(env(safe-area-inset-top) + 96px)",
+          backgroundColor: accent
+            ? scrolled
+              ? accent.color
+              : `${accent.color}E6`
+            : undefined,
         }}
       />
       <header
