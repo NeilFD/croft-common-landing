@@ -100,12 +100,38 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
           textShadow: scrolled ? "none" : textShadow,
         }}
       >
-        <Link to="/" className="flex items-center group" aria-label="Crazy Bear home">
-          <img
-            src={bearMark}
-            alt="Crazy Bear"
-            className={`h-12 w-12 md:h-14 md:w-14 ${markFilter}`}
-          />
+        <Link to={accent ? `/${propertyKey}` : "/"} className="flex items-center gap-3 md:gap-4 group" aria-label={accent ? `Crazy Bear ${accent.label} home` : "Crazy Bear home"}>
+          {accent ? (
+            <span
+              aria-hidden="true"
+              className="block h-12 w-12 md:h-14 md:w-14"
+              style={{
+                backgroundColor: accent.color,
+                WebkitMaskImage: `url(${bearMark})`,
+                maskImage: `url(${bearMark})`,
+                WebkitMaskSize: "contain",
+                maskSize: "contain",
+                WebkitMaskRepeat: "no-repeat",
+                maskRepeat: "no-repeat",
+                WebkitMaskPosition: "center",
+                maskPosition: "center",
+              }}
+            />
+          ) : (
+            <img
+              src={bearMark}
+              alt="Crazy Bear"
+              className={`h-12 w-12 md:h-14 md:w-14 ${markFilter}`}
+            />
+          )}
+          {accent && (
+            <span
+              className="font-display uppercase leading-none text-[15px] md:text-[18px] tracking-[0.08em]"
+              style={{ color: accent.color, textShadow: "none" }}
+            >
+              Crazy Bear <span className="block md:inline">{accent.label}</span>
+            </span>
+          )}
         </Link>
         <nav className="flex items-center gap-3 sm:gap-5 md:gap-7">
           <Link
