@@ -127,7 +127,12 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
           {accent && (
             <span
               className="font-display uppercase leading-none text-[15px] md:text-[18px] tracking-[0.08em]"
-              style={{ color: accent.color, textShadow: "none" }}
+              style={{
+                color: accent.color,
+                textShadow: scrolled
+                  ? "0 0 1px rgba(255,255,255,0.35)"
+                  : "0 1px 2px rgba(255,255,255,0.55), 0 0 14px rgba(255,255,255,0.35)",
+              }}
             >
               Crazy Bear <span className="block md:inline">{accent.label}</span>
             </span>
