@@ -1,33 +1,65 @@
-# Enable removing carousel images on default-backed slots
+## Goal
 
-## Problem
+Make the **header (PropertyNavShell)** and **footer (CBFooter)** fully tinted to the scope colour while the user is inside `/town` or `/country`:
 
-In `/management/cms/images` → Town Home → carousel, the slot is showing **"Using bundled defaults"**. Bundled defaults come from `cmsImageRegistry` (code), not the database, so the per-tile delete button and reorder buttons are hidden (`AssetsManager.tsx` lines 321-353 gate on `!isDefault`).
+- `/town` → header + footer background = **Red Inferno `#4E0000`**
+- `/country` → header + footer background = **Abyssal Teal `#063F47`**
 
-Today, to remove one slide you'd have to upload 11 replacements first. No good.
+Global shell, `/`, `/karaoke`, `/house-rules`, Crazy Bear pages stay pure black/white.
 
-## Fix
+## Approach (CSS-only, no component rewrites)
 
-Add a one-click **"Customise slides"** action on any slot that is currently rendering bundled defaults. It seeds the DB with the bundled defaults as draft rows, after which all existing controls (delete, reorder, alt text, publish) work normally.
+Both components currently hardcode `bg-black text-white`. CBFooter is shared by every page, so we cannot just change the className. Instead, override via property-scope CSS in `src/index.css` — same pattern as the existing 3px accent strip.
 
-### Changes
+### Token updates
 
-**`src/components/cms/AssetsManager.tsx`**
+- `--cb-town-accent` → `0 100% 15%` (#4E0000, exact)
+- `--cb-town-accent-soft` → `0 100% 11%` (deeper companion for hover)
+- `--cb-country-accent` → `189 85% 15%` (#063F47, exact, replaces Pesto)
+- `--cb-country-accent-soft` → `189 85% 11%`
 
-1. Add a `seedDefaultsAsDrafts(slot)` helper that inserts one `cms_images` row per `slot.defaults` entry with `is_draft: true`, `published: false`, preserving order via `sort_order`.
-2. In the `SlotEditor` header, when `showingDefaults` is true and `slot.kind !== "hero"` (carousel/gallery), render a **"Customise slides"** button next to Add. Clicking it seeds drafts then refreshes — the grid immediately shows the same 11 images but now with delete + reorder controls.
-3. Also surface a per-tile **Remove** button on default tiles: clicking it first seeds defaults as drafts, then deletes the chosen draft row in one flow (so the user can just hit the bin on slide #7 without thinking about seeding).
-4. After seeding, the existing **Publish** button (already visible when drafts exist) commits the new shorter list live. No new publish plumbing needed.
+### New scope rules
 
-### Out of scope
+```css
+/* Header */
+[data-property="town"] nav.sticky.bg-black,
+[data-property="country"] nav.sticky.bg-black {
+  background: hsl(var(--cb-accent)) !important;
+  border-bottom-color: hsl(0 0% 100% / 0.15) !important;
+}
+/* Mobile menu drawer + dropdown panels inside the header */
+[data-property] nav .bg-black { background: hsl(var(--cb-accent)) !important; }
+[data-property] .fixed.inset-0.bg-black { background: hsl(var(--cb-accent)) !important; }
 
-- No DB migration — `cms_images` already supports everything.
-- No changes to the public `/town` carousel renderer — it already prefers DB rows over bundled defaults.
-- Hero slots (single image) untouched — `Replace` already covers that case.
+/* Footer */
+[data-property] footer.bg-black {
+  background: hsl(var(--cb-accent)) !important;
+}
+```
 
-### User flow on /town carousel
+The existing 3px top accent strip becomes redundant against a fully-tinted header — remove it (or keep as a white hairline for separation; I'll keep it as a thin white 1px line above the nav for crispness).
 
-1. Open CMS → Assets → Town Home.
-2. Click the bin on any slide (or "Customise slides" first) → drafts get seeded, that slide is removed.
-3. Optionally reorder / delete more.
-4. Click **Publish** on the slot → live `/town` carousel updates.
+Hover states inside the header that currently flip to `bg-white text-black` stay as-is — white-on-red and white-on-teal read fine and give a nice inverted hit state.
+
+### Footer link hover
+
+Currently footer link hover uses `--cb-accent-on-dark` (Gold for Town, Copper for Country). On a Red Inferno background, gold still reads. On Abyssal Teal, copper still reads. Leaving both.
+
+### Hairlines
+
+Current rule sets footer top border to 3px in `--cb-accent`. With the whole footer now in that colour, switch the top border to `hsl(0 0% 100% / 0.2)` 1px so it separates cleanly from the page content above (which may be on white).
+
+## Files touched
+
+- `src/index.css` — 4 token value updates + ~6 new scope overrides + tweak existing footer border rule. No component edits.
+- `mem://design/brand-2026` + `mem://index.md` Core line — record Country accent = Abyssal Teal `#063F47`, Town accent = Red Inferno `#4E0000`, and that header+footer take the full accent fill inside `[data-property]` scopes.
+
+## Things I'm explicitly NOT touching
+
+- CBFooter.tsx / PropertyNavShell.tsx markup
+- Global shell, landing, karaoke, house-rules, Crazy Bear pages
+- Body type, hero imagery, button copy, gold/copper secondary accents
+
+## Risk note
+
+CBFooter is rendered on many pages. The override is gated by `[data-property]`, so it only activates inside Town/Country subtrees — no bleed elsewhere. I'll spot-check `/town`, `/country`, `/`, `/karaoke`, and a Crazy Bear page after applying.
