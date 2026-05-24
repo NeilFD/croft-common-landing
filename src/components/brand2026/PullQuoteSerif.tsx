@@ -1,7 +1,7 @@
 /**
  * BRAND 2026 — Editorial italic serif pull-quote.
  * Used sparingly for handwritten-feel moments lifted from the 2026 deck
- * ("You look like trouble", "8ish", "The 90s. Many memories. No evidence.").
+ * ("You look like trouble", "8ish", "So many memories. \nNo evidence.").
  * Picks up the active property accent colour automatically. On dark
  * surfaces it uses the on-dark variant (Gold / Copper) for contrast;
  * pass onLight when sitting on a light background.
