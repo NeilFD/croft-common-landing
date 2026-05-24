@@ -25,14 +25,18 @@ interface CBTopNavProps {
 
 const SCROLL_SOLID_THRESHOLD = 60;
 
-const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
+const CBTopNav = ({ tone = "light", wordmark }: CBTopNavProps) => {
   const isLight = tone === "light";
   const [loginOpen, setLoginOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const propertyCtx = useOptionalProperty();
-  const propertyKey = propertyCtx?.property as keyof typeof PROPERTY_ACCENTS | undefined;
+  const propertyKey = (wordmark ?? (propertyCtx?.property as keyof typeof PROPERTY_ACCENTS | undefined)) as keyof typeof PROPERTY_ACCENTS | undefined;
   const accent = propertyKey ? PROPERTY_ACCENTS[propertyKey] : null;
+  // Only tint the backdrop strip when the property is active via context
+  // (i.e. /town and /country shells). Sub-enclaves passing `wordmark` keep
+  // their own theming and just get the wordmark label.
+  const tintBackdrop = !!propertyCtx;
 
   // Scroll-aware solidification (Apple / Hermès pattern).
   useEffect(() => {
