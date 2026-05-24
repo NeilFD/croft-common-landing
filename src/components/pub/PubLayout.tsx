@@ -13,7 +13,7 @@ import "@/styles/pub.css";
 const PubLayout = () => {
   return (
     <div className="pub-theme min-h-screen flex flex-col">
-      <CBTopNav tone="light" />
+      <CBTopNav tone="light" wordmark="country" />
       <main className="flex-1">
         <Outlet />
       </main>
