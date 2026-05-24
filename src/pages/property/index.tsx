@@ -58,7 +58,7 @@ export const CountryHome = () => (
   <PropertyPage
     title="Crazy Bear Country"
     eyebrow="Stadhampton, Oxfordshire"
-    body="Long lunches. Loud dinners. Hazy summer evenings that somehow become 2am.\n\nThe original Crazy Bear. A sixteenth-century Oxfordshire pub with rooms, fire-cooked food, Thai spice, spilled wine and stories in every corner. \n\nLocals. Old souls. London escapees. Dogs under tables. Music in the garden. One more bottle nobody needed.\n\nLess polished countryside retreat. More rebellious village pub with very good taste."
+    body={"Long lunches. Loud dinners. Hazy summer evenings that somehow become 2am.\n\nThe original Crazy Bear. A sixteenth-century Oxfordshire pub with rooms, fire-cooked food, Thai spice, spilled wine and stories in every corner.\n\nLocals. Old souls. London escapees. Dogs under tables. Music in the garden. One more bottle nobody needed.\n\nLess polished countryside retreat. More rebellious village pub with very good taste."}
     seoDescription="Crazy Bear Country. A sixteenth-century Oxfordshire pub with rooms, fire-cooked food, Thai spice, spilled wine and stories in every corner."
     faqKey="/country"
     schemaKind="hotel"
@@ -175,7 +175,7 @@ export const TownHome = () => (
   <PropertyPage
     title="Crazy Bear Town"
     eyebrow="Beaconsfield, Buckinghamshire"
-    body="Velvet. Mirror. Marble.\n\nA townhouse just outside London built on late nights, sharp cocktails and bad ideas that usually make good stories. \n\nThree restaurants. Signature bedrooms. A hidden pool. Karaoke somewhere downstairs. Breakfast somewhere much later.\n\nNineteen years in and still refusing to behave."
+    body={"Velvet. Mirror. Marble.\n\nA townhouse just outside London built on late nights, sharp cocktails and bad ideas that usually make good stories.\n\nThree restaurants. Signature bedrooms. A hidden pool. Karaoke somewhere downstairs. Breakfast somewhere much later.\n\nNineteen years in and still refusing to behave."}
     seoDescription="Crazy Bear Town. Velvet, mirror, marble. A townhouse just outside London built on late nights and good stories. Restaurants, rooms, pool and karaoke."
     faqKey="/town"
     schemaKind="hotel"
