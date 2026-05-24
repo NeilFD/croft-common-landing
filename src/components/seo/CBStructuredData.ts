@@ -66,7 +66,7 @@ export const hotelSchema = (property: "town" | "country") => ({
   name: property === "town" ? "Crazy Bear Town" : "Crazy Bear Country",
   description:
     property === "town"
-      ? "Townhouse glamour in Beaconsfield. Three restaurants, signature bedrooms, hidden pool."
+      ? "Velvet. Mirror. Marble. A townhouse just outside London built on late nights and good stories. Three restaurants, signature bedrooms, hidden pool."
       : "A 16th century inn in Stadhampton, Oxfordshire. Rooms, restaurants and a country pub spirit.",
   address: addrFor(property),
   geo: geoFor(property),
