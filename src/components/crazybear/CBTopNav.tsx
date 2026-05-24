@@ -93,7 +93,7 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
           height: "calc(env(safe-area-inset-top) + 96px)",
           backgroundColor: accent
             ? scrolled
-              ? accent.color
+              ? `${accent.color}8C`
               : `${accent.color}4D`
             : undefined,
         }}
