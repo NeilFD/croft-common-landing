@@ -334,6 +334,11 @@ const SlotEditor = ({ slot }: { slot: AssetSlot }) => {
               {slot.kind === "hero" ? "Replace" : "Add"}
             </span>
           </label>
+          {showingDefaults && slot.kind !== "hero" && (
+            <Button size="sm" variant="outline" onClick={customiseSlides}>
+              Customise slides
+            </Button>
+          )}
           {hasDrafts && (
             <>
               <Button size="sm" variant="outline" onClick={discardDrafts}>Discard drafts</Button>
