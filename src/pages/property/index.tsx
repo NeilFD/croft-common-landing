@@ -1,5 +1,6 @@
 import PropertyPage from "@/components/property/PropertyPage";
 import CBMenuPage from "@/components/crazybear/CBMenuPage";
+import BookTableButton from "@/components/booking/BookTableButton";
 import CBGallery from "@/components/property/CBGallery";
 import { townGallery, countryGallery } from "@/data/galleryData";
 import { blackBearMenu, bnbMenu, countryPubMenu, type Menu } from "@/data/menus";
