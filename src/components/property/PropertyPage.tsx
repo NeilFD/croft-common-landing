@@ -106,11 +106,24 @@ const PropertyPage = ({
         jsonLd={ld}
         lcpImage={carousel?.[0] ?? hero ?? undefined}
       />
-      <section className="relative h-[70vh] min-h-[480px] w-full overflow-hidden bg-black text-white">
-        {carousel ? (
-          <HeroCarousel images={carousel} alt={title} />
-        ) : (
-          hero && (
+      {carousel && carousel.length > 0 ? (
+        <HeroSequence
+          frames={carousel.map((src) => ({ src, alt: title, beat: undefined }))
+            .map((frame, i, arr) => {
+              const beats = getHeroBeatsFor(location.pathname) ?? [];
+              // Assign beats to middle frames (skip first + last).
+              const isMiddle = i > 0 && i < arr.length - 1;
+              const beatIdx = i - 1;
+              return isMiddle && beats[beatIdx] ? { ...frame, beat: beats[beatIdx] } : frame;
+            })}
+          eyebrow={eyebrowText}
+          headline={title}
+          fit={fit}
+          objectPosition={heroObjectPosition}
+        />
+      ) : (
+        <section className="relative h-[70vh] min-h-[480px] w-full overflow-hidden bg-black text-white">
+          {hero && (
             <img
               src={hero}
               alt={title}
@@ -122,54 +135,53 @@ const PropertyPage = ({
               className={`absolute inset-0 h-full w-full ${fit === "contain" ? "object-contain" : "object-cover"}`}
               style={heroObjectPosition ? { objectPosition: heroObjectPosition } : undefined}
             />
-          )
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-        {/* Brand 2026: thin property-accent rule sits flush at the top of the hero */}
-        <span aria-hidden className="absolute top-0 left-0 h-[2px] w-full cb-accent-bg z-10" />
-        <div className="relative z-10 flex h-full items-end px-6 pb-24 md:px-12 md:pb-28">
-          <div>
-            {cmsPage ? (
-              <CMSText
-                page={cmsPage}
-                section="hero"
-                contentKey="eyebrow"
-                fallback={eyebrowText}
-                as="p"
-                className="cb-accent-on-dark text-[10px] tracking-[0.4em] uppercase opacity-90"
-              />
-            ) : (
-              <p className="cb-accent-on-dark text-[10px] tracking-[0.4em] uppercase opacity-90">
-                {eyebrowText}
-              </p>
-            )}
-            {cmsPage ? (
-              <CMSText
-                page={cmsPage}
-                section="hero"
-                contentKey="title"
-                fallback={title}
-                as="h1"
-                className="mt-3 font-serif text-5xl md:text-7xl uppercase"
-              />
-            ) : (
-              <h1 className="mt-3 font-serif text-5xl md:text-7xl uppercase">{title}</h1>
-            )}
-            <span aria-hidden className="cb-accent-rule mt-5" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+          <span aria-hidden className="absolute top-0 left-0 h-[2px] w-full cb-accent-bg z-10" />
+          <div className="relative z-10 flex h-full items-end px-6 pb-24 md:px-12 md:pb-28">
+            <div>
+              {cmsPage ? (
+                <CMSText
+                  page={cmsPage}
+                  section="hero"
+                  contentKey="eyebrow"
+                  fallback={eyebrowText}
+                  as="p"
+                  className="cb-accent-on-dark text-[10px] tracking-[0.4em] uppercase opacity-90"
+                />
+              ) : (
+                <p className="cb-accent-on-dark text-[10px] tracking-[0.4em] uppercase opacity-90">
+                  {eyebrowText}
+                </p>
+              )}
+              {cmsPage ? (
+                <CMSText
+                  page={cmsPage}
+                  section="hero"
+                  contentKey="title"
+                  fallback={title}
+                  as="h1"
+                  className="mt-3 font-serif text-5xl md:text-7xl uppercase"
+                />
+              ) : (
+                <h1 className="mt-3 font-serif text-5xl md:text-7xl uppercase">{title}</h1>
+              )}
+              <span aria-hidden className="cb-accent-rule mt-5" />
+            </div>
           </div>
-        </div>
-        <a
-          href="#cb-page-body"
-          aria-label="Scroll for more"
-          className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 text-white/80 hover:text-white transition-colors"
-        >
-          <span className="block animate-cb-bounce">
-            <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
-            </svg>
-          </span>
-        </a>
-      </section>
+          <a
+            href="#cb-page-body"
+            aria-label="Scroll for more"
+            className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 text-white/80 hover:text-white transition-colors"
+          >
+            <span className="block animate-cb-bounce">
+              <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+              </svg>
+            </span>
+          </a>
+        </section>
+      )}
       <CBBreadcrumb />
       <section id="cb-page-body" className="mx-auto max-w-3xl px-6 pt-10 pb-20 text-foreground scroll-mt-16">
         {cmsPage ? (
