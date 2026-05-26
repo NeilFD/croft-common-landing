@@ -75,7 +75,7 @@ const BookRoomButton = ({
         {label}
       </button>
 
-      {open && (
+      {open && createPortal(
         <div
           role="dialog"
           aria-modal="true"
