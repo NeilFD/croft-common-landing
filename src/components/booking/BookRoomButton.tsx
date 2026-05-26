@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { MEWS_HOTELS, type MewsHotelKey } from "@/data/mewsHotels";
 
 interface Props {
@@ -74,7 +75,7 @@ const BookRoomButton = ({
         {label}
       </button>
 
-      {open && (
+      {open && createPortal(
         <div
           role="dialog"
           aria-modal="true"
@@ -126,7 +127,8 @@ const BookRoomButton = ({
               />
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
