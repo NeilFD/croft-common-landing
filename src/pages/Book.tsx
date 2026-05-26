@@ -47,7 +47,7 @@ const Book: React.FC = () => {
   const { isCMSMode } = useCMSMode();
 
   useEffect(() => {
-    document.title = "Book a table | Crazy Bear";
+    document.title = "Book a table or a room | Crazy Bear";
 
     const metaDescId = "meta-desc-book";
     let metaDesc = document.getElementById(metaDescId) as HTMLMetaElement | null;
@@ -58,7 +58,7 @@ const Book: React.FC = () => {
       document.head.appendChild(metaDesc);
     }
     metaDesc.content =
-      "Reserve a table at Crazy Bear. Black Bear & B&B, Hom Thai (Town) and The Pub at Stadhampton (Country).";
+      "Reserve a table or a room at Crazy Bear. Black Bear, B&B and Hom Thai in Town; The Pub and rooms at Stadhampton in Country.";
 
     let canonical = document.querySelector("link[rel='canonical']") as HTMLLinkElement | null;
     if (!canonical) {
