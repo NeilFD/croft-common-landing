@@ -346,6 +346,12 @@ const CBMenuPage = ({ menu, cmsPage, bookVenue }: Props) => {
             )}
           </div>
 
+          {bookVenue && (
+            <div className="mt-8 flex justify-center">
+              <BookTableButton venue={bookVenue} variant="outline" />
+            </div>
+          )}
+
           <div className="w-full h-px my-10 bg-black/15" />
 
           {menu.sections.map((s) => (
