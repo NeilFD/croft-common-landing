@@ -1,6 +1,4 @@
-import { useEffect, useRef, useState } from "react";
 import { MEWS_HOTELS, type MewsHotelKey } from "@/data/mewsHotels";
-import { useMewsDistributor } from "@/hooks/useMewsDistributor";
 
 interface Props {
   hotel: MewsHotelKey;
@@ -40,49 +38,22 @@ const BookRoomButton = ({
   className = "",
 }: Props) => {
   const h = MEWS_HOTELS[hotel];
-  const triggerId = `cb-mews-trigger-${hotel}`;
-  const { status, open, isReady } = useMewsDistributor(h.configurationId, triggerId);
-  const [pending, setPending] = useState(false);
-  const waitingRef = useRef(false);
-
-  useEffect(() => {
-    if (!waitingRef.current || !isReady) return;
-    waitingRef.current = false;
-    setPending(false);
-    open();
-  }, [isReady, open]);
-
-  useEffect(() => {
-    if (!pending) return;
-    const timer = window.setTimeout(() => {
-      waitingRef.current = false;
-      setPending(false);
-    }, 8000);
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [pending]);
 
   const handleClick = () => {
-    if (pending) return;
-    if (open()) return;
-    waitingRef.current = true;
-    setPending(true);
+    // Same-window redirect to the Mews hosted booking engine.
+    // Avoids both the new-tab UX and the Mews "continue on next page" interstitial.
+    window.location.href = h.fallbackUrl;
   };
-
-  const buttonText = pending || status === "loading" ? "Loading…" : label;
 
   return (
     <button
-      id={triggerId}
       type="button"
       onClick={handleClick}
       aria-label={`${label} at ${h.label}`}
-      aria-busy={pending || status === "loading"}
       data-property={h.property}
       className={`${baseTypography} ${variantClasses(variant, tone)} ${className}`}
     >
-      {buttonText}
+      {label}
     </button>
   );
 };
