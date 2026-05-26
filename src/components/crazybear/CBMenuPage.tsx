@@ -7,11 +7,17 @@ import { getHeroFor } from "@/data/propertyHeroMap";
 import { CMSText } from "@/components/cms/CMSText";
 import { supabase } from "@/integrations/supabase/client";
 
+import BookTableButton from "@/components/booking/BookTableButton";
+import type { SevenRoomsVenueKey } from "@/data/sevenroomsVenues";
+
 interface Props {
   menu: Menu;
   /** When set, hero text is editable through the CMS under this page namespace
    *  (e.g. "town/food/black-bear"). When omitted, falls back to static menu data. */
   cmsPage?: string;
+  /** SevenRooms venue key. When set, a "Book a table" button appears under
+   *  the menu title and opens the venue's SevenRooms reservation widget. */
+  bookVenue?: SevenRoomsVenueKey;
 }
 
 const slugify = (s: string) =>
