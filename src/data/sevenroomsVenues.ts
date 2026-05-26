@@ -25,7 +25,7 @@ export interface SevenRoomsVenue {
 
 export const SEVENROOMS_VENUES: Record<SevenRoomsVenueKey, SevenRoomsVenue> = {
   "beaconsfield": {
-    label: "The Black Bear & The B&B",
+    label: "The Black Bear & The Rooms",
     property: "town",
     url: "https://www.sevenrooms.com/explore/beaconsfield/reservations/create/search/",
   },
