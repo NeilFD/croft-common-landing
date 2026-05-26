@@ -22,7 +22,7 @@ export interface MewsHotel {
 
 export const MEWS_HOTELS: Record<MewsHotelKey, MewsHotel> = {
   beaconsfield: {
-    label: "The B&B at Beaconsfield",
+    label: "The Rooms at Beaconsfield",
     property: "town",
     configurationId: "690b25ab-866e-447f-aedd-b1490084c2bb",
     cityId: "4f085e2c-9847-4551-a6f6-b14900838fa5",
