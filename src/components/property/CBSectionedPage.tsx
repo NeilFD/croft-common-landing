@@ -141,24 +141,34 @@ const CBSectionedPage = ({ intro, sections, cmsPage }: Props) => {
                   {s.body}
                 </p>
               )}
-              {s.cta && (
-                <Link
-                  to={s.cta.href}
-                  className="mt-8 inline-block font-cb-mono text-[10px] tracking-[0.5em] uppercase border border-foreground px-6 py-3 hover:bg-foreground hover:text-background transition-colors"
-                >
-                  {cmsPage ? (
-                    <CMSText
-                      page={cmsPage}
-                      section={s.id}
-                      contentKey="cta-label"
-                      fallback={s.cta.label}
-                      as="span"
-                    />
-                  ) : (
-                    s.cta.label
-                  )}
-                </Link>
-              )}
+              {s.cta && (() => {
+                const venueKey = parseSevenRoomsHref(s.cta.href);
+                if (venueKey) {
+                  return (
+                    <div className="mt-8">
+                      <BookTableButton venue={venueKey} label={s.cta.label} variant="outline" />
+                    </div>
+                  );
+                }
+                return (
+                  <Link
+                    to={s.cta.href}
+                    className="mt-8 inline-block font-cb-mono text-[10px] tracking-[0.5em] uppercase border border-foreground px-6 py-3 hover:bg-foreground hover:text-background transition-colors"
+                  >
+                    {cmsPage ? (
+                      <CMSText
+                        page={cmsPage}
+                        section={s.id}
+                        contentKey="cta-label"
+                        fallback={s.cta.label}
+                        as="span"
+                      />
+                    ) : (
+                      s.cta.label
+                    )}
+                  </Link>
+                );
+              })()}
             </div>
           </article>
         ))}
