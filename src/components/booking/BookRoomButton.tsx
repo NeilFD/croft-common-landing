@@ -127,7 +127,8 @@ const BookRoomButton = ({
               />
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
