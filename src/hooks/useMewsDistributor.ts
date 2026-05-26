@@ -2,11 +2,11 @@ import { useCallback, useEffect, useState } from "react";
 
 /**
  * Loads the Mews distributor script once per page and exposes an `open()`
- * helper that mounts the booking widget for a given configuration id.
+ * helper for the official full-screen Mews overlay.
  *
  * Mews docs: https://help.mews.com/s/article/setup-the-booking-engine
- * The script registers a global `Mews.Distributor` that takes an array of
- * configuration ids and renders an in-page booking widget.
+ * The direct distributor URL cannot be framed because Mews sends
+ * frame-ancestors 'self'. The supported route is the script overlay.
  */
 
 const SCRIPT_SRC = "https://app.mews.com/distributor/distributor.min.js";
@@ -17,13 +17,17 @@ declare global {
     Mews?: {
       Distributor?: (options: {
         configurationIds: string[];
-        openElementId?: string;
-      }) => { open: () => void };
+        openElements?: string;
+        currency?: string;
+        language?: string;
+        theme?: { primaryColor?: string };
+      }, callback?: (app: MewsDistributorApp) => void) => void;
     };
   }
 }
 
 type Status = "idle" | "loading" | "ready" | "error";
+type MewsDistributorApp = { open: () => void; close?: () => void };
 
 let scriptStatus: Status = "idle";
 const listeners = new Set<(status: Status) => void>();
@@ -55,8 +59,47 @@ const loadScript = () => {
   if (!existing) document.head.appendChild(script);
 };
 
-export const useMewsDistributor = () => {
+const apps = new Map<string, MewsDistributorApp>();
+const initialising = new Set<string>();
+const appListeners = new Map<string, Set<(app: MewsDistributorApp) => void>>();
+
+const notifyAppReady = (key: string, app: MewsDistributorApp) => {
+  appListeners.get(key)?.forEach((cb) => cb(app));
+};
+
+const initialiseDistributor = (configurationId: string, openElementId: string) => {
+  const key = `${configurationId}:${openElementId}`;
+  if (apps.has(key) || initialising.has(key)) return;
+
+  const Distributor = window.Mews?.Distributor;
+  if (!Distributor) return;
+
+  initialising.add(key);
+  try {
+    Distributor(
+      {
+        configurationIds: [configurationId],
+        openElements: `#${openElementId}`,
+        currency: "GBP",
+        language: "en-GB",
+        theme: { primaryColor: "#000000" },
+      },
+      (app) => {
+        apps.set(key, app);
+        initialising.delete(key);
+        notifyAppReady(key, app);
+      },
+    );
+  } catch (err) {
+    initialising.delete(key);
+    console.warn("[Mews] failed to initialise distributor", err);
+  }
+};
+
+export const useMewsDistributor = (configurationId: string, openElementId: string) => {
   const [status, setLocalStatus] = useState<Status>(scriptStatus);
+  const key = `${configurationId}:${openElementId}`;
+  const [app, setApp] = useState<MewsDistributorApp | null>(() => apps.get(key) ?? null);
 
   useEffect(() => {
     listeners.add(setLocalStatus);
@@ -66,25 +109,37 @@ export const useMewsDistributor = () => {
     };
   }, []);
 
-  const open = useCallback(
-    (configurationId: string, openElementId: string) => {
-      if (typeof window === "undefined") return false;
-      const Distributor = window.Mews?.Distributor;
-      if (!Distributor) return false;
-      try {
-        const instance = Distributor({
-          configurationIds: [configurationId],
-          openElementId,
-        });
-        instance.open();
-        return true;
-      } catch (err) {
-        console.warn("[Mews] failed to open distributor", err);
-        return false;
-      }
-    },
-    [],
-  );
+  useEffect(() => {
+    const existing = apps.get(key);
+    if (existing) {
+      setApp(existing);
+      return;
+    }
 
-  return { status, open };
+    const set = appListeners.get(key) ?? new Set<(next: MewsDistributorApp) => void>();
+    set.add(setApp);
+    appListeners.set(key, set);
+
+    if (status === "ready") initialiseDistributor(configurationId, openElementId);
+
+    return () => {
+      set.delete(setApp);
+      if (set.size === 0) appListeners.delete(key);
+    };
+  }, [configurationId, key, openElementId, status]);
+
+  const open = useCallback(() => {
+    if (typeof window === "undefined") return false;
+    const current = app ?? apps.get(key);
+    if (current) {
+      current.open();
+      return true;
+    }
+
+    loadScript();
+    if (scriptStatus === "ready") initialiseDistributor(configurationId, openElementId);
+    return false;
+  }, [app, configurationId, key, openElementId]);
+
+  return { status: app ? "ready" : status, open, isReady: Boolean(app) };
 };
