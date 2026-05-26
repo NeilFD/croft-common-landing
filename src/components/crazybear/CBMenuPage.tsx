@@ -253,7 +253,7 @@ const Section = ({ section, cmsPage }: { section: MenuSection; cmsPage?: string 
   );
 };
 
-const CBMenuPage = ({ menu, cmsPage }: Props) => {
+const CBMenuPage = ({ menu, cmsPage, bookVenue }: Props) => {
   const location = useLocation();
   const { data: cmsHero } = useQuery({
     enabled: !!cmsPage,
