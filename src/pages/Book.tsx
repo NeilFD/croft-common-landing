@@ -7,7 +7,7 @@ import {
   SEVENROOMS_VENUES,
   type SevenRoomsVenueKey,
 } from "@/data/sevenroomsVenues";
-import bookHeroFood from "@/assets/cb-hero-blackbear.jpg";
+import bookHeroFood from "@/assets/hero-english-menu.png";
 
 /**
  * Reservations hub. One equal card per SevenRooms venue, in a single
