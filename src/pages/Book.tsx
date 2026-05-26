@@ -107,7 +107,7 @@ const Book: React.FC = () => {
               page="book"
               section="hero"
               contentKey="subtitle"
-              fallback="Pick a venue. Live availability runs straight from our restaurants."
+              fallback="Pick a venue. Book a table."
               as="p"
               className="mt-6 max-w-2xl font-cb-sans text-lg md:text-xl opacity-90"
             />
