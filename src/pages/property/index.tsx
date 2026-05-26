@@ -1,5 +1,6 @@
 import PropertyPage from "@/components/property/PropertyPage";
 import CBMenuPage from "@/components/crazybear/CBMenuPage";
+import BookTableButton from "@/components/booking/BookTableButton";
 import CBGallery from "@/components/property/CBGallery";
 import { townGallery, countryGallery } from "@/data/galleryData";
 import { blackBearMenu, bnbMenu, countryPubMenu, type Menu } from "@/data/menus";
@@ -29,9 +30,10 @@ interface MenuRouteProps {
   cuisine: string[];
   faqKey?: string;
   cmsPage?: string;
+  bookVenue?: import("@/data/sevenroomsVenues").SevenRoomsVenueKey;
 }
 
-const MenuRoute = ({ menu, property, path, title, description, cuisine, faqKey, cmsPage }: MenuRouteProps) => {
+const MenuRoute = ({ menu, property, path, title, description, cuisine, faqKey, cmsPage, bookVenue }: MenuRouteProps) => {
   const faqEntry = faqKey ? cbFaqs[faqKey] : undefined;
   const ld: Record<string, any>[] = [
     breadcrumbSchema(path),
@@ -41,7 +43,7 @@ const MenuRoute = ({ menu, property, path, title, description, cuisine, faqKey, 
   return (
     <>
       <CBSeo title={`${title} | Crazy Bear`} description={description.slice(0, 158)} path={path} jsonLd={ld} />
-      <CBMenuPage menu={menu} cmsPage={cmsPage} />
+      <CBMenuPage menu={menu} cmsPage={cmsPage} bookVenue={bookVenue} />
       {(cmsPage || faqEntry) && (
         <CBFAQ
           cmsPage={cmsPage}
@@ -212,6 +214,7 @@ export const TownBlackBear = () =>
       cuisine={["British", "Modern European"]}
       faqKey="/town/food"
       cmsPage="town/food/black-bear"
+      bookVenue="beaconsfield"
     />
   );
 export const TownBnB = () =>
@@ -226,6 +229,7 @@ export const TownBnB = () =>
       cuisine={["British", "Brunch"]}
       faqKey="/town/food"
       cmsPage="town/food/bnb"
+      bookVenue="beaconsfield"
     />
   );
 export const TownHomThai = () =>
@@ -240,7 +244,11 @@ export const TownHomThai = () =>
       cuisine={["Thai", "Asian"]}
       faqKey="/town/food"
       cmsPage="town/food/hom-thai"
-    />
+    >
+      <section className="mx-auto max-w-4xl px-6 pb-16 text-center">
+        <BookTableButton venue="beaconsfield-thai" variant="outline" />
+      </section>
+    </PropertyPage>
   );
 export const TownDrink = () =>
   withSecret(
@@ -517,7 +525,7 @@ export const CountryTerracesAndGardens = () => (
           id: "garden-terrace",
           title: "Garden Terrace",
           body: "Where afternoon tea, long brunches and pre-dinner drinks happen. Heaters in winter, parasols in summer.",
-          cta: { label: "Book a table", href: "/book" },
+          cta: { label: "Book a table", href: "sevenrooms:stadhampton-oak" },
         },
         {
           id: "woodland",

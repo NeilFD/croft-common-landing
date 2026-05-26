@@ -1,5 +1,6 @@
 import { useCMSAssets } from "@/hooks/useCMSAssets";
 import { CMSText } from "@/components/cms/CMSText";
+import BookTableButton from "@/components/booking/BookTableButton";
 import pubInterior from "@/assets/pub/pub-interior.jpg";
 
 /**
