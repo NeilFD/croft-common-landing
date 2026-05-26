@@ -29,9 +29,10 @@ interface MenuRouteProps {
   cuisine: string[];
   faqKey?: string;
   cmsPage?: string;
+  bookVenue?: import("@/data/sevenroomsVenues").SevenRoomsVenueKey;
 }
 
-const MenuRoute = ({ menu, property, path, title, description, cuisine, faqKey, cmsPage }: MenuRouteProps) => {
+const MenuRoute = ({ menu, property, path, title, description, cuisine, faqKey, cmsPage, bookVenue }: MenuRouteProps) => {
   const faqEntry = faqKey ? cbFaqs[faqKey] : undefined;
   const ld: Record<string, any>[] = [
     breadcrumbSchema(path),
@@ -41,7 +42,7 @@ const MenuRoute = ({ menu, property, path, title, description, cuisine, faqKey, 
   return (
     <>
       <CBSeo title={`${title} | Crazy Bear`} description={description.slice(0, 158)} path={path} jsonLd={ld} />
-      <CBMenuPage menu={menu} cmsPage={cmsPage} />
+      <CBMenuPage menu={menu} cmsPage={cmsPage} bookVenue={bookVenue} />
       {(cmsPage || faqEntry) && (
         <CBFAQ
           cmsPage={cmsPage}
