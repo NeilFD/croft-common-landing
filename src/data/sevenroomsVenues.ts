@@ -10,7 +10,7 @@
  */
 
 export type SevenRoomsVenueKey =
-  | "beaconsfield"      // Town: Black Bear + B&B share one widget
+  | "beaconsfield"      // Town: Black Bear + The Rooms share one widget
   | "beaconsfield-thai" // Town: Hom Thai
   | "stadhampton-oak";  // Country: The Pub at Stadhampton
 
@@ -25,7 +25,7 @@ export interface SevenRoomsVenue {
 
 export const SEVENROOMS_VENUES: Record<SevenRoomsVenueKey, SevenRoomsVenue> = {
   "beaconsfield": {
-    label: "The Black Bear & The B&B",
+    label: "The Black Bear & The Rooms",
     property: "town",
     url: "https://www.sevenrooms.com/explore/beaconsfield/reservations/create/search/",
   },

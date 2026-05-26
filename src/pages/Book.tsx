@@ -31,7 +31,7 @@ const HOTELS: { key: MewsHotelKey; blurb: string }[] = [
 const VENUES: { key: SevenRoomsVenueKey; blurb: string }[] = [
   {
     key: "beaconsfield",
-    blurb: "Open kitchen, big flavours. The Black Bear and The B&B share one booking.",
+    blurb: "Open kitchen, big flavours. The Black Bear and The Rooms share one booking.",
   },
   {
     key: "beaconsfield-thai",
@@ -58,7 +58,7 @@ const Book: React.FC = () => {
       document.head.appendChild(metaDesc);
     }
     metaDesc.content =
-      "Reserve a table or a room at Crazy Bear. Black Bear, B&B and Hom Thai in Town; The Pub and rooms at Stadhampton in Country.";
+      "Reserve a table or a room at Crazy Bear. Black Bear, Rooms and Hom Thai in Town; The Pub and rooms at Stadhampton in Country.";
 
     let canonical = document.querySelector("link[rel='canonical']") as HTMLLinkElement | null;
     if (!canonical) {
