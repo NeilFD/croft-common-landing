@@ -1,122 +1,73 @@
-# SevenRooms reservation widgets — wired into the site
+## Goal
 
-Drop the four SevenRooms booking flows into the relevant restaurant and pub pages so they work right now and are easy to change later. Keep the design fully Crazy Bear, even though SevenRooms' own UI is the part we don't fully control (see "How much we control" below).
+Add Mews rooms reservations to the site, opened from `/book` via a branded full-screen modal that mirrors the existing SevenRooms `BookTableButton` UX, with property-scoped accent (Town red / Country teal).
 
-## Mapping
+## Mews identifiers (captured)
 
-
-| Venue page                                               | Property | SevenRooms slug        | Widget URL                                                                                                                                                                 |
-| -------------------------------------------------------- | -------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/town/food/black-bear`                                  | Town     | `beaconsfield`         | [https://www.sevenrooms.com/explore/beaconsfield/reservations/create/search/](https://www.sevenrooms.com/explore/beaconsfield/reservations/create/search/)                 |
-| `/town/food/bnb`                                         | Town     | `beaconsfield`         | same as above                                                                                                                                                              |
-| `/town/food/hom-thai`                                    | Town     | `beaconsfieldthai`     | [https://www.sevenrooms.com/explore/beaconsfieldthai/reservations/create/search/](https://www.sevenrooms.com/explore/beaconsfieldthai/reservations/create/search/)         |
-| `/pub` (Stadhampton Pub)                                 | Country  | `OAK`                  | [https://www.sevenrooms.com/explore/OAK/reservations/create/search/](https://www.sevenrooms.com/explore/OAK/reservations/create/search/)                                   |
-| Country Thai (route to add or attach to `/country/food`) | Country  | `CrazyBearStadhampton` | [https://www.sevenrooms.com/explore/CrazyBearStadhampton/reservations/create/search/](https://www.sevenrooms.com/explore/CrazyBearStadhampton/reservations/create/search/) |
-
-
-Open question flagged below: where exactly the "Stadhampton Thai" widget lives, since there isn't a dedicated Country Thai page yet.
+- **Town — Crazy Bear Beaconsfield**
+  - Configuration ID: `690b25ab-866e-447f-aedd-b1490084c2bb`
+  - City ID: `4f085e2c-9847-4551-a6f6-b14900838fa5`
+- **Country — Crazy Bear Stadhampton**
+  - Configuration ID: `475876b0-3ae2-4a28-8c0e-b14900821585`
+  - City ID: `eb0fb60d-8188-4108-8e7a-aee400d0f366`
 
 ## What gets built
 
-### 1. Single source of truth
+### 1. Mews data source
+New file `src/data/mewsHotels.ts` — single source of truth for both Mews configurations (id, label, property scope, currency `GBP`). Pattern mirrors `src/data/sevenroomsVenues.ts` so future surfaces (room pages, header CTA) can reuse it without duplication.
 
-`src/data/sevenroomsVenues.ts`
+### 2. Branded Mews loader hook
+New file `src/hooks/useMewsDistributor.ts` — injects the official Mews `distributor.min.js` once per page lifecycle, exposes a `openMews(configurationId)` function that calls `Mews.Distributor.open()` with the given config. Handles script-loaded readiness, avoids double-injection, and silently no-ops if the SDK fails (with console warn).
 
-```ts
-export type SevenRoomsVenueKey =
-  | "beaconsfield"
-  | "beaconsfield-thai"
-  | "stadhampton-oak"
-  | "stadhampton-thai";
+### 3. BookRoomButton component
+New file `src/components/booking/BookRoomButton.tsx` — same API surface as `BookTableButton` (`hotel`, `label`, `variant`, `tone`, `className`).
 
-export const SEVENROOMS_VENUES: Record<SevenRoomsVenueKey, {
-  label: string;          // "Black Bear & B&B", "Hom Thai", etc.
-  slug: string;           // the SevenRooms slug e.g. "beaconsfield"
-  property: "town" | "country";
-  url: string;            // full search URL
-}> = { /* ...all four... */ };
+Behaviour:
+- Click opens our own full-screen `Dialog` styled identically to the table-booking modal (black background, white border, property accent bar at top, eyebrow + display title).
+- Inside the modal we render a single container `<div id="cb-mews-mount-{configurationId}">` and call the Mews distributor with `openElementId` pointing to it (Mews mounts its widget inline into our container).
+- Same dialog conventions as `BookTableButton`: `data-property` scope, no focus rings, opaque footer with "Open in new tab" fallback link to the Mews-hosted booking page for that hotel.
+
+Because Mews's distributor is a self-contained widget, the inner booking flow remains Mews's UI — but the chrome around it (open trigger, modal frame, eyebrow, property accent, fallback link) is fully Crazy Bear. This is the most branded outcome without a custom Mews API integration.
+
+### 4. /book — new "Stay the night" section
+Edit `src/pages/Book.tsx`. Below the existing 3-card restaurant grid, add a clearly delineated second block:
+
+- Section heading: `Stay the night` (display font), eyebrow `Rooms`.
+- Two-card grid (Town + Country), styled identically to the restaurant cards: property accent bar, eyebrow, hotel name, one-line blurb, `BookRoomButton` outline/light CTA `Book a room`.
+- Cards use `data-property` so Town gets red accent, Country gets teal.
+
+Restaurant section gets a small sub-heading `Tables` for symmetry with `Stay the night`, so the page reads as two clearly separated booking categories.
+
+### 5. SEO + meta
+Update the `/book` page title and meta description to mention both tables and rooms. Keep canonical handling as-is.
+
+### 6. CMS hookup
+Per project rule "every new page is added to CMS": no new page is added here (everything stays on `/book`), but the new section eyebrow + heading + two card blurbs are wired through `CMSText` with `page="book"`, `section="rooms"`, so they're editable in the existing Book CMS surface without a new registry entry.
+
+## Technical detail
+
+```text
+src/
+  data/
+    mewsHotels.ts            (new)  configIds + labels
+  hooks/
+    useMewsDistributor.ts    (new)  script loader + open()
+  components/
+    booking/
+      BookRoomButton.tsx     (new)  branded modal + Mews mount
+  pages/
+    Book.tsx                 (edit) add Stay the night section
 ```
 
-One file. Edit a URL or slug here later, every CTA and modal updates instantly.
+Mews script URL: `https://app.mews.com/distributor/distributor.min.js` (same one shown in your screenshots). It's loaded once, lazily, when the first `BookRoomButton` mounts. No edge function, no API key, no Supabase changes — Mews handles availability, payment, confirmation entirely inside its widget.
 
-### 2. One reusable component
+## Out of scope (for this round)
 
-`src/components/booking/BookTableButton.tsx`
+- Embedding Mews CTAs on individual room-type pages (Town/Country room detail pages). You said /book only for now — easy to add later because `BookRoomButton` is reusable.
+- Per-room-type pre-selection (deep-linking a specific room category into Mews). Possible later via Mews's `rooms` parameter once we map our room slugs to Mews category IDs.
+- A fully custom pre-flight (dates/guests in our UI, hand off to Mews pre-filled). Bigger build; revisit once the basic flow is live.
 
-- Props: `venue: SevenRoomsVenueKey`, optional `label`, optional `variant` (matches existing button variants — e.g. the `Reserve a table` style used in `CBLandingSections`).
-- Behaviour: opens a Crazy-Bear-styled modal (`Dialog` from existing shadcn UI) containing a full-height iframe pointed at the venue's SevenRooms URL.
-- Modal chrome: black surround, Bowlby One title showing the venue name, property-accent rule (red for Town, teal for Country), close button. Same modal pattern already used elsewhere on the site for consistency.
-- Iframe: `width=100%`, `height=min(85vh, 900px)`, `loading="lazy"`, `referrerPolicy="no-referrer-when-downgrade"`, `allow="payment *"` so card capture works. Permission to embed SevenRooms in an iframe should be confirmed with SevenRooms support (note in "Things to confirm").
-- Mobile: full-screen sheet rather than centred dialog. Single tap close.
-- Fallback link inside the modal: "Booking widget not loading? Open in a new tab" → opens the SevenRooms URL directly. Covers cases where SevenRooms blocks framing via `X-Frame-Options`.
+## Risks
 
-### 3. Where it shows up
-
-
-| Page                                                     | Placement                                                                                                     |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `/town/food/black-bear`                                  | Replace static hero CTA with `<BookTableButton venue="beaconsfield" label="Book a table" />`                  |
-| `/town/food/bnb`                                         | Same component, same venue                                                                                    |
-| `/town/food/hom-thai`                                    | `venue="beaconsfield-thai"`                                                                                   |
-| `/town/food` (Town food landing)                         | Three buttons, one per venue, in the existing landing layout                                                  |
-| `/pub`, `/pub/food`, `/pub/drink`                        | `venue="stadhampton-oak"` on the Reserve CTA already present in `PubHero`/`CBLandingSections`                 |
-| `/country/food`                                          | Two buttons: Pub (`stadhampton-oak`) and Thai (`stadhampton-thai`) until a dedicated Country Thai page exists |
-| `/country/terraces-and-gardens` → Garden Terrace section | Swap the `/book` href for the Country Pub widget (or Thai, your call — see open question)                     |
-
-
-Any other "Book" / "Reserve" CTA in the codebase points at the same component using the right venue key.
-
-### 4. CMS hook (project rule: every page surface editable)
-
-A new `useCMSText` slot per restaurant page: `booking.venue` (free text, falls back to the venue key in the data file). Editors can override the venue per page from the CMS without a redeploy, but the default mapping above ships hard-coded so it works on day one.
-
-## How much we control (UI/UX)
-
-SevenRooms gives three integration levels. We use the highest level they allow for our account.
-
-
-| Level                                  | What we control                                                                                                                                      | What we don't                                                                                                                                                                                                                                                               |
-| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **A. Deep link** (what we'd use today) | Everything around it — button, modal chrome, copy, when/where it opens                                                                               | The entire booking flow once the iframe loads: layout, date picker, party-size widget, confirmation screen, emails. SevenRooms styles it. We can pass a few colour/logo tokens via their venue settings (your SevenRooms admin), but it's a venue-wide theme, not per-page. |
-| **B. Embedded Booking Widget**         | Same as A, plus their JS widget renders inline rather than iframed, so it inherits page font size and we can override basic colours via their config | The form fields, validation copy, slot logic, confirmation screen — still SevenRooms                                                                                                                                                                                        |
-| **C. SevenRooms Reservations API**     | Everything. We build our own date/party/slot pickers and call their API for availability and booking creation                                        | Requires API partnership approval from SevenRooms, OAuth credentials, PCI scope considerations for payment, ongoing API maintenance                                                                                                                                         |
-
-
-Recommendation: **start with A**, since that's what the four URLs you've given me support out of the box. Move to B once you confirm with SevenRooms support that the embed script is enabled on your venues — same plumbing on our side, just swap iframe for script tag inside the same `BookTableButton`. C is a larger project, only worth it if you want to keep customers entirely inside the Crazy Bear UI.
-
-What we get either way (and what you should brief your SevenRooms admin on so it looks right inside our modal):
-
-- Upload Crazy Bear logo for each venue
-- Set venue primary / accent colour to the property accent (`#4E0000` Town, `#063F47` Country)
-- Disable the SevenRooms top nav / "powered by" bar where the venue settings allow it
-- Set venue display name to match our site naming (e.g. "The Black Bear", not "Crazy Bear Beaconsfield")
-
-## Things to confirm with you before build
-
-1. **Country Thai widget destination** — there's a SevenRooms slug `CrazyBearStadhampton` for Stadhampton Thai but no dedicated `/country/thai` page on the site yet. Options: (a) attach it to `/country/food` as one of two buttons alongside the Pub, (b) create a new `/country/food/thai` page, (c) drop it on the Country home as a secondary CTA. My default in this plan is (a).  
-  
-Forget the stadhampton Thai slug for now  
-
-2. **Garden Terrace booking** — Pub (`stadhampton-oak`) or Thai (`stadhampton-thai`)? Currently planning Pub.  
-  
-Push to oak  
-
-3. **B&B + Black Bear share one widget** — confirmed by you. Both will open the Beaconsfield search. Customer picks which venue inside the SevenRooms flow.  
-
-4. **Iframe vs new tab** — plan defaults to in-page modal with iframe. Tell me if you'd rather have it always open in a new tab (less branded, no embedding risk).  
-  
-Most brandable option posisble please  
-
-5. **SevenRooms account access** — to make the booking flow itself look like Crazy Bear (logo, accent colour, suppressed SevenRooms branding) someone with SevenRooms admin access needs to update venue settings. Happy to write that brief for you once we agree the plan.  
-  
-We have done this inside sevenrooms
-
-## Out of scope this round
-
-- Building our own booking flow against the SevenRooms API (Level C).
-- Capacity / availability previews on Crazy Bear pages (would need API access).  
-  
-Doesnt teh booking widget slug pull from our sevenrooms account and tehrefore uses avaialbility time rules to manage any bookings?  
-
-- Booking history / "my reservations" inside the customer's Bear's Den account (separate feature).
-- Wiring booking into the karaoke flow (karaoke layout is locked and has its own booking panel).
+- Mews's distributor renders its own DOM inside our modal — we cannot restyle its internals. Branding is limited to the modal frame around it. If that's not enough, the next step is the "Pre-flight then Mews" option from the earlier question.
+- Mews script is third-party and loads on demand; if it's blocked, the "Open in new tab" footer link is the fallback.
