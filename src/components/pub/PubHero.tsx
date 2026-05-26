@@ -63,6 +63,9 @@ const PubHero = () => {
           as="p"
           className="mt-6 font-cb-sans text-lg md:text-2xl text-[hsl(var(--pub-cream))] opacity-95 max-w-xl tracking-wide"
         />
+        <div className="mt-8">
+          <BookTableButton venue="stadhampton-oak" variant="outline" tone="light" />
+        </div>
       </div>
 
       {/* Bottom hint */}
