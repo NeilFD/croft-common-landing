@@ -525,7 +525,7 @@ export const CountryTerracesAndGardens = () => (
           id: "garden-terrace",
           title: "Garden Terrace",
           body: "Where afternoon tea, long brunches and pre-dinner drinks happen. Heaters in winter, parasols in summer.",
-          cta: { label: "Book a table", href: "/book" },
+          cta: { label: "Book a table", href: "sevenrooms:stadhampton-oak" },
         },
         {
           id: "woodland",
