@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useRef, useState } from "react";
 import { MEWS_HOTELS, type MewsHotelKey } from "@/data/mewsHotels";
+import { useMewsDistributor } from "@/hooks/useMewsDistributor";
 
 interface Props {
   hotel: MewsHotelKey;
@@ -32,11 +32,6 @@ const variantClasses = (variant: Props["variant"], tone: Props["tone"]) => {
   }
 };
 
-/**
- * Branded near-full-page modal that embeds the Mews booking engine in an
- * iframe. This keeps the user inside our chrome (eyebrow, property accent,
- * obvious close button) instead of bouncing them into a separate tab.
- */
 const BookRoomButton = ({
   hotel,
   label = "Book a room",
@@ -45,92 +40,50 @@ const BookRoomButton = ({
   className = "",
 }: Props) => {
   const h = MEWS_HOTELS[hotel];
-  const [open, setOpen] = useState(false);
+  const triggerId = `cb-mews-trigger-${hotel}`;
+  const { status, open, isReady } = useMewsDistributor(h.configurationId, triggerId);
+  const [pending, setPending] = useState(false);
+  const waitingRef = useRef(false);
 
   useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = prev;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
+    if (!waitingRef.current || !isReady) return;
+    waitingRef.current = false;
+    setPending(false);
+    open();
+  }, [isReady, open]);
 
-  const close = useCallback(() => setOpen(false), []);
+  useEffect(() => {
+    if (!pending) return;
+    const timer = window.setTimeout(() => {
+      waitingRef.current = false;
+      setPending(false);
+    }, 8000);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [pending]);
+
+  const handleClick = () => {
+    if (pending) return;
+    if (open()) return;
+    waitingRef.current = true;
+    setPending(true);
+  };
+
+  const buttonText = pending || status === "loading" ? "Loading…" : label;
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label={`${label} at ${h.label}`}
-        data-property={h.property}
-        className={`${baseTypography} ${variantClasses(variant, tone)} ${className}`}
-      >
-        {label}
-      </button>
-
-      {open && createPortal(
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={`Book a room at ${h.label}`}
-          data-property={h.property}
-          className="fixed inset-0 z-[100000] flex items-stretch justify-center bg-black/90 p-0 md:p-6"
-        >
-          <div className="relative flex h-full w-full max-w-6xl flex-col border border-white/20 bg-black text-white">
-            {/* Accent bar */}
-            <span aria-hidden className="absolute top-0 left-0 h-[3px] w-full cb-accent-bg" />
-
-            {/* Header */}
-            <div className="flex items-center justify-between gap-4 border-b border-white/15 px-5 py-4 md:px-8 md:py-5">
-              <div className="min-w-0">
-                <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase opacity-70">
-                  {h.property === "town" ? "Crazy Bear Town" : "Crazy Bear Country"} — Rooms
-                </p>
-                <p className="mt-1 truncate font-display text-xl md:text-2xl uppercase leading-none tracking-tight">
-                  {h.label}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <a
-                  href={h.fallbackUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hidden md:inline-flex font-cb-mono text-[10px] tracking-[0.4em] uppercase border border-white/40 px-4 py-2 hover:bg-white hover:text-black transition-colors"
-                >
-                  Open in new tab
-                </a>
-                <button
-                  type="button"
-                  onClick={close}
-                  aria-label="Close booking"
-                  className="inline-flex font-cb-mono text-[10px] tracking-[0.4em] uppercase border border-white px-4 py-2 hover:bg-white hover:text-black transition-colors"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-
-            {/* Iframe */}
-            <div className="relative flex-1 bg-white">
-              <iframe
-                title={`Book a room at ${h.label}`}
-                src={h.fallbackUrl}
-                className="absolute inset-0 h-full w-full border-0"
-                allow="payment *; clipboard-write"
-              />
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
-    </>
+    <button
+      id={triggerId}
+      type="button"
+      onClick={handleClick}
+      aria-label={`${label} at ${h.label}`}
+      aria-busy={pending || status === "loading"}
+      data-property={h.property}
+      className={`${baseTypography} ${variantClasses(variant, tone)} ${className}`}
+    >
+      {buttonText}
+    </button>
   );
 };
 
