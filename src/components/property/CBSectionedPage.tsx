@@ -8,6 +8,8 @@
  */
 import { Link } from "react-router-dom";
 import { CMSText } from "@/components/cms/CMSText";
+import BookTableButton from "@/components/booking/BookTableButton";
+import { parseSevenRoomsHref } from "@/data/sevenroomsVenues";
 
 export interface CBSection {
   id: string;
