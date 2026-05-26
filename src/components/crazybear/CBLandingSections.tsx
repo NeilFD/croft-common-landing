@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { SITE_MAP, PRIMARY_CTAS, MEMBERS_ENTRY, type SiteMapColumn, type SiteMapLink } from "@/data/cbSiteMap";
+import BookTableButton from "@/components/booking/BookTableButton";
 
 /**
  * Homepage content sections that mirror the global nav order AND the
@@ -116,12 +117,13 @@ const CBLandingSections = () => {
                 >
                   Book a room
                 </Link>
-                <Link
-                  to="/pub/food"
-                  className="inline-flex items-center border border-white/70 font-cb-mono text-[10px] tracking-[0.4em] uppercase px-4 py-2 hover:bg-white hover:text-black transition-colors"
-                >
-                  Reserve a table
-                </Link>
+                <BookTableButton
+                  venue="stadhampton-oak"
+                  label="Reserve a table"
+                  variant="outline"
+                  tone="light"
+                  className="!px-4 !py-2 !tracking-[0.4em]"
+                />
                 <a
                   href="https://maps.google.com/?q=Crazy+Bear+Stadhampton+OX44+7UR"
                   target="_blank"
@@ -158,12 +160,13 @@ const CBLandingSections = () => {
                 >
                   Book a room
                 </Link>
-                <Link
-                  to="/town/food/black-bear"
-                  className="inline-flex items-center border border-white/70 font-cb-mono text-[10px] tracking-[0.4em] uppercase px-4 py-2 hover:bg-white hover:text-black transition-colors"
-                >
-                  Reserve a table
-                </Link>
+                <BookTableButton
+                  venue="beaconsfield"
+                  label="Reserve a table"
+                  variant="outline"
+                  tone="light"
+                  className="!px-4 !py-2 !tracking-[0.4em]"
+                />
                 <a
                   href="https://maps.google.com/?q=Crazy+Bear+Beaconsfield+HP9+1LX"
                   target="_blank"
