@@ -10,79 +10,25 @@ import {
 import bookHeroFood from "@/assets/cb-hero-blackbear.jpg";
 
 /**
- * Reservations hub. SevenRooms venues grouped by property (Town / Country).
- * Each card opens the Crazy-Bear-styled BookTableButton modal with that
- * venue's live widget. Hi-res food hero sits behind everything.
+ * Reservations hub. One equal card per SevenRooms venue, in a single
+ * uniform grid. Town / Country are delineated by the accent bar at the
+ * top of each card (red = Town, teal = Country) and the eyebrow label —
+ * no nested panels, no asymmetric groups.
  */
-const TOWN_VENUES: { key: SevenRoomsVenueKey; blurb: string }[] = [
+const VENUES: { key: SevenRoomsVenueKey; blurb: string }[] = [
   {
     key: "beaconsfield",
-    blurb: "The Black Bear & The B&B. Open kitchen, big flavours, shared booking.",
+    blurb: "Open kitchen, big flavours. The Black Bear and The B&B share one booking.",
   },
   {
     key: "beaconsfield-thai",
-    blurb: "Hom Thai. Lacquer, lanterns, proper Thai.",
+    blurb: "Lacquer, lanterns, proper Thai.",
   },
-];
-
-const COUNTRY_VENUES: { key: SevenRoomsVenueKey; blurb: string }[] = [
   {
     key: "stadhampton-oak",
-    blurb: "The Pub at Stadhampton. Real ale, proper food, fires lit.",
+    blurb: "Real ale, proper food, fires lit.",
   },
 ];
-
-const VenueCard: React.FC<{
-  venueKey: SevenRoomsVenueKey;
-  blurb: string;
-}> = ({ venueKey, blurb }) => {
-  const v = SEVENROOMS_VENUES[venueKey];
-  return (
-    <li
-      data-property={v.property}
-      className="relative flex flex-col border border-white/20 bg-black/55 backdrop-blur-sm p-6 md:p-7"
-    >
-      <span aria-hidden className="absolute top-0 left-0 h-[2px] w-full cb-accent-bg" />
-      <h3 className="font-display text-2xl md:text-3xl uppercase leading-tight">
-        {v.label}
-      </h3>
-      <p className="mt-3 font-cb-sans text-sm opacity-85 flex-1">{blurb}</p>
-      <div className="mt-6">
-        <BookTableButton venue={venueKey} variant="outline" tone="light" />
-      </div>
-    </li>
-  );
-};
-
-const PropertyGroup: React.FC<{
-  property: "town" | "country";
-  eyebrow: string;
-  title: string;
-  venues: { key: SevenRoomsVenueKey; blurb: string }[];
-}> = ({ property, eyebrow, title, venues }) => (
-  <section
-    data-property={property}
-    aria-label={title}
-    className="relative border border-white/15 bg-black/40 backdrop-blur-sm p-6 md:p-10"
-  >
-    <span aria-hidden className="absolute top-0 left-0 h-[3px] w-full cb-accent-bg" />
-    <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase opacity-80">
-      {eyebrow}
-    </p>
-    <h2 className="mt-3 font-display text-3xl md:text-5xl uppercase leading-[0.95]">
-      {title}
-    </h2>
-    <ul
-      className={`mt-8 grid grid-cols-1 gap-5 ${
-        venues.length > 1 ? "md:grid-cols-2" : ""
-      }`}
-    >
-      {venues.map((v) => (
-        <VenueCard key={v.key} venueKey={v.key} blurb={v.blurb} />
-      ))}
-    </ul>
-  </section>
-);
 
 const Book: React.FC = () => {
   const { isCMSMode } = useCMSMode();
@@ -112,7 +58,7 @@ const Book: React.FC = () => {
 
   return (
     <div className="relative min-h-screen bg-black text-white flex flex-col overflow-hidden">
-      {/* Hero backdrop */}
+      {/* Hi-res food backdrop */}
       <img
         src={bookHeroFood}
         alt=""
@@ -120,10 +66,10 @@ const Book: React.FC = () => {
         className="absolute inset-0 h-full w-full object-cover"
         style={{ objectPosition: "center 35%" }}
       />
-      <div aria-hidden className="absolute inset-0 bg-black/70" />
+      <div aria-hidden className="absolute inset-0 bg-black/75" />
       <div
         aria-hidden
-        className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black"
+        className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/70 to-black"
       />
 
       <div className="relative z-10 flex flex-1 flex-col">
@@ -161,25 +107,58 @@ const Book: React.FC = () => {
               page="book"
               section="hero"
               contentKey="subtitle"
-              fallback="Pick a venue. The booking widget runs live availability from our restaurants."
+              fallback="Pick a venue. Live availability runs straight from our restaurants."
               as="p"
               className="mt-6 max-w-2xl font-cb-sans text-lg md:text-xl opacity-90"
             />
 
-            <div className="mt-14 grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <PropertyGroup
-                property="town"
-                eyebrow="Crazy Bear Town"
-                title="Town restaurants"
-                venues={TOWN_VENUES}
-              />
-              <PropertyGroup
-                property="country"
-                eyebrow="Crazy Bear Country"
-                title="Country restaurants"
-                venues={COUNTRY_VENUES}
-              />
+            {/* Property-key legend */}
+            <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 font-cb-mono text-[10px] tracking-[0.4em] uppercase">
+              <span data-property="town" className="flex items-center gap-3">
+                <span aria-hidden className="block h-[2px] w-8 cb-accent-bg" />
+                Crazy Bear Town
+              </span>
+              <span data-property="country" className="flex items-center gap-3">
+                <span aria-hidden className="block h-[2px] w-8 cb-accent-bg" />
+                Crazy Bear Country
+              </span>
             </div>
+
+            {/* Uniform 3-card grid */}
+            <ul className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+              {VENUES.map(({ key, blurb }) => {
+                const v = SEVENROOMS_VENUES[key];
+                return (
+                  <li
+                    key={key}
+                    data-property={v.property}
+                    className="relative flex h-full flex-col border border-white/20 bg-black/65 backdrop-blur-sm p-7"
+                  >
+                    <span
+                      aria-hidden
+                      className="absolute top-0 left-0 h-[3px] w-full cb-accent-bg"
+                    />
+                    <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase opacity-80">
+                      {v.property === "town" ? "Crazy Bear Town" : "Crazy Bear Country"}
+                    </p>
+                    <h2 className="mt-4 font-display text-2xl uppercase leading-tight min-h-[3.5rem]">
+                      {v.label}
+                    </h2>
+                    <p className="mt-4 font-cb-sans text-sm opacity-85 flex-1">
+                      {blurb}
+                    </p>
+                    <div className="mt-6">
+                      <BookTableButton
+                        venue={key}
+                        variant="outline"
+                        tone="light"
+                        className="w-full"
+                      />
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         </main>
       </div>
