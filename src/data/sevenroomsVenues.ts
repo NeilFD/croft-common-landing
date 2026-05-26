@@ -10,7 +10,7 @@
  */
 
 export type SevenRoomsVenueKey =
-  | "beaconsfield"      // Town: Black Bear + B&B share one widget
+  | "beaconsfield"      // Town: Black Bear + The Rooms share one widget
   | "beaconsfield-thai" // Town: Hom Thai
   | "stadhampton-oak";  // Country: The Pub at Stadhampton
 
