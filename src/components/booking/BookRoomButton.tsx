@@ -1,5 +1,4 @@
-import { useEffect, useId, useState } from "react";
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useCallback, useId, useRef, useState } from "react";
 import { MEWS_HOTELS, type MewsHotelKey } from "@/data/mewsHotels";
 import { useMewsDistributor } from "@/hooks/useMewsDistributor";
 
@@ -36,6 +35,12 @@ const variantClasses = (variant: Props["variant"], tone: Props["tone"]) => {
   }
 };
 
+/**
+ * Mews's distributor renders its OWN full-screen branded overlay attached to
+ * <body>. Wrapping it inside a shadcn Dialog caused portal / z-index conflicts
+ * that left the iframe blank. We now trigger the native Mews overlay directly
+ * from the button — same brand-rich experience the user sees on app.mews.com.
+ */
 const BookRoomButton = ({
   hotel,
   label = "Book a room",
@@ -43,84 +48,57 @@ const BookRoomButton = ({
   tone = "dark",
   className = "",
 }: Props) => {
-  const [open, setOpen] = useState(false);
   const reactId = useId();
-  const mountId = `cb-mews-mount-${reactId.replace(/[:]/g, "")}`;
+  const triggerId = `cb-mews-trigger-${reactId.replace(/[:]/g, "")}`;
   const h = MEWS_HOTELS[hotel];
   const { status, open: openMews } = useMewsDistributor();
+  const [pending, setPending] = useState(false);
+  const waitingRef = useRef(false);
 
-  // When the dialog opens and Mews is ready, mount the widget into our container.
-  useEffect(() => {
-    if (!open) return;
-    if (status !== "ready") return;
-    // Defer to next tick so the mount node is in the DOM.
-    const t = window.setTimeout(() => {
-      openMews(h.configurationId, mountId);
-    }, 50);
-    return () => window.clearTimeout(t);
-  }, [open, status, openMews, h.configurationId, mountId]);
+  const tryOpen = useCallback(() => {
+    return openMews(h.configurationId, triggerId);
+  }, [openMews, h.configurationId, triggerId]);
+
+  const handleClick = useCallback(() => {
+    if (tryOpen()) return;
+
+    if (status === "error") {
+      window.open(h.fallbackUrl, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    // Script still loading — poll briefly, then fall back to a new tab.
+    if (waitingRef.current) return;
+    waitingRef.current = true;
+    setPending(true);
+    const started = Date.now();
+    const iv = window.setInterval(() => {
+      if (tryOpen()) {
+        window.clearInterval(iv);
+        waitingRef.current = false;
+        setPending(false);
+        return;
+      }
+      if (Date.now() - started > 4000) {
+        window.clearInterval(iv);
+        waitingRef.current = false;
+        setPending(false);
+        window.open(h.fallbackUrl, "_blank", "noopener,noreferrer");
+      }
+    }, 150);
+  }, [tryOpen, status, h.fallbackUrl]);
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label={`${label} at ${h.label}`}
-        className={`${baseTypography} ${variantClasses(variant, tone)} ${className}`}
-      >
-        {label}
-      </button>
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent
-          className="max-w-[1100px] w-[96vw] h-[92vh] sm:h-[88vh] p-0 gap-0 border-foreground bg-black text-white rounded-none sm:rounded-none overflow-hidden flex flex-col"
-          overlayClassName="bg-black/85"
-          data-property={h.property}
-        >
-          {/* Header */}
-          <div className="relative shrink-0 border-b border-white/15 px-6 py-5">
-            <span aria-hidden className="absolute top-0 left-0 h-[2px] w-full cb-accent-bg" />
-            <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase opacity-70">
-              {h.property === "town" ? "Crazy Bear Town" : "Crazy Bear Country"}
-            </p>
-            <DialogTitle className="mt-2 font-display text-2xl md:text-3xl uppercase tracking-tight">
-              {h.label}
-            </DialogTitle>
-            <DialogDescription className="sr-only">
-              Room reservation widget for {h.label}. If the widget does not load,
-              use the link below to open the booking page in a new tab.
-            </DialogDescription>
-          </div>
-
-          {/* Mews mount + loading state */}
-          <div className="relative flex-1 bg-white overflow-auto">
-            <div id={mountId} className="min-h-full" />
-            {status !== "ready" && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white">
-                <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase text-black/60">
-                  {status === "error" ? "Booking engine unavailable" : "Loading rooms"}
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Footer fallback */}
-          <div className="shrink-0 border-t border-white/15 px-6 py-3 flex items-center justify-between gap-4">
-            <p className="font-cb-sans text-xs opacity-70">
-              Booking widget not loading?
-            </p>
-            <a
-              href={h.fallbackUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-cb-mono text-[10px] tracking-[0.4em] uppercase underline underline-offset-4 hover:opacity-80"
-            >
-              Open in new tab
-            </a>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
+    <button
+      id={triggerId}
+      type="button"
+      onClick={handleClick}
+      aria-label={`${label} at ${h.label}`}
+      data-property={h.property}
+      className={`${baseTypography} ${variantClasses(variant, tone)} ${className}`}
+    >
+      {pending ? "Loading…" : label}
+    </button>
   );
 };
 
