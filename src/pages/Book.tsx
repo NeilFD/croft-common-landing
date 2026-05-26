@@ -3,11 +3,24 @@ import { Link } from "react-router-dom";
 import { useCMSMode } from "@/contexts/CMSModeContext";
 import { CMSText } from "@/components/cms/CMSText";
 import BookTableButton from "@/components/booking/BookTableButton";
+import BookRoomButton from "@/components/booking/BookRoomButton";
 import {
   SEVENROOMS_VENUES,
   type SevenRoomsVenueKey,
 } from "@/data/sevenroomsVenues";
+import { MEWS_HOTELS, type MewsHotelKey } from "@/data/mewsHotels";
 import bookHeroFood from "@/assets/hero-english-menu.png";
+
+const HOTELS: { key: MewsHotelKey; blurb: string }[] = [
+  {
+    key: "beaconsfield",
+    blurb: "Rooms above the Black Bear. Stay the night, walk to breakfast.",
+  },
+  {
+    key: "stadhampton",
+    blurb: "Country rooms, deep beds, big skies. Stadhampton-style.",
+  },
+];
 
 /**
  * Reservations hub. One equal card per SevenRooms venue, in a single
