@@ -31,7 +31,7 @@ const HOTELS: { key: MewsHotelKey; blurb: string }[] = [
 const VENUES: { key: SevenRoomsVenueKey; blurb: string }[] = [
   {
     key: "beaconsfield",
-    blurb: "Open kitchen, big flavours. The Black Bear and The B&B share one booking.",
+    blurb: "Open kitchen, big flavours. The Black Bear and The Rooms share one booking.",
   },
   {
     key: "beaconsfield-thai",
