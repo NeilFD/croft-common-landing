@@ -213,6 +213,7 @@ export const TownBlackBear = () =>
       cuisine={["British", "Modern European"]}
       faqKey="/town/food"
       cmsPage="town/food/black-bear"
+      bookVenue="beaconsfield"
     />
   );
 export const TownBnB = () =>
@@ -227,6 +228,7 @@ export const TownBnB = () =>
       cuisine={["British", "Brunch"]}
       faqKey="/town/food"
       cmsPage="town/food/bnb"
+      bookVenue="beaconsfield"
     />
   );
 export const TownHomThai = () =>
@@ -241,7 +243,11 @@ export const TownHomThai = () =>
       cuisine={["Thai", "Asian"]}
       faqKey="/town/food"
       cmsPage="town/food/hom-thai"
-    />
+    >
+      <section className="mx-auto max-w-4xl px-6 pb-16 text-center">
+        <BookTableButton venue="beaconsfield-thai" variant="outline" />
+      </section>
+    </PropertyPage>
   );
 export const TownDrink = () =>
   withSecret(
