@@ -58,7 +58,7 @@ const Book: React.FC = () => {
       document.head.appendChild(metaDesc);
     }
     metaDesc.content =
-      "Reserve a table or a room at Crazy Bear. Black Bear, B&B and Hom Thai in Town; The Pub and rooms at Stadhampton in Country.";
+      "Reserve a table or a room at Crazy Bear. Black Bear, Rooms and Hom Thai in Town; The Pub and rooms at Stadhampton in Country.";
 
     let canonical = document.querySelector("link[rel='canonical']") as HTMLLinkElement | null;
     if (!canonical) {
