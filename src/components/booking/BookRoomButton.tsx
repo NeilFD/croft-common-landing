@@ -40,9 +40,7 @@ const BookRoomButton = ({
   const h = MEWS_HOTELS[hotel];
 
   const handleClick = () => {
-    // Same-window redirect to the Mews hosted booking engine.
-    // Avoids both the new-tab UX and the Mews "continue on next page" interstitial.
-    window.location.href = h.fallbackUrl;
+    window.open(h.fallbackUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
