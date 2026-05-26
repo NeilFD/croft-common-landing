@@ -1,7 +1,8 @@
 import { useLocation } from "react-router-dom";
 import { useProperty } from "@/contexts/PropertyContext";
 import { getHeroFor, getHeroFitFor } from "@/data/propertyHeroMap";
-import HeroCarousel from "./HeroCarousel";
+import HeroSequence from "./HeroSequence";
+import { getHeroBeatsFor } from "@/data/heroBeats";
 import { CBSeo } from "@/components/seo/CBSeo";
 import CBFAQ from "@/components/seo/CBFAQ";
 import CBBreadcrumb from "@/components/seo/CBBreadcrumb";
