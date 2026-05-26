@@ -64,12 +64,12 @@ const Book: React.FC = () => {
         alt=""
         aria-hidden
         className="absolute inset-0 h-full w-full object-cover"
-        style={{ objectPosition: "center 35%" }}
+        style={{ objectPosition: "center 40%" }}
       />
-      <div aria-hidden className="absolute inset-0 bg-black/75" />
+      <div aria-hidden className="absolute inset-0 bg-black/55" />
       <div
         aria-hidden
-        className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/70 to-black"
+        className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/85"
       />
 
       <div className="relative z-10 flex flex-1 flex-col">
