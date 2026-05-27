@@ -147,6 +147,7 @@ export const ManagementSidebar = () => {
     modules: false,
     knowledge: false,
     spaces: false,
+    bookings: false,
     admin: false,
     adminNotifications: false,
     adminAnalytics: false,
