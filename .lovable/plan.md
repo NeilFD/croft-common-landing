@@ -1,97 +1,47 @@
-# Karaoke Booking Engine — Phase 1 Build (Frontend + Emails + Management)
+## What's actually happening
 
-Backend (tables, RPCs, seed data, email infra) is already in place. This plan covers everything still to build.
+The sends ARE going out — `email_send_log` shows both Laurent's guest email (`laurent.lemortellec@crazybear.co.uk`) and the venue copy (`neil.fincham-dukes@crazybear.co.uk`) marked `sent` at 14:01 UTC today. There are no suppressions, no bounces, no errors. The booking flow and queue dispatcher are working end-to-end.
 
-## 1. Shared booking logic
+So we have two separate things going on:
 
-Create `src/lib/karaoke/slots.ts`:
-- Slot timing constants: 2h total, 15m gather, 90m usable, 15m clean-down.
-- Helpers: `formatSlotWindow`, `formatUsableWindow`, `nextNDays(28)`, `isWithinCutoff(slotStart, cutoffHours)`.
-- Min/max party size: 2 / 16.
+### 1. `neilfdukes@gmail.com` was never on the list
 
-Create `src/lib/karaoke/api.ts` — thin typed wrappers around the RPCs:
-- `getAvailability(fromDate, days)` -> `get_karaoke_availability`
-- `createBooking(input)` -> `create_karaoke_booking`
-- `getBookingByToken(token)` -> `get_karaoke_booking_by_token`
-- `updateBookingByToken(...)` / `cancelBookingByToken(...)`
-- `listPackages()` -> reads `karaoke_packages`
+The venue notification is sent to whatever is in Settings → Venue email. That's currently `neil.fincham-dukes@crazybear.co.uk`. The gmail address has never been targeted, so of course no email arrived there. You've asked me to swap it.
 
-## 2. Public booking flow — rework `BookingPanel.tsx`
+### 2. The crazybear.co.uk inboxes aren't receiving (not even spam)
 
-Keep the existing Bears Den visual shell. Replace mock state with live data.
+Marked `sent` by our system means the email API accepted the message — it doesn't guarantee inbox delivery. Likely causes:
 
-Steps (one panel, animated step transitions):
-1. **Date** — 28-day picker, disabled days where no slots configured / all booked.
-2. **Slot** — list of that day's `karaoke_slots` with availability badge ("Available" / "Booked"). Inline note: "2 hour booth — 15 min welcome drink, 90 min sing, 15 min clean-down."
-3. **Party size** — slider 2–16, live total readout.
-4. **F&B** — two fieldsets (drink / food), 3 placeholder cards each, optional radio per group, "No package" allowed. Price shows "TBC" when null.
-5. **Your details** — name, email, phone, notes.
-6. **Deposit (dummy)** — explainer card "Phase 1: no card needed. A £X deposit per head will be required when payments go live." Confirm button calls `create_karaoke_booking` with `deposit_status='dummy_paid'`.
-7. **Confirmation moment** — see §3.
+- Microsoft 365 / Google Workspace at crazybear.co.uk silently quarantining mail from `notify.crazybear.dev` (a new sender) before it ever hits the user's spam folder. This is admin-level filtering, not user-level.
+- DMARC alignment between `crazybear.dev` (sender) and `crazybear.co.uk` (recipient) — different root domains, no special trust.
 
-State managed locally; on success route to `/town/karaoke/manage/:token` link is shown but the confirmation screen stays mounted.
+## Plan
 
-## 3. Confirmation moment — VHS strip
+### A. Repoint the venue email (immediate)
 
-New `src/components/karaoke/BookingConfirmation.tsx`:
-- Looping retro VHS / karaoke GIF strip (3–4 stacked horizontal marquees with brand frames already in `/public/lovable-uploads`, plus CSS scanlines + chromatic-aberration overlay using existing tokens — no AI imagery).
-- Headline "Booth held. Warm up the pipes."
-- Booking summary card: date, slot window, usable window callout, party size, F&B, manage link, ICS download.
-- Secondary CTAs: "Manage booking", "Add to calendar" (generate ICS client-side), "Back to Karaoke".
+Update `karaoke_settings.venue_email` from `neil.fincham-dukes@crazybear.co.uk` to `neilfdukes@gmail.com` so all future venue notifications go to your gmail.
 
-## 4. Guest self-service — `/town/karaoke/manage/:token`
+I'll do this as a data update via the insert tool — no schema change, no code change required. The existing wiring already reads `venue_email` from settings live.
 
-New route + page `src/pages/karaoke/ManageBooking.tsx`:
-- Resolves token via `get_karaoke_booking_by_token`. 404-style "Link invalid" state.
-- Shows current booking + cut-off banner (24h before `slot_start`).
-- If outside cut-off:
-  - Reschedule (date + slot picker, reuses §2 components, only shows slots free for new date).
-  - Change party size (2–16 slider).
-  - Add / remove F&B packages.
-  - Cancel booking (confirm dialog, free-text reason).
-- Each save fires `update_karaoke_booking_by_token` then re-invokes guest + venue emails with `idempotencyKey` based on `booking_id + updated_at`.
-- Inside cut-off: read-only with "Call us to change" message + tel link.
+### B. Confirm gmail delivery
 
-Register route in `src/App.tsx` (or wherever Town routes live).
+Once changed, trigger one test booking (or I can fire a test send through the edge function). Gmail typically delivers within seconds and you'll either see it in Inbox or Spam — much easier to diagnose than a corporate Microsoft tenant.
 
-## 5. Transactional email templates
+### C. Investigate crazybear.co.uk non-delivery (separate workstream)
 
-Create under `supabase/functions/_shared/transactional-email-templates/`:
-- `karaoke-guest-confirmation.tsx` — Bears Den styled, includes 15 / 90 / 15 timing block, F&B summary, manage link, calendar link.
-- `karaoke-guest-update.tsx` — "Your booking has changed", diff-style summary.
-- `karaoke-guest-cancellation.tsx`.
-- `karaoke-venue-reservation-sheet.tsx` — full reservation sheet to `neil.fincham-dukes@crazybear.co.uk`: guest details, party size, slot windows, F&B, special notes, manage link for staff reference.
-- `karaoke-venue-update.tsx` / `karaoke-venue-cancellation.tsx`.
+This is the more important one for the guest copy — Laurent didn't receive his confirmation either. Even though Laurent's address happens to be `crazybear.co.uk`, real guests will be on gmail / outlook / hotmail / yahoo, so we need to confirm deliverability is actually OK there. Suggested checks:
 
-Register all six in `registry.ts`. Deploy `send-transactional-email`.
+1. Send a test confirmation to a personal gmail + outlook + hotmail address from the live booking flow. If those land, the issue is purely the crazybear.co.uk inbound filters (their IT team's problem, not ours).
+2. If they DON'T land, we have a real sender reputation / DMARC issue on `notify.crazybear.dev` and we'd need to look at SPF/DKIM alignment and warm-up — that's a bigger piece of work.  
+  
+no teh .co.uk address has never worked???? has .app been set up, does .dev still work???
 
-Wire invocations from §2 (create) and §4 (update / cancel). Venue email recipient pulled from `karaoke_settings.venue_email` (placeholder set to Neil's address) via a small `get-karaoke-venue-email` RPC.
+### D. Optional follow-up: multi-recipient venue email
 
-## 6. Management surface — `/management/karaoke`
+If you later want the venue notification to go to multiple people (gmail + work + ops), I can extend `venue_email` to accept a comma-separated list and update the sender to fan it out. Not doing this now — you chose "replace", not "both".
 
-New section added to existing management sidebar/nav.
+## Technical details
 
-Pages:
-- **Calendar** — month view of bookings, click day -> drawer with slot-by-slot list, status pills.
-- **Bookings list** — sortable table (date, slot, guest, party, F&B, status), filters (date range, status), CSV export, row click -> detail drawer with full audit log from `karaoke_booking_audit`. Staff can cancel (status `cancelled_by_venue`) with reason -> triggers guest cancellation email.
-- **Slots** — edit `karaoke_slots` (toggle weekday availability, change windows if needed — defaults already seeded).
-- **Packages** — CRUD `karaoke_packages` (kind/name/description/price).
-- **Settings** — edit `karaoke_settings.venue_email` and cancellation cut-off hours.
-
-All writes via management-scoped RPCs (already created) gated by existing admin role check.
-
-CMS entry: add to management nav per project rule "every new page added needs CMS editing".
-
-## 7. Out of scope (Phase 2)
-
-- Real Stripe deposit charging — `deposit_amount_pennies` and `useDepositCheckout()` are wired so the swap is one component.
-- Final F&B pricing — placeholders stay TBC.
-- Multi-room.
-
-## Technical notes
-
-- All currency in pennies (GBP, £).
-- ICS generated client-side, no new dependency.
-- No lucide icons, no em dashes, no AI imagery — VHS effect built from existing brand frames + CSS.
-- British English throughout copy.
-- Existing karaoke layout left alone except `BookingPanel.tsx` internals (per memory rule).
+- Single SQL update: `UPDATE karaoke_settings SET venue_email = 'neilfdukes@gmail.com' WHERE id = 1`.
+- No edge function redeploy needed — `getVenueEmail()` in `src/lib/karaoke/api.ts` reads the value live from the DB on every send.
+- No template change, no UI change.
