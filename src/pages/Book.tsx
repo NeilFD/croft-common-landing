@@ -277,7 +277,7 @@ const Book: React.FC = () => {
                     page="book"
                     section="karaoke"
                     contentKey="heading"
-                    fallback="Sing the night"
+                    fallback="Sing like there's nobody watching"
                     as="h2"
                     className="mt-2 font-display text-3xl md:text-4xl uppercase leading-none tracking-tight"
                   />
