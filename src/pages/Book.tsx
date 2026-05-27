@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCMSMode } from "@/contexts/CMSModeContext";
 import { CMSText } from "@/components/cms/CMSText";
 import BookTableButton from "@/components/booking/BookTableButton";
