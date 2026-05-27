@@ -366,13 +366,39 @@ function PackagesTab() {
             <div><Label>Name</Label><Input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} /></div>
             <div><Label>Description</Label><Textarea value={editing.description ?? ""} onChange={(e) => setEditing({ ...editing, description: e.target.value })} /></div>
             <div>
-              <Label>Price per person (pennies, blank = TBC)</Label>
-              <Input
-                type="number"
-                value={editing.price_per_person_pennies ?? ""}
-                onChange={(e) => setEditing({ ...editing, price_per_person_pennies: e.target.value === "" ? null : Number(e.target.value) })}
-              />
+              <Label>Price per person (£, blank = TBC)</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">£</span>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  inputMode="decimal"
+                  placeholder="e.g. 7.00"
+                  className="pl-7"
+                  value={
+                    editing.price_per_person_pennies == null
+                      ? ""
+                      : (editing.price_per_person_pennies / 100).toFixed(2)
+                  }
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (v === "") {
+                      setEditing({ ...editing, price_per_person_pennies: null });
+                    } else {
+                      const pounds = Number(v);
+                      setEditing({
+                        ...editing,
+                        price_per_person_pennies: Number.isFinite(pounds)
+                          ? Math.round(pounds * 100)
+                          : null,
+                      });
+                    }
+                  }}
+                />
+              </div>
             </div>
+
             <div><Label>Sort order</Label><Input type="number" value={editing.sort_order} onChange={(e) => setEditing({ ...editing, sort_order: Number(e.target.value) })} /></div>
             <div className="flex items-center gap-2"><Switch checked={editing.is_active} onCheckedChange={(v) => setEditing({ ...editing, is_active: v })} /> <span className="text-sm">Active</span></div>
             <div className="flex gap-2 pt-2">
