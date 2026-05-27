@@ -27,8 +27,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, ChevronRight, Download, Search, Plus, Pencil } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Search, Plus, Pencil, CalendarIcon } from "lucide-react";
+
 import { formatSlotWindow, formatLongDate } from "@/lib/karaoke/slots";
 import {
   sendBookingEmails,
