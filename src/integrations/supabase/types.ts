@@ -2028,6 +2028,242 @@ export type Database = {
           },
         ]
       }
+      karaoke_booking_audit: {
+        Row: {
+          action: string
+          actor_id: string | null
+          booking_id: string
+          created_at: string
+          from_state: Json | null
+          id: string
+          note: string | null
+          source: string
+          to_state: Json | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          booking_id: string
+          created_at?: string
+          from_state?: Json | null
+          id?: string
+          note?: string | null
+          source: string
+          to_state?: Json | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          booking_id?: string
+          created_at?: string
+          from_state?: Json | null
+          id?: string
+          note?: string | null
+          source?: string
+          to_state?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "karaoke_booking_audit_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "karaoke_bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      karaoke_bookings: {
+        Row: {
+          cancelled_at: string | null
+          cancelled_reason: string | null
+          created_at: string
+          created_by: string | null
+          deposit_amount_pennies: number | null
+          deposit_status: string
+          drink_package_id: string | null
+          food_package_id: string | null
+          guest_email: string
+          guest_first_name: string
+          guest_last_name: string | null
+          guest_phone: string | null
+          id: string
+          manage_token: string
+          notes: string | null
+          party_size: number
+          slot_date: string
+          slot_end: string
+          slot_start: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          cancelled_at?: string | null
+          cancelled_reason?: string | null
+          created_at?: string
+          created_by?: string | null
+          deposit_amount_pennies?: number | null
+          deposit_status?: string
+          drink_package_id?: string | null
+          food_package_id?: string | null
+          guest_email: string
+          guest_first_name: string
+          guest_last_name?: string | null
+          guest_phone?: string | null
+          id?: string
+          manage_token?: string
+          notes?: string | null
+          party_size: number
+          slot_date: string
+          slot_end: string
+          slot_start: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          cancelled_at?: string | null
+          cancelled_reason?: string | null
+          created_at?: string
+          created_by?: string | null
+          deposit_amount_pennies?: number | null
+          deposit_status?: string
+          drink_package_id?: string | null
+          food_package_id?: string | null
+          guest_email?: string
+          guest_first_name?: string
+          guest_last_name?: string | null
+          guest_phone?: string | null
+          id?: string
+          manage_token?: string
+          notes?: string | null
+          party_size?: number
+          slot_date?: string
+          slot_end?: string
+          slot_start?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "karaoke_bookings_drink_package_id_fkey"
+            columns: ["drink_package_id"]
+            isOneToOne: false
+            referencedRelation: "karaoke_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "karaoke_bookings_food_package_id_fkey"
+            columns: ["food_package_id"]
+            isOneToOne: false
+            referencedRelation: "karaoke_packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      karaoke_packages: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          kind: string
+          name: string
+          price_per_person_pennies: number | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          kind: string
+          name: string
+          price_per_person_pennies?: number | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          kind?: string
+          name?: string
+          price_per_person_pennies?: number | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      karaoke_settings: {
+        Row: {
+          brief_minutes: number
+          cancellation_cutoff_hours: number
+          id: number
+          turnover_minutes: number
+          updated_at: string
+          updated_by: string | null
+          venue_email: string
+        }
+        Insert: {
+          brief_minutes?: number
+          cancellation_cutoff_hours?: number
+          id?: number
+          turnover_minutes?: number
+          updated_at?: string
+          updated_by?: string | null
+          venue_email?: string
+        }
+        Update: {
+          brief_minutes?: number
+          cancellation_cutoff_hours?: number
+          id?: number
+          turnover_minutes?: number
+          updated_at?: string
+          updated_by?: string | null
+          venue_email?: string
+        }
+        Relationships: []
+      }
+      karaoke_slots: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          is_active: boolean
+          label: string | null
+          sort_order: number
+          start_time: string
+          subtitle: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          sort_order?: number
+          start_time: string
+          subtitle?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          sort_order?: number
+          start_time?: string
+          subtitle?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       kitchen_vendor_inquiries: {
         Row: {
           created_at: string | null
@@ -4915,6 +5151,10 @@ export type Database = {
         Returns: string
       }
       can_edit_marketing: { Args: { _uid: string }; Returns: boolean }
+      cancel_karaoke_booking_by_token: {
+        Args: { p_reason?: string; p_token: string }
+        Returns: Json
+      }
       check_secret_kitchen_access_status: {
         Args: { user_email: string }
         Returns: {
@@ -4936,6 +5176,13 @@ export type Database = {
           release_id: string
           ticket_numbers: number[]
           wallet_token: string
+        }[]
+      }
+      create_karaoke_booking: {
+        Args: { payload: Json }
+        Returns: {
+          booking_id: string
+          manage_token: string
         }[]
       }
       create_lead: {
@@ -4982,6 +5229,19 @@ export type Database = {
               total_quantity: number
             }[]
           }
+      get_karaoke_availability: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          day_of_week: number
+          label: string
+          slot_date: string
+          slot_end: string
+          slot_start: string
+          status: string
+          subtitle: string
+        }[]
+      }
+      get_karaoke_booking_by_token: { Args: { p_token: string }; Returns: Json }
       get_management_users: {
         Args: never
         Returns: {
@@ -5011,6 +5271,14 @@ export type Database = {
       is_gold: { Args: { check_user_id: string }; Returns: boolean }
       is_management_user: { Args: { _uid: string }; Returns: boolean }
       is_marketing_authoriser: { Args: { _uid: string }; Returns: boolean }
+      management_cancel_karaoke_booking: {
+        Args: { p_id: string; p_reason?: string }
+        Returns: Json
+      }
+      management_update_karaoke_booking: {
+        Args: { p_id: string; patch: Json }
+        Returns: Json
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -5046,6 +5314,10 @@ export type Database = {
           p_title: string
         }
         Returns: undefined
+      }
+      update_karaoke_booking_by_token: {
+        Args: { p_token: string; patch: Json }
+        Returns: Json
       }
       update_lead: {
         Args: { lead_id_param: string; patch: Json }
