@@ -3,15 +3,29 @@
 Frances's point 4: any URL that changes needs a 301-equivalent so SEO
 authority transfers and external links don't break.
 
-## This round (structural SEO + nav refactor)
+## Domain migration (May 2026)
+
+**Host changed:** every public URL moved from `crazybear.dev` →
+`crazybear.app`. Frances must set up DNS-level 301s at the registrar
+so old `crazybear.dev/*` URLs forward to the same path on
+`crazybear.app/*`, preserving SEO authority and inbound links
+(notably old member-wallet QR codes that still encode the .dev host).
+
+| From | To | Status |
+|------|----|--------|
+| `https://www.crazybear.dev/*` | `https://www.crazybear.app/*` | **301 required at DNS layer** |
+| `https://crazybear.dev/*` | `https://crazybear.app/*` | **301 required at DNS layer** |
+
+Email sender (`notify.crazybear.dev`) is intentionally NOT migrated
+yet — needs new verified email domain + DKIM/SPF/DMARC at registrar
+before flipping.
+
+## Previous round (structural SEO + nav refactor)
 
 **No public URLs changed.** The work was additive: a single global nav
 overlay, footer site map, on-page sections that scroll to in-page anchors
 (`/#stay`, `/#eat-drink`, etc.), and JSON-LD additions.
 
-| From | To | Status |
-|------|----|--------|
-| (none) | (none) | No redirects required this round |
 
 ## Existing redirects already in router
 
