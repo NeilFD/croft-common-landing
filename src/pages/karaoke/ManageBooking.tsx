@@ -1,18 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { toast } from "sonner";
 import {
+  BOOKING_WINDOW_DAYS,
   CANCEL_CUTOFF_HOURS,
   PARTY_MAX,
   PARTY_MIN,
   formatLongDate,
+  formatShortDay,
   formatSlotWindow,
   formatUsableWindow,
   isOutsideCutoff,
+  nextNDays,
+  toIsoDate,
 } from "@/lib/karaoke/slots";
 import {
+  AvailabilityRow,
   KaraokeBooking,
   cancelBookingByToken,
+  getAvailability,
   getBookingByToken,
   sendBookingEmails,
   updateBookingByToken,
