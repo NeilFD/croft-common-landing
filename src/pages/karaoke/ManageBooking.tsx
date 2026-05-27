@@ -230,12 +230,96 @@ const ManageBooking = () => {
                 </button>
               </div>
               <p className="mt-2 font-cb-sans text-xs opacity-60">
-                To change date, time or packages, email{" "}
-                <a href="mailto:neil.fincham-dukes@crazybear.co.uk" className="underline">
-                  the venue
-                </a>{" "}
-                directly — date and slot swaps are coming to this page next.
+                Need to swap packages? Email{" "}
+                <a href="mailto:neil.fincham-dukes@crazybear.co.uk" className="underline">the venue</a>.
               </p>
+            </div>
+
+            <div>
+              <p className="kar-condensed text-xs tracking-[0.4em] uppercase opacity-70">
+                Reschedule
+              </p>
+              {!showReschedule ? (
+                <button
+                  type="button"
+                  disabled={availLoading}
+                  onClick={loadAvailability}
+                  className="mt-4 kar-condensed text-xs uppercase tracking-[0.3em] border border-[hsl(var(--kar-cream))] px-5 py-3 disabled:opacity-40"
+                >
+                  {availLoading ? "Loading..." : "Pick a new date"}
+                </button>
+              ) : (
+                <div className="mt-4 space-y-4">
+                  <div className="flex gap-2 overflow-x-auto pb-2">
+                    {datesByDay.map((d) => {
+                      const hasOpen = availability.some(
+                        (r) => r.slot_date === d && r.status === "open",
+                      );
+                      const { short, date } = formatShortDay(d);
+                      const isSel = selDate === d;
+                      return (
+                        <button
+                          key={d}
+                          type="button"
+                          disabled={!hasOpen}
+                          onClick={() => { setSelDate(d); setSelStart(""); }}
+                          className={`shrink-0 px-3 py-2 border kar-condensed text-xs uppercase tracking-[0.2em] ${
+                            isSel
+                              ? "border-[hsl(var(--kar-neon))] bg-[hsl(var(--kar-neon))] text-[hsl(var(--kar-black))]"
+                              : hasOpen
+                              ? "border-[hsl(var(--kar-cream)/0.3)] hover:border-[hsl(var(--kar-cream))]"
+                              : "border-[hsl(var(--kar-cream)/0.1)] opacity-30"
+                          }`}
+                        >
+                          {short} {date}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {selDate && (
+                    <div className="flex flex-wrap gap-2">
+                      {slotsForDate.map((s) => {
+                        const open = s.status === "open";
+                        const isSel = selStart === s.slot_start;
+                        return (
+                          <button
+                            key={s.slot_start}
+                            type="button"
+                            disabled={!open}
+                            onClick={() => setSelStart(s.slot_start)}
+                            className={`px-4 py-2 border kar-condensed text-xs uppercase tracking-[0.2em] ${
+                              isSel
+                                ? "border-[hsl(var(--kar-neon))] bg-[hsl(var(--kar-neon))] text-[hsl(var(--kar-black))]"
+                                : open
+                                ? "border-[hsl(var(--kar-cream)/0.3)] hover:border-[hsl(var(--kar-cream))]"
+                                : "border-[hsl(var(--kar-cream)/0.1)] opacity-30 line-through"
+                            }`}
+                          >
+                            {formatSlotWindow(s.slot_start, s.slot_end)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      disabled={busy || !selDate || !selStart}
+                      onClick={handleReschedule}
+                      className="kar-condensed text-xs uppercase tracking-[0.3em] border border-[hsl(var(--kar-neon))] text-[hsl(var(--kar-neon))] px-5 py-3 disabled:opacity-40"
+                    >
+                      Confirm swap
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowReschedule(false); setSelDate(""); setSelStart(""); }}
+                      className="kar-condensed text-xs uppercase tracking-[0.3em] opacity-60"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>
