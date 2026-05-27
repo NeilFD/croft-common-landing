@@ -37,9 +37,9 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 
 // Configuration
 const SITE_NAME = "crazy-bear-web"
-const SENDER_DOMAIN = "notify.crazybear.dev"
-const ROOT_DOMAIN = "crazybear.dev"
-const FROM_DOMAIN = "crazybear.dev" // Domain shown in From address (may be root or sender subdomain)
+const SENDER_DOMAIN = "notify.crazybeartest.com"
+const ROOT_DOMAIN = "crazybeartest.com"
+const FROM_DOMAIN = "crazybeartest.com" // Domain shown in From address (may be root or sender subdomain)
 const RECOVERY_REDIRECT_URL = "https://www.crazybear.app/set-password"
 
 function forceRecoveryRedirect(confirmationUrl: string): string {
