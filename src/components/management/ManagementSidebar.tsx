@@ -119,6 +119,9 @@ const spacesSubModules = [
     icon: Users,
     exactMatch: false
   },
+];
+
+const bookingsSubModules = [
   {
     name: 'Karaoke',
     path: '/management/karaoke',
