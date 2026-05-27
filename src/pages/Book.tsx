@@ -45,6 +45,7 @@ const VENUES: { key: SevenRoomsVenueKey; blurb: string }[] = [
 
 const Book: React.FC = () => {
   const { isCMSMode } = useCMSMode();
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.title = "Book a table or a room | Crazy Bear";
