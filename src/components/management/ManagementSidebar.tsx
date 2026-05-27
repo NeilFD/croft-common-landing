@@ -118,6 +118,12 @@ const spacesSubModules = [
     path: '/management/spaces/leads',
     icon: Users,
     exactMatch: false
+  },
+  {
+    name: 'Karaoke',
+    path: '/management/karaoke',
+    icon: MessageCircle,
+    exactMatch: false
   }
 ];
 

@@ -181,6 +181,7 @@ const MarketingCalendar = lazy(() => import("./pages/management/marketing/Market
 const MarketingCampaigns = lazy(() => import("./pages/management/marketing/CampaignsList"));
 const MarketingAssets = lazy(() => import("./pages/management/marketing/AssetsLibrary"));
 const MarketingProgramme = lazy(() => import("./pages/management/marketing/MarketingProgramme"));
+const KaraokeManagement = lazy(() => import("./pages/management/KaraokeManagement"));
 const BeoViewer = lazy(() => import("./pages/BeoViewer"));
 const ClientMagicLogin = lazy(() => import("./pages/ClientMagicLogin"));
 const ClientPortal = lazy(() => import("./pages/ClientPortal"));
@@ -588,6 +589,9 @@ const App = () => {
                          <Route path="/management/spaces/leads" element={<LeadsList />} />
                          <Route path="/management/spaces/leads/new" element={<LeadDetail />} />
                          <Route path="/management/spaces/leads/:id" element={<LeadDetail />} />
+
+                         {/* Karaoke Management */}
+                         <Route path="/management/karaoke" element={<KaraokeManagement />} />
                         
                         {/* BEO PDF Viewer */}
                         <Route path="/beo/view" element={<BeoViewer />} />
