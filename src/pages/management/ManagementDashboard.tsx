@@ -19,6 +19,8 @@ import {
   Home,
   ChevronRight,
   ChevronDown,
+  Mic2,
+  Ticket,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -58,6 +60,16 @@ const ManagementDashboard = () => {
         { name: 'Calendar', href: '/management/spaces/calendar', icon: Calendar },
         { name: 'Events', href: '/management/events', icon: CalendarDays },
         { name: 'Leads & Sales', href: '/management/spaces/leads', icon: Users },
+      ],
+    },
+    {
+      title: 'BOOKINGS',
+      description: 'Karaoke and guest booking flows',
+      icon: Ticket,
+      href: '/management/karaoke',
+      show: true,
+      children: [
+        { name: 'Karaoke', href: '/management/karaoke', icon: Mic2 },
       ],
     },
     {

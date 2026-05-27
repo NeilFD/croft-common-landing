@@ -119,6 +119,9 @@ const spacesSubModules = [
     icon: Users,
     exactMatch: false
   },
+];
+
+const bookingsSubModules = [
   {
     name: 'Karaoke',
     path: '/management/karaoke',
@@ -144,6 +147,7 @@ export const ManagementSidebar = () => {
     modules: false,
     knowledge: false,
     spaces: false,
+    bookings: false,
     admin: false,
     adminNotifications: false,
     adminAnalytics: false,
@@ -173,9 +177,13 @@ export const ManagementSidebar = () => {
   const isOnCMSRoute = currentPath.startsWith('/management/cms');
   const isOnResearchRoute = currentPath.startsWith('/management/research');
   const isOnMarketingRoute = currentPath.startsWith('/management/marketing');
+  const isOnBookingsRoute = currentPath.startsWith('/management/karaoke');
   
   if (isOnSpacesRoute && !expandedSections.spaces) {
     setExpandedSections(prev => ({ ...prev, spaces: true }));
+  }
+  if (isOnBookingsRoute && !expandedSections.bookings) {
+    setExpandedSections(prev => ({ ...prev, bookings: true }));
   }
   if (isOnAdminRoute && !expandedSections.admin) {
     setExpandedSections(prev => ({ ...prev, admin: true }));
@@ -452,6 +460,52 @@ export const ManagementSidebar = () => {
                                </SidebarMenuButton>
                              </TooltipTrigger>
                              <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                              <p className="font-cb-sans">{module.name}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </SidebarMenuItem>
+                      ))}
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </CollapsibleContent>
+              </Collapsible>
+            </SidebarGroup>
+          )}
+
+          {/* Bookings Section */}
+          {showText && (
+            <SidebarGroup>
+              <Collapsible
+                open={expandedSections.bookings}
+                onOpenChange={() => toggleSection('bookings')}
+              >
+                <CollapsibleTrigger asChild>
+                  <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2 text-base">
+                    <span className="flex items-center font-display uppercase tracking-wide">
+                      <MessageCircle className="mr-2 h-5 w-5 text-[hsl(var(--accent-pink))]" />
+                      BOOKINGS
+                    </span>
+                    <ChevronDown className={`h-5 w-5 transition-transform ${expandedSections.bookings ? 'rotate-180' : ''}`} />
+                  </SidebarGroupLabel>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      {bookingsSubModules.map((module) => (
+                        <SidebarMenuItem key={module.path}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <SidebarMenuButton
+                                asChild
+                                className={getNavClass(isActive(module.path, module.exactMatch))}
+                              >
+                                <NavLink to={module.path} className="font-cb-sans">
+                                  <module.icon className="mr-2 h-4 w-4" />
+                                  {module.name}
+                                </NavLink>
+                              </SidebarMenuButton>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
                               <p className="font-cb-sans">{module.name}</p>
                             </TooltipContent>
                           </Tooltip>
