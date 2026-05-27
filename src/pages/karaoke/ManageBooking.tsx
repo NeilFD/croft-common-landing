@@ -31,6 +31,17 @@ const ManageBooking = () => {
   const [notFound, setNotFound] = useState(false);
   const [party, setParty] = useState<number>(PARTY_MIN);
   const [busy, setBusy] = useState(false);
+  const [showReschedule, setShowReschedule] = useState(false);
+  const [availability, setAvailability] = useState<AvailabilityRow[]>([]);
+  const [selDate, setSelDate] = useState<string>("");
+  const [selStart, setSelStart] = useState<string>("");
+  const [availLoading, setAvailLoading] = useState(false);
+
+  const datesByDay = useMemo(() => nextNDays(BOOKING_WINDOW_DAYS), []);
+  const slotsForDate = useMemo(
+    () => availability.filter((s) => s.slot_date === selDate),
+    [availability, selDate],
+  );
 
   useEffect(() => {
     if (!token) return;
