@@ -19,6 +19,8 @@ import {
   Home,
   ChevronRight,
   ChevronDown,
+  Mic2,
+  Ticket,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
