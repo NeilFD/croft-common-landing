@@ -11,17 +11,17 @@ import {
 } from "@/lib/karaoke/slots";
 import type { KaraokeBooking } from "@/lib/karaoke/api";
 
-// Pick a handful of brand frames already in the project for the VHS strip.
-// Using existing uploads avoids any AI imagery rule violation.
-const STRIP_IMAGES = [
-  "/lovable-uploads/00e4abb5-7048-4240-9a07-44d31b238a96.png",
-  "/lovable-uploads/14947106-1082-495d-a320-e9b9f52e1379.png",
-  "/lovable-uploads/21f71c45-1b6f-4e0b-963c-a0f725504104.png",
-  "/lovable-uploads/2501737a-fee4-46b5-bad4-686fc66ed1dd.png",
-  "/lovable-uploads/2a013145-1125-485a-bc81-556ddb550540.png",
-  "/lovable-uploads/35ecafad-f268-4164-9069-284e858ea4d3.png",
-  "/lovable-uploads/2adc6d27-c55e-409e-a08f-06f29113262f.png",
-];
+// Town Crazy Bear imagery only — no Croft Common or other property assets.
+import town01 from "@/assets/cb-carousel-new/town-01.jpg";
+import town02 from "@/assets/cb-carousel-new/town-02.jpg";
+import town03 from "@/assets/cb-carousel-new/town-03.jpg";
+import town04 from "@/assets/cb-carousel-new/town-04.jpg";
+import town05 from "@/assets/cb-carousel-new/town-05.jpg";
+import town06 from "@/assets/cb-carousel-new/town-06.jpg";
+import townRedVelvet from "@/assets/brand-2026/town-red-velvet.jpg";
+
+const STRIP_IMAGES = [town02, town01, town05, townRedVelvet, town03, town04, town06];
+
 
 const BookingConfirmation = ({
   booking,
