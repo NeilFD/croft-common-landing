@@ -222,7 +222,24 @@ export default function KaraokeCalendar() {
           <Button variant="outline" size="sm" onClick={() => move(1)} aria-label="Next">
             <ChevronRight className="h-4 w-4" />
           </Button>
-          <h2 className="font-display uppercase tracking-wide text-lg ml-2">{headerLabel}</h2>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="ml-2 font-display uppercase tracking-wide text-base">
+                <CalendarIcon className="h-4 w-4 mr-2" />
+                {headerLabel}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 bg-background" align="start">
+              <CalendarPicker
+                mode="single"
+                selected={cursor}
+                onSelect={(d) => d && setCursor(d)}
+                weekStartsOn={1}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+
         </div>
         <div className="flex items-center gap-2">
           <div className="inline-flex border border-border rounded-md overflow-hidden">
