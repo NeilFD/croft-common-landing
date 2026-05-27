@@ -589,6 +589,9 @@ const App = () => {
                          <Route path="/management/spaces/leads" element={<LeadsList />} />
                          <Route path="/management/spaces/leads/new" element={<LeadDetail />} />
                          <Route path="/management/spaces/leads/:id" element={<LeadDetail />} />
+
+                         {/* Karaoke Management */}
+                         <Route path="/management/karaoke" element={<KaraokeManagement />} />
                         
                         {/* BEO PDF Viewer */}
                         <Route path="/beo/view" element={<BeoViewer />} />
