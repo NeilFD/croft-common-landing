@@ -115,12 +115,29 @@ export const cancelBookingByToken = async (token: string, reason: string): Promi
   return data as KaraokeBooking;
 };
 
+// Fetch the venue notification email from karaoke_settings so the address
+// stays editable in the management UI without redeploying code.
+const getVenueEmail = async (): Promise<string> => {
+  const fallback = "neil.fincham-dukes@crazybear.co.uk";
+  try {
+    const { data } = await supabase
+      .from("karaoke_settings" as any)
+      .select("venue_email")
+      .eq("id", 1)
+      .maybeSingle();
+    const email = (data as any)?.venue_email;
+    return typeof email === "string" && email.includes("@") ? email : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
 // Send guest + venue emails for a booking event.
 export const sendBookingEmails = async (
   booking: KaraokeBooking,
   kind: "created" | "updated" | "cancelled",
 ) => {
-  const venueEmail = "neil.fincham-dukes@crazybear.co.uk";
+  const venueEmail = await getVenueEmail();
   const guestTemplate =
     kind === "cancelled" ? "karaoke-guest-cancellation" : "karaoke-guest-confirmation";
   const venueTemplate =

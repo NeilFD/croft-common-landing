@@ -53,6 +53,8 @@ const statusBadge = (status: string) => {
   return <Badge variant="outline" className={map[status] ?? ""}>{status.replace(/_/g, " ")}</Badge>;
 };
 
+import KaraokeCalendar from "@/components/management/KaraokeCalendar";
+
 export default function KaraokeManagement() {
   return (
     <ManagementLayout>
@@ -61,17 +63,20 @@ export default function KaraokeManagement() {
           <h1 className="text-3xl font-display uppercase tracking-wide">Karaoke</h1>
           <p className="text-muted-foreground font-cb-sans">Single booth. 2 hour slots. 90 minute sing.</p>
         </div>
-        <Tabs defaultValue="bookings" className="space-y-6">
+        <Tabs defaultValue="calendar" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="bookings">Bookings</TabsTrigger>
-            <TabsTrigger value="slots">Slots</TabsTrigger>
+            <TabsTrigger value="calendar">Calendar</TabsTrigger>
             <TabsTrigger value="packages">Packages</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
-          <TabsContent value="bookings"><BookingsTab /></TabsContent>
-          <TabsContent value="slots"><SlotsTab /></TabsContent>
+          <TabsContent value="calendar"><KaraokeCalendar /></TabsContent>
           <TabsContent value="packages"><PackagesTab /></TabsContent>
-          <TabsContent value="settings"><SettingsTab /></TabsContent>
+          <TabsContent value="settings">
+            <div className="space-y-6">
+              <SettingsTab />
+              <SlotsTab />
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
     </ManagementLayout>
