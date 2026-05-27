@@ -1,106 +1,121 @@
-# Migrate crazybear.dev → crazybear.app
+## Karaoke Booking Engine — Phase 1
 
-The QR scan failure proves the issue: wallet passes encode `https://www.crazybear.dev/den/verify?m=...`, that host no longer resolves, so the scan dies. The same root cause is hiding inside auth emails, SEO canonicals, sitemaps, JSON-LD, edge functions and a couple of legacy `crazybeartest.com` shims. This plan replaces all of them.
+Build out the existing `/town/karaoke` `BookingPanel` into a real reservation system. Single karaoke room, one booking per 2-hour slot (90 min usable + 15 min brief + 15 min turnover). Visual styling of the karaoke page is preserved — only the booking form and confirmation get rewired.
 
-## 1. Single source of truth
+### 1. Data model (Lovable Cloud)
 
-Right now the canonical site URL is duplicated as string literals in ~10 files. Introduce one constant and import it everywhere.
+New tables (with GRANTs + RLS):
 
-- `src/lib/siteUrl.ts` → `export const SITE_URL = "https://www.crazybear.app"; export const SITE_HOST = "crazybear.app";`
-- Edge-function equivalent in `supabase/functions/_shared/site.ts` (Deno can't import from `src/`).
+- `karaoke_slots` — config of bookable windows per weekday (`day_of_week`, `start_time`, `end_time`, `is_active`). Seeded with 12–2, 2–4, 4–6, 6–8 daily. Editable in Management later.
+- `karaoke_bookings`
+  - `id`, `slot_date` (date), `slot_start`, `slot_end`
+  - `guest_first_name`, `guest_last_name`, `guest_email`, `guest_phone`
+  - `party_size` (int, check 2–16)
+  - `food_package_id` (nullable, fk to `karaoke_packages`)
+  - `drink_package_id` (nullable, fk to `karaoke_packages`)
+  - `notes`
+  - `status`: `pending_payment` | `confirmed` | `cancelled` | `cancelled_by_venue`
+  - `manage_token` (uuid, indexed) — used in guest manage link
+  - `deposit_status`: `dummy_paid` | `paid` | `refunded` | `not_required` (phase 1 default `dummy_paid`)
+  - `deposit_amount_pennies` (int, nullable for phase 1)
+  - `cancelled_at`, `cancelled_reason`
+  - `created_at`, `updated_at`
+  - Unique index on `(slot_date, slot_start)` WHERE `status IN ('pending_payment','confirmed')` — enforces single-room exclusivity.
+- `karaoke_packages` — placeholder F&B catalogue. `kind` (`food`|`drink`), `name`, `description`, `price_per_person_pennies` (nullable until pricing confirmed), `sort_order`, `is_active`. Seeded with 3 food + 3 drink placeholders.
+- `karaoke_booking_audit` — append-only log of state changes (who, when, from→to, source: guest/management/system).
 
-Then refactor the hardcoded literals below to use these constants so this never drifts again.
+RLS:
+- Public can `SELECT` only `karaoke_slots` and active `karaoke_packages`.
+- Public availability check goes through a `SECURITY DEFINER` RPC `get_karaoke_availability(p_from date, p_to date)` returning per-day/per-slot `available|gone` (never exposing guest data).
+- Booking insert/update/cancel goes through SECURITY DEFINER RPCs:
+  - `create_karaoke_booking(payload jsonb)` — validates party size, slot exists, slot free, then inserts with `status='confirmed'` (phase 1) + `deposit_status='dummy_paid'`. Returns `id` + `manage_token`.
+  - `get_karaoke_booking_by_token(p_token uuid)` — returns booking + packages.
+  - `update_karaoke_booking_by_token(p_token uuid, patch jsonb)` — reschedule (date/slot) and party size only; re-checks availability and 2–16 bounds.
+  - `cancel_karaoke_booking_by_token(p_token uuid, p_reason text)`.
+- Management role (`admin`/`sales`/`ops`) gets full read + RPCs for venue-side edit/cancel/override.
 
-## 2. Frontend (client) changes
+### 2. Public booking flow (`/town/karaoke`)
 
+`BookingPanel.tsx` reworked behind the same visual shell:
 
-| File                                               | What changes                                                                                                                                                  |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `index.html`                                       | OG/Twitter `og:image`, `og:url`, `twitter:image` → `crazybear.app`. Remove/replace the `crazybeartest.com` redirect shim block entirely (it's dead code now). |
-| `src/components/seo/CBSeo.tsx`                     | `SITE` constant → `https://www.crazybear.app` (drives every canonical + JSON-LD on the site).                                                                 |
-| `src/components/crazybear/culture/CulturePage.tsx` | Two hardcoded canonicals → `crazybear.app`.                                                                                                                   |
-| `src/components/crazybear/CBMemberLoginModal.tsx`  | `redirectTo` for magic link → `https://www.crazybear.app/set-password`.                                                                                       |
-| `src/components/crazybear/CBSubscriptionForm.tsx`  | `emailRedirectTo` → `https://www.crazybear.app/set-password`.                                                                                                 |
-| `src/components/marketing/ChannelPreview.tsx`      | Display label `notify.crazybear.dev` → `notify.crazybear.app` (cosmetic, but matches the new sender).                                                         |
-| `src/pages/Privacy.tsx`                            | Body copy "data controller for crazybear.dev" and fallback email `privacy@crazybear.dev` → `.app`.                                                            |
-| `src/pages/crazybear/Terms.tsx`                    | Body copy reference → `.app`.                                                                                                                                 |
-| `src/pages/crazybear/Contact.tsx`                  | `town@` / `country@crazybear.dev` mailtos and fallbacks → `.app`.                                                                                             |
-| `src/pages/crazybear/Careers.tsx`                  | `careers@crazybear.dev` mailto + fallback → `.app`.                                                                                                           |
-| `src/pages/crazybear/Press.tsx`                    | `press@crazybear.dev` mailto + fallback → `.app`.                                                                                                             |
+1. **Day picker** — next 28 days (scrollable past the current week).
+2. **Slot picker** — pulls live availability from `get_karaoke_availability`. Slot row makes the "90 min usable + 15 in / 15 out" rule explicit underneath the slot label.
+3. **Party size** — slider clamped 2–16 (was 2–12). Live "min 2 / max 16" microcopy.
+4. **F&B packages** — two new fieldsets ("Food", "Drinks") rendering active `karaoke_packages` as selectable cards. "Pricing tbc" badge when price is null. None-selected is allowed.
+5. **Details** — name (split first/last), email, phone, optional notes. Zod-validated client + server.
+6. **Dummy deposit step** — a "Pay deposit (test mode)" button that completes instantly with a `dummy_paid` status. Phase 2 swaps this for the real Stripe Embedded Checkout call without changing the UI contract.
+7. **Submit** → calls `create_karaoke_booking` RPC → returns `id` + `manage_token` → navigates to confirmation.
 
+### 3. Confirmation moment
 
-Note on enquiry pages: `neil.fincham-dukes@crazybear.co.uk` and `jen.needham@crazybear.co.uk` are real corporate addresses on a different domain — leave untouched.
+New full-bleed `BookingConfirmation` overlay inside the karaoke shell:
 
-## 3. SEO / crawler assets
+- Looping retro VHS/karaoke GIF strip across the top (3–4 stacked GIFs from existing brand assets / Giphy embeds), tracking lines + chroma offset, all wrapped in karaoke neon/blood palette.
+- Big `kar-display` headline: **"Booth held. Warm up the pipes."**
+- Booking summary (day, slot, 90 min usable, party, F&B selections).
+- Two CTAs: "Manage booking" (deep links to `/town/karaoke/manage/{token}`) and "Add to calendar" (ICS download).
+- Marquee ticker underneath: "No encores refused · Be there by [start-15min] · Booth opens at [start]".
 
-- `public/sitemap.xml` — every `<loc>` (≈55 URLs) → `https://www.crazybear.app/...`.
-- `public/robots.txt` — `Sitemap:` line → `crazybear.app/sitemap.xml`.
-- `scripts/prerender.ts` and `scripts/verify-prerender.ts` — `SITE`/`BASE` default → `crazybear.app`.
-- `docs/redirects.md` — log the host change so Frances can mirror at DNS.
+### 4. Guest self-service (`/town/karaoke/manage/:token`)
 
-## 4. Edge functions (the bit causing today's QR failure)
+New public route, no auth, token-gated. Resolves booking via `get_karaoke_booking_by_token`.
 
+- Shows current booking + a "What you can do" panel: reschedule (date/slot), change party size (2–16), add/remove F&B packages, cancel.
+- Cut-off rule: changes & cancellations disabled within 24h of `slot_start` (server enforces).
+- Reschedule uses the same availability widget as the booking page.
+- Every change fires a transactional email update ("Your karaoke booking has changed") and a venue email reservation sheet refresh.
 
-| Function                    | Change                                                                                                                                                     |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `create-cb-wallet-pass`     | Logo fetch URLs, `WEBSITE`/`CONTACT` back fields, **and the QR `message` URL `https://www.crazybear.app/den/verify?m=...**` → `.app`. This fixes the scan. |
-| `create-cinema-wallet-pass` | Same logo + website fields → `.app`.                                                                                                                       |
-| `receipt-ocr`               | `REF_LOGO_URL` → `.app`.                                                                                                                                   |
-| `seo-audit`                 | `SITE_BASE` → `.app`.                                                                                                                                      |
-| `seo-copywriter`            | `SITE_BASE` → `.app`.                                                                                                                                      |
-| `auth-email-hook`           | `RECOVERY_REDIRECT_URL` → `https://www.crazybear.app/set-password`. Sender domain decision below.                                                          |
+### 5. Transactional emails (Lovable email infra)
 
+Two new React Email templates registered with `send-transactional-email`:
 
-After editing, all changed edge functions need redeploying (Lovable handles automatically on save, but flagging for awareness).
+- `karaoke-guest-confirmation` — to guest. Includes 90 min usable + 15 in / 15 out wording, full party + F&B summary, "Manage your booking" button → `https://www.crazybear.app/town/karaoke/manage/{token}`, cancellation cut-off note.
+- `karaoke-venue-reservation-sheet` — to `neil.fincham-dukes@crazybear.co.uk` (placeholder, single config row in `karaoke_settings` table so it can be swapped in Management without a code change). Full reservation sheet: guest details, party, F&B, notes, slot timing, booking ref.
 
-## 5. Auth redirect URLs (Lovable Cloud)
+Triggers, each idempotency-keyed by booking id + event:
+- New booking → both emails.
+- Reschedule / party / F&B change → "updated" variants of both.
+- Cancellation (guest or venue) → "cancelled" variants of both.
 
-Supabase auth only sends users to URLs in its allow-list. We must add to the Auth config:
+Email infra setup: call `email_domain--setup_email_infra` (if not present) then `email_domain--scaffold_transactional_email` and add the two templates to `registry.ts`.
 
-- Site URL: `https://www.crazybear.app`
-- Additional redirect URLs: `https://www.crazybear.app/**`, `https://crazybear.app/**`
+### 6. Management surface (`/management/karaoke`)
 
-Old `crazybear.dev` entries can be removed once DNS is fully decommissioned. (I'll call `supabase--configure_auth` for this in build mode.)
+New sidebar entry under the Spaces grouping. Three sub-pages:
 
-## 6. Reissue existing wallet passes
+- **Karaoke calendar** — month + week view of every booking, colour-coded by status. Click a booking → drawer with full details, party, F&B, notes, audit log; actions: edit, cancel (with reason), mark no-show, resend confirmation email. Filters: date range, status.
+- **Karaoke bookings list** — table view (date, slot, guest, party, F&B, status, deposit) with search, status filters, CSV export.
+- **Karaoke settings** — manage `karaoke_slots` (toggle individual weekday slots on/off, change start/end times), edit `karaoke_packages` (placeholder names + descriptions; price left "tbc" until phase 2), and edit the venue email recipient.
 
-Apple Wallet passes are baked at issue time — the existing live passes in members' wallets still contain the dead `crazybear.dev` QR. Two options, in priority order:
+All actions go through the management RPCs and write to `karaoke_booking_audit`. Cancellations and edits trigger the same guest + venue transactional emails.
 
-1. **Pass push update** — if the wallet passes were issued with a web service URL, we can push an update that replaces the QR `message`. Need to check `create-cb-wallet-pass` for `webServiceURL` in the pass.json; if present, write a small one-off function to bump `serial` and notify Apple Push Notification service.
-2. **Reissue on next open** — easier: add a server-side check so when a member views their card we re-mint the `.pkpass` with the new QR; old passes get superseded next time the user taps "Add to Apple Wallet".
+### 7. CMS integration
 
-I'll inspect `create-cb-wallet-pass` for `webServiceURL` and pick the right option in build mode.
+Per project rule: every new page registered in the CMS management system.
 
-## 7. Decommission `crazybeartest.com` shim
+- Register `/town/karaoke/manage/:token` in the CMS page registry (noindex) so the route is visible/manageable.
+- Add `/management/karaoke`, `/management/karaoke/bookings`, `/management/karaoke/settings` to the management nav + access control table.
 
-`index.html` has a JS block redirecting `crazybeartest.com` → set-password. That host is dead too (per memory: "notify.crazybeartest.com is decommissioned"). Delete the whole shim — it can only cause confusion.
+### 8. Phase 2 hooks (built but inert in phase 1)
 
-## 8. Things deliberately NOT changed
+- `karaoke_bookings.deposit_amount_pennies` + `karaoke_packages.price_per_person_pennies` already wired into the data model.
+- The "Pay deposit" button is a single `useDepositCheckout()` hook returning a stub success in phase 1. Phase 2 replaces the hook body with a Stripe Embedded Checkout session that creates a `pending_payment` booking, then promotes to `confirmed` + `deposit_status='paid'` on webhook.
+- A `karaoke-deposit` Stripe product + price will be added in phase 2 once per-head deposit amount is confirmed.
+- Venue email recipient + F&B copy/prices already editable from Management, so no code change needed when finalised.
 
-- `crazybear.co.uk` corporate emails (real, separate domain).
-- `instagram.com/crazybearhotels`, `tiktok.com/@crazybeargroup` — social handles.
-- File/folder names like `src/pages/crazybear/`, component names `CBxxx` — internal naming, unaffected.
-- Project memory references to `notify.crazybear.dev` as "current sender" — I'll update memory after the email-domain decision in step 9.
+### Technical notes
 
-## 9. One clarification needed before build
+- All currency in pennies (GBP, `£`). British English copy throughout.
+- Visual styling of `/town/karaoke` shell preserved per memory rule — only `BookingPanel` internals and a new confirmation overlay change. No new fonts/colours.
+- Karaoke confirmation GIFs sourced as static assets in `src/assets/karaoke/` (or remote Giphy iframes) — agreed before build.
+- Slot timing helper centralised in `src/lib/karaoke/slots.ts` (formatting, brief/turnover windows, cut-off logic) so client + edge functions share one source of truth.
+- Edge functions:
+  - `send-transactional-email` already exists (or scaffolded) — only template additions.
+  - All booking write operations are SECURITY DEFINER Postgres functions invoked via `supabase.rpc(...)`; no custom send-only edge function needed.
 
-**Email sender domain.** `notify.crazybear.dev` is used by `auth-email-hook`, `cb-send-welcome`, `marketing-review-notify`, `send-cinema-ticket-email` as the actual Resend sender. Switching this requires:
+### Out of scope (this plan)
 
-- adding `notify.crazybear.app` (or `crazybear.app`) as a verified domain in Lovable Cloud → Emails
-- adding SPF/DKIM/DMARC DNS records at the registrar
-- waiting for DNS verification before sending
-
-If you want me to keep sending from `notify.crazybear.dev` for now (DNS for that subdomain may still resolve even if the apex site doesn't), I'll only touch the *link/redirect/canonical* URLs and leave the sender alone until you've added the new email domain. Otherwise I'll trigger the email-domain setup dialog as part of build.
-
-I'll ask this as a question before starting build.
-
-## Technical summary (for reference)
-
-- 1 new shared constant file (frontend) + 1 (edge functions).
-- ~15 frontend files edited (URLs, mailtos, copy).
-- 2 public files (sitemap.xml, robots.txt) regenerated.
-- 6 edge functions edited + redeployed.
-- 1 `supabase--configure_auth` call to update Site URL + redirect allow-list.
-- 1 wallet-pass reissue path (option 1 or 2 above) so existing members' QRs start working.
-- `index.html` `crazybeartest.com` shim deleted.
-- Project memory (`mem://infrastructure/email`) updated to reflect the new sender domain once chosen.
+- Real Stripe deposit charging (phase 2).
+- Final F&B pricing (placeholder until provided).
+- Multi-room support (single room assumption baked in).
+- Native push notifications for the venue (email reservation sheet only for now).
