@@ -1,47 +1,42 @@
-## What's actually happening
+# Switch email sender to crazybear.app
 
-The sends ARE going out — `email_send_log` shows both Laurent's guest email (`laurent.lemortellec@crazybear.co.uk`) and the venue copy (`neil.fincham-dukes@crazybear.co.uk`) marked `sent` at 14:01 UTC today. There are no suppressions, no bounces, no errors. The booking flow and queue dispatcher are working end-to-end.
+You bought **crazybear.app** through Lovable. We'll use it purely as the email sender domain (the site stays where it is). New sender becomes **notify@crazybear.app**, replacing the misbehaving `notify.crazybear.dev` that Gmail seems to be silently dropping.
 
-So we have two separate things going on:
+## Why this fixes the deliverability problem
 
-### 1. `neilfdukes@gmail.com` was never on the list
+`.dev` domains have a mixed reputation with corporate spam filters (Microsoft 365 in particular has been aggressive about them). A fresh `.app` subdomain, registered through Lovable and verified via Lovable's nameservers, gives us a clean sender reputation and proper SPF/DKIM/MX records out of the box.
 
-The venue notification is sent to whatever is in Settings → Venue email. That's currently `neil.fincham-dukes@crazybear.co.uk`. The gmail address has never been targeted, so of course no email arrived there. You've asked me to swap it.
+## Steps
 
-### 2. The crazybear.co.uk inboxes aren't receiving (not even spam)
+### 1. Add notify.crazybear.app as an email domain
+You'll click a button to open the email setup dialog and add `crazybear.app` with subdomain `notify`. Because the domain was bought through Lovable, DNS verification is automatic — no manual record-copying.
 
-Marked `sent` by our system means the email API accepted the message — it doesn't guarantee inbox delivery. Likely causes:
+### 2. Wait for verification (usually 5 to 30 mins)
+Lovable provisions the subdomain on its nameservers. Status moves from `awaiting_dns` to `active`.
 
-- Microsoft 365 / Google Workspace at crazybear.co.uk silently quarantining mail from `notify.crazybear.dev` (a new sender) before it ever hits the user's spam folder. This is admin-level filtering, not user-level.
-- DMARC alignment between `crazybear.dev` (sender) and `crazybear.co.uk` (recipient) — different root domains, no special trust.
+### 3. Swap the sender domain in the email functions
+Two edge functions reference `notify.crazybear.dev` today:
+- `send-transactional-email` (karaoke + booking confirmations, venue sheets)
+- `auth-email-hook` (signup / password reset / magic links)
 
-## Plan
+I'll update the `SENDER_DOMAIN` / `FROM_DOMAIN` constants in both, then redeploy. Templates, branding, queue, suppression list, unsubscribe handling — all untouched.
 
-### A. Repoint the venue email (immediate)
+### 4. Test
+Run a karaoke test booking. Confirm:
+- Guest confirmation arrives at `neilfdukes@gmail.com`
+- Venue sheet arrives at `neilfdukes@gmail.com`
+- `email_send_log` shows `sent` from the new domain
 
-Update `karaoke_settings.venue_email` from `neil.fincham-dukes@crazybear.co.uk` to `neilfdukes@gmail.com` so all future venue notifications go to your gmail.
+### 5. Leave .dev domain alone (for now)
+We won't disable or delete `notify.crazybear.dev` yet. It stays as a fallback until `.app` proves stable across a few test sends. Once confirmed, we can clean it up.
 
-I'll do this as a data update via the insert tool — no schema change, no code change required. The existing wiring already reads `venue_email` from settings live.
+### 6. Update project memory
+Core memory currently says the email sender is `notify.crazybear.dev`. I'll update it to `notify.crazybear.app`.
 
-### B. Confirm gmail delivery
+## What I need from you first
 
-Once changed, trigger one test booking (or I can fire a test send through the edge function). Gmail typically delivers within seconds and you'll either see it in Inbox or Spam — much easier to diagnose than a corporate Microsoft tenant.
+Click the button below to add `crazybear.app` as an email domain (subdomain: `notify`). After that completes, I'll handle steps 3 to 6 automatically.
 
-### C. Investigate crazybear.co.uk non-delivery (separate workstream)
-
-This is the more important one for the guest copy — Laurent didn't receive his confirmation either. Even though Laurent's address happens to be `crazybear.co.uk`, real guests will be on gmail / outlook / hotmail / yahoo, so we need to confirm deliverability is actually OK there. Suggested checks:
-
-1. Send a test confirmation to a personal gmail + outlook + hotmail address from the live booking flow. If those land, the issue is purely the crazybear.co.uk inbound filters (their IT team's problem, not ours).
-2. If they DON'T land, we have a real sender reputation / DMARC issue on `notify.crazybear.dev` and we'd need to look at SPF/DKIM alignment and warm-up — that's a bigger piece of work.  
-  
-no teh .co.uk address has never worked???? has .app been set up, does .dev still work???
-
-### D. Optional follow-up: multi-recipient venue email
-
-If you later want the venue notification to go to multiple people (gmail + work + ops), I can extend `venue_email` to accept a comma-separated list and update the sender to fan it out. Not doing this now — you chose "replace", not "both".
-
-## Technical details
-
-- Single SQL update: `UPDATE karaoke_settings SET venue_email = 'neilfdukes@gmail.com' WHERE id = 1`.
-- No edge function redeploy needed — `getVenueEmail()` in `src/lib/karaoke/api.ts` reads the value live from the DB on every send.
-- No template change, no UI change.
+<presentation-actions>
+<presentation-open-email-setup>Add crazybear.app as email domain</presentation-open-email-setup>
+</presentation-actions>
