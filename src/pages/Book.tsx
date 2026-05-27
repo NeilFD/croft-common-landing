@@ -260,6 +260,67 @@ const Book: React.FC = () => {
                 })}
               </ul>
             </section>
+
+            {/* ───────────── Karaoke ───────────── */}
+            <section className="mt-20">
+              <div className="flex items-end justify-between gap-6 border-b border-white/20 pb-4">
+                <div>
+                  <CMSText
+                    page="book"
+                    section="karaoke"
+                    contentKey="eyebrow"
+                    fallback="Karaoke"
+                    as="p"
+                    className="font-cb-mono text-[10px] tracking-[0.5em] uppercase opacity-70"
+                  />
+                  <CMSText
+                    page="book"
+                    section="karaoke"
+                    contentKey="heading"
+                    fallback="Sing the night"
+                    as="h2"
+                    className="mt-2 font-display text-3xl md:text-4xl uppercase leading-none tracking-tight"
+                  />
+                </div>
+              </div>
+
+              <ul className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+                <li
+                  data-property="town"
+                  className="relative flex h-full flex-col border border-white/20 bg-black/65 backdrop-blur-sm p-7"
+                >
+                  <span
+                    aria-hidden
+                    className="absolute top-0 left-0 h-[3px] w-full cb-accent-bg"
+                  />
+                  <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase opacity-80">
+                    Crazy Bear Town
+                  </p>
+                  <h3 className="mt-4 font-display text-2xl uppercase leading-tight min-h-[3.5rem]">
+                    Karaoke at Beaconsfield
+                  </h3>
+                  <CMSText
+                    page="book"
+                    section="karaoke"
+                    contentKey="blurb-beaconsfield"
+                    fallback="Private rooms. Loud songs. Cold drinks. Book a booth."
+                    as="p"
+                    className="mt-4 font-cb-sans text-sm opacity-85 flex-1"
+                  />
+                  <div className="mt-6">
+                    <button
+                      type="button"
+                      onClick={() => navigate("/town/karaoke")}
+                      aria-label="Book a karaoke booth at Beaconsfield"
+                      data-property="town"
+                      className="w-full inline-flex items-center justify-center font-cb-mono text-[10px] tracking-[0.5em] uppercase px-6 py-3 transition-colors border border-white/80 text-white hover:bg-white hover:text-black"
+                    >
+                      Book karaoke
+                    </button>
+                  </div>
+                </li>
+              </ul>
+            </section>
           </div>
         </main>
       </div>
