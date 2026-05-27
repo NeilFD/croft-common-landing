@@ -64,7 +64,7 @@ export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
 
             {/* Main Content */}
             <main className="flex-1 overflow-auto p-6 md:p-8 lg:p-12 flex flex-col">
-              <div className="max-w-[1600px] mx-auto flex-1 pb-24">
+              <div className="w-full max-w-[1600px] mx-auto flex-1 pb-24">
                 {children}
               </div>
               
