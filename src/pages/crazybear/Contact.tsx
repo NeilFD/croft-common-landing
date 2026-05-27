@@ -38,9 +38,9 @@ const Contact = () => (
           page={PAGE}
           section="country"
           contentKey="email"
-          fallback="country@crazybear.dev"
+          fallback="country@crazybear.app"
           as="a"
-          href="mailto:country@crazybear.dev"
+          href="mailto:country@crazybear.app"
           className="mt-2 inline-block font-cb-mono text-[12px] tracking-[0.35em] uppercase underline underline-offset-4"
         />
         <p className="mt-6">
@@ -80,9 +80,9 @@ const Contact = () => (
           page={PAGE}
           section="town"
           contentKey="email"
-          fallback="town@crazybear.dev"
+          fallback="town@crazybear.app"
           as="a"
-          href="mailto:town@crazybear.dev"
+          href="mailto:town@crazybear.app"
           className="mt-2 inline-block font-cb-mono text-[12px] tracking-[0.35em] uppercase underline underline-offset-4"
         />
         <p className="mt-6">

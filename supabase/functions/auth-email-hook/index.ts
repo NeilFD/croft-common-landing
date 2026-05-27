@@ -40,7 +40,7 @@ const SITE_NAME = "crazy-bear-web"
 const SENDER_DOMAIN = "notify.crazybear.dev"
 const ROOT_DOMAIN = "crazybear.dev"
 const FROM_DOMAIN = "crazybear.dev" // Domain shown in From address (may be root or sender subdomain)
-const RECOVERY_REDIRECT_URL = "https://www.crazybear.dev/set-password"
+const RECOVERY_REDIRECT_URL = "https://www.crazybear.app/set-password"
 
 function forceRecoveryRedirect(confirmationUrl: string): string {
   const url = new URL(confirmationUrl)

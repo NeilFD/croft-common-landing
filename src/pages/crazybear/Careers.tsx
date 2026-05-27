@@ -93,7 +93,7 @@ const Careers = () => (
               />
               <span className="ml-auto">
                 <a
-                  href="mailto:careers@crazybear.dev"
+                  href="mailto:careers@crazybear.app"
                   className="font-cb-mono text-[10px] tracking-[0.4em] uppercase underline underline-offset-4"
                 >
                   Apply
@@ -115,10 +115,10 @@ const Careers = () => (
           className="mt-3 font-cb-sans text-lg opacity-85"
         />
         <a
-          href="mailto:careers@crazybear.dev"
+          href="mailto:careers@crazybear.app"
           className="mt-6 inline-block border border-foreground px-8 py-4 font-cb-mono text-[10px] tracking-[0.4em] uppercase hover:bg-foreground hover:text-background transition-colors"
         >
-          <CMSText page={PAGE} section="cta" contentKey="email" fallback="careers@crazybear.dev" as="span" />
+          <CMSText page={PAGE} section="cta" contentKey="email" fallback="careers@crazybear.app" as="span" />
         </a>
       </div>
     </div>

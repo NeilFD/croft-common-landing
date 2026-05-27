@@ -31,7 +31,7 @@ import { createClient } from '@supabase/supabase-js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const DIST = resolve(ROOT, 'dist');
-const SITE = 'https://www.crazybear.dev';
+const SITE = 'https://www.crazybear.app';
 const DEFAULT_OG = `${SITE}/brand/logo.png`;
 
 // ---------- 1. Bail early if there's no build to prerender ----------

@@ -67,7 +67,7 @@ const CBSubscriptionForm = () => {
         // via the link in the confirmation email (lands at /set-password).
         password: crypto.randomUUID() + crypto.randomUUID(),
         options: {
-          emailRedirectTo: `https://www.crazybear.dev/set-password`,
+          emailRedirectTo: `https://www.crazybear.app/set-password`,
           data: {
             first_name: firstName || null,
             last_name: lastName,

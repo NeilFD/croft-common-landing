@@ -3,7 +3,7 @@
  * Curls a list of URLs as Googlebot and asserts each one returns a unique
  * <title> + a real <h1> in the static HTML. Use before swapping DNS:
  *
- *   bunx tsx scripts/verify-prerender.ts https://www.crazybear.dev
+ *   bunx tsx scripts/verify-prerender.ts https://www.crazybear.app
  */
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
-const BASE = process.argv[2] || 'https://www.crazybear.dev';
+const BASE = process.argv[2] || 'https://www.crazybear.app';
 const UA = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
 
 const src = readFileSync(resolve(ROOT, 'src/data/cmsPages.ts'), 'utf8');
