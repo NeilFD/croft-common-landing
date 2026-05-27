@@ -3414,7 +3414,7 @@ export type Database = {
           image_url: string
           is_approved: boolean | null
           is_featured: boolean | null
-          is_visible: boolean | null
+          is_visible: boolean
           latitude: number | null
           location_confirmed: boolean | null
           longitude: number | null
@@ -3439,7 +3439,7 @@ export type Database = {
           image_url: string
           is_approved?: boolean | null
           is_featured?: boolean | null
-          is_visible?: boolean | null
+          is_visible?: boolean
           latitude?: number | null
           location_confirmed?: boolean | null
           longitude?: number | null
@@ -3464,7 +3464,7 @@ export type Database = {
           image_url?: string
           is_approved?: boolean | null
           is_featured?: boolean | null
-          is_visible?: boolean | null
+          is_visible?: boolean
           latitude?: number | null
           location_confirmed?: boolean | null
           longitude?: number | null
