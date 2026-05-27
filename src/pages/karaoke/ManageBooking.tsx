@@ -104,6 +104,42 @@ const ManageBooking = () => {
     }
   };
 
+  const loadAvailability = async () => {
+    setAvailLoading(true);
+    try {
+      const from = datesByDay[0];
+      const to = datesByDay[datesByDay.length - 1];
+      const rows = await getAvailability(from, to);
+      setAvailability(rows);
+      setShowReschedule(true);
+    } catch (e: any) {
+      toast.error("Couldn't load availability.");
+    } finally {
+      setAvailLoading(false);
+    }
+  };
+
+  const handleReschedule = async () => {
+    if (!token || !booking || !selDate || !selStart) return;
+    setBusy(true);
+    try {
+      await updateBookingByToken(token, { slot_date: selDate, slot_start: selStart });
+      const fresh = await getBookingByToken(token);
+      if (fresh) {
+        setBooking(fresh);
+        sendBookingEmails(fresh, "updated").catch(() => {});
+      }
+      toast.success("Rescheduled.");
+      setShowReschedule(false);
+      setSelDate("");
+      setSelStart("");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't reschedule.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   if (loading) {
     return (
       <section className="bg-[hsl(var(--kar-black))] text-[hsl(var(--kar-cream))] px-6 py-32 min-h-screen">
