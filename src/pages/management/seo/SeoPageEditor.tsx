@@ -192,7 +192,7 @@ export default function SeoPageEditor() {
   const descHint = lengthHint(description, 70, 160);
   const previewTitle = title || '(no title set)';
   const previewDesc = description || '(no description set)';
-  const previewUrl = `www.crazybear.dev${route}`;
+  const previewUrl = `www.crazybear.app${route}`;
 
   return (
     <ManagementLayout>
@@ -324,7 +324,7 @@ export default function SeoPageEditor() {
               </div>
               {ogImage && (
                 <img
-                  src={ogImage.startsWith('http') ? ogImage : `https://www.crazybear.dev${ogImage}`}
+                  src={ogImage.startsWith('http') ? ogImage : `https://www.crazybear.app${ogImage}`}
                   alt="Sharing preview"
                   className="mt-3 max-w-sm border border-foreground/20"
                   onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
