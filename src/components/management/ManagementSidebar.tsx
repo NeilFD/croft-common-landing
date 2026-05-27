@@ -177,9 +177,13 @@ export const ManagementSidebar = () => {
   const isOnCMSRoute = currentPath.startsWith('/management/cms');
   const isOnResearchRoute = currentPath.startsWith('/management/research');
   const isOnMarketingRoute = currentPath.startsWith('/management/marketing');
+  const isOnBookingsRoute = currentPath.startsWith('/management/karaoke');
   
   if (isOnSpacesRoute && !expandedSections.spaces) {
     setExpandedSections(prev => ({ ...prev, spaces: true }));
+  }
+  if (isOnBookingsRoute && !expandedSections.bookings) {
+    setExpandedSections(prev => ({ ...prev, bookings: true }));
   }
   if (isOnAdminRoute && !expandedSections.admin) {
     setExpandedSections(prev => ({ ...prev, admin: true }));
