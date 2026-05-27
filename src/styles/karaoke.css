@@ -114,10 +114,45 @@
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
 }
+@keyframes kar-marquee-reverse {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
 .kar-marquee-track {
   animation: kar-marquee 40s linear infinite;
   will-change: transform;
 }
+.animate-kar-marquee {
+  animation: kar-marquee 30s linear infinite;
+  will-change: transform;
+}
+.animate-kar-marquee-reverse {
+  animation: kar-marquee-reverse 36s linear infinite;
+  will-change: transform;
+}
+
+/* ---------- VHS / confirmation effects ---------- */
+@keyframes kar-vhs-jitter {
+  0%, 100% { transform: translate(0, 0); }
+  20%      { transform: translate(-1px, 1px); }
+  40%      { transform: translate(1px, -1px); }
+  60%      { transform: translate(-1px, 0); }
+  80%      { transform: translate(1px, 1px); }
+}
+.kar-vhs-jitter {
+  animation: kar-vhs-jitter 0.18s steps(2) infinite;
+}
+@keyframes kar-pop-in {
+  0%   { transform: scale(0.6) rotate(-3deg); opacity: 0; }
+  60%  { transform: scale(1.06) rotate(1deg);  opacity: 1; }
+  100% { transform: scale(1)    rotate(0deg);  opacity: 1; }
+}
+.kar-pop-in { animation: kar-pop-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes kar-scanlines {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 6px; }
+}
+
 
 /* ---------- Disco ball ---------- */
 @keyframes kar-spin {
