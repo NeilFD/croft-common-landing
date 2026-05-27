@@ -63,6 +63,16 @@ const ManagementDashboard = () => {
       ],
     },
     {
+      title: 'BOOKINGS',
+      description: 'Karaoke and guest booking flows',
+      icon: Ticket,
+      href: '/management/karaoke',
+      show: true,
+      children: [
+        { name: 'Karaoke', href: '/management/karaoke', icon: Mic2 },
+      ],
+    },
+    {
       title: 'MARKETING',
       description: 'Calendar, programme, campaigns, assets',
       icon: CalendarDays,
