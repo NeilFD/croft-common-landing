@@ -15,7 +15,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const SITE_BASE = "https://www.crazybear.dev";
+const SITE_BASE = "https://www.crazybear.app";
 
 const FALLBACK_SEO: Record<string, { title: string; description: string; og_image?: string }> = {
   "/": { title: "The Crazy Bear | Country & Town", description: "The Crazy Bear. Two hotels, one spirit. Country in Stadhampton, Town in Beaconsfield." },

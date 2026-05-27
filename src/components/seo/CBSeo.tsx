@@ -2,7 +2,7 @@ import { Helmet } from "react-helmet-async";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-const SITE = "https://www.crazybear.dev";
+const SITE = "https://www.crazybear.app";
 
 interface CBSeoProps {
   title: string;

@@ -130,7 +130,7 @@ export const EmailPreview = ({ body, hashtags = [], ctaUrl }: PreviewProps) => (
     <div className="max-w-[480px] border border-foreground/10">
       <div className="bg-foreground text-background px-4 py-3">
         <div className="text-[10px] uppercase tracking-wider">Bears Den</div>
-        <div className="font-display text-lg">notify.crazybear.dev</div>
+        <div className="font-display text-lg">notify.crazybear.app</div>
       </div>
       <div className="p-4 text-sm whitespace-pre-wrap">{body}</div>
       {ctaUrl && (

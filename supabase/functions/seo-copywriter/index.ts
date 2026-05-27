@@ -7,7 +7,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const SITE_BASE = "https://www.crazybear.dev";
+const SITE_BASE = "https://www.crazybear.app";
 const LOVABLE_KEY = Deno.env.get("LOVABLE_API_KEY");
 
 const TOV = `Brand voice: 'Bears Den' — short, staccato, confident, minimal.

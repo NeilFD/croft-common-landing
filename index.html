@@ -49,13 +49,13 @@
     
     
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://www.crazybear.dev/brand/logo.png">
-    <meta property="og:url" content="https://www.crazybear.dev/">
+    <meta property="og:image" content="https://www.crazybear.app/brand/logo.png">
+    <meta property="og:url" content="https://www.crazybear.app/">
 
     <meta name="twitter:card" content="summary_large_image" />
     
     
-    <meta name="twitter:image" content="https://www.crazybear.dev/brand/logo.png">
+    <meta name="twitter:image" content="https://www.crazybear.app/brand/logo.png">
     
     
     <!-- Bootstrap canonicalisation and token routing BEFORE React loads -->
@@ -86,27 +86,9 @@
           if (!isNative) {
             var onCroftApex = host === 'croftcommontest.com';
             var onCroftWww = host === 'www.croftcommontest.com';
-            var onBearApex = host === 'crazybeartest.com';
-            var onBearWww = host === 'www.crazybeartest.com';
             var onLogin = /^\/management\/login\/?$/.test(loc.pathname);
-            var onSetPassword = /^\/set-password\/?$/.test(loc.pathname);
-
-            // Crazy Bear: edge already canonicalises www -> apex. Do NOT redirect
-            // again from JS (causes www <-> apex loop). Only handle special routes.
-            if ((onBearApex || onBearWww) && onLogin) {
-              var bearLoginTarget = 'https://crazybeartest.com/set-password' + search + hash;
-              console.info('[bootstrap] Blocking legacy management login on Crazy Bear');
-              w.location.replace(bearLoginTarget);
-              return;
-            }
 
             if (hasRecoveryTokens) {
-              if ((onBearApex || onBearWww) && !onSetPassword) {
-                var bearTarget = 'https://crazybeartest.com/set-password' + search + hash;
-                console.info('[bootstrap] Directing tokens to /set-password on Crazy Bear');
-                w.location.replace(bearTarget);
-                return;
-              }
               // Croft: edge does apex -> www; send tokens straight to login on www.
               if (onCroftApex || (onCroftWww && !onLogin)) {
                 var target = 'https://www.croftcommontest.com/management/login' + search + hash;
@@ -124,6 +106,7 @@
               }
             }
           }
+
           
           // ===== ULTRA-EARLY NATIVE BOOT BEACON =====
           // Fire immediately if native, before React loads

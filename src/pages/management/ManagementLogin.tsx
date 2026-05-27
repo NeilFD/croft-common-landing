@@ -44,7 +44,7 @@ const ManagementLogin = () => {
   const [sessionValid, setSessionValid] = useState(false);
   const [sessionCheckComplete, setSessionCheckComplete] = useState(false);
 
-  // Management login lives at /management/login on every host, including crazybear.dev.
+  // Management login lives at /management/login on every host, including crazybear.app.
   // Never redirect here to /set-password — that page is for Bears Den members only.
 
 

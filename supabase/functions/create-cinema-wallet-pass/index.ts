@@ -23,8 +23,8 @@ function normalizePem(pem: string): string {
 
 async function fetchAsset(file: string): Promise<Uint8Array> {
   const candidates = [
-    `https://crazybear.dev/brand/wallet/${file}`,
-    `https://www.crazybear.dev/brand/wallet/${file}`,
+    `https://crazybear.app/brand/wallet/${file}`,
+    `https://www.crazybear.app/brand/wallet/${file}`,
     `https://crazy-bear-web.lovable.app/brand/wallet/${file}`,
   ];
   for (const url of candidates) {
@@ -147,7 +147,7 @@ serve(async (req) => {
           { key: 'holderBack', label: namesLabel, value: ticketHolder },
           { key: 'about', label: 'SECRET CINEMA', value: 'One night. One screen. Fifty tickets. Show this pass on arrival.' },
           { key: 'venue', label: 'VENUE', value: 'Crazy Bear — see your booking email for location' },
-          { key: 'website', label: 'WEBSITE', value: 'https://www.crazybear.dev' },
+          { key: 'website', label: 'WEBSITE', value: 'https://www.crazybear.app' },
           { key: 'terms', label: 'TERMS', value: 'Non-transferable. Late entry not guaranteed.' },
         ],
       },

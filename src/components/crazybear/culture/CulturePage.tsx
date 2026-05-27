@@ -53,7 +53,7 @@ const TOWN: Copy = {
   title: "Town Culture | The Crazy Bear, Beaconsfield",
   metaDescription:
     "Town culture. Thai upstairs, silver, gold and copper leaf, mirrored ceilings and late nights in Beaconsfield. Twenty years of black on black on black.",
-  canonical: "https://www.crazybear.dev/town/culture",
+  canonical: "https://www.crazybear.app/town/culture",
   eyebrow: "Beaconsfield / Est. 2002",
   headline: "Town. After dark.",
   tagline:
@@ -135,7 +135,7 @@ const COUNTRY: Copy = {
   title: "Country Culture | The Crazy Bear, Stadhampton",
   metaDescription:
     "Country culture. Turf floors, a cow in the dining room, koi behind the cisterns, roll-top baths and thirty years of long Sundays in Stadhampton, Oxfordshire.",
-  canonical: "https://www.crazybear.dev/country/culture",
+  canonical: "https://www.crazybear.app/country/culture",
   eyebrow: "Stadhampton / Est. 1993",
   headline: "Country. Misbehaving since 1993.",
   tagline:

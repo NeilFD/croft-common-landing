@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import CBTopNav from '@/components/crazybear/CBTopNav';
 
-const REDIRECT = 'https://www.crazybear.dev/set-password';
+const REDIRECT = 'https://www.crazybear.app/set-password';
 
 const SetPassword = () => {
   const [email, setEmail] = useState('');
@@ -81,7 +81,7 @@ const SetPassword = () => {
     try { await supabase.functions.invoke('cb-send-welcome'); } catch {}
     try { sessionStorage.removeItem('recovery'); } catch {}
     toast({ title: 'You are in', description: 'Welcome to the den.' });
-    window.location.assign('https://www.crazybear.dev/');
+    window.location.assign('https://www.crazybear.app/');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

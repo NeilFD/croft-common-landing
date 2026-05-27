@@ -8,7 +8,7 @@ const SECTIONS: { id: string; title: string; body: string }[] = [
     id: "about",
     title: "1. About us",
     body:
-      "The Crazy Bear is the trading name of The Crazy Bear Group, with hotels at Stadhampton (Oxfordshire) and Beaconsfield (Buckinghamshire). These terms apply to all bookings, visits and use of crazybear.dev.",
+      "The Crazy Bear is the trading name of The Crazy Bear Group, with hotels at Stadhampton (Oxfordshire) and Beaconsfield (Buckinghamshire). These terms apply to all bookings, visits and use of crazybear.app.",
   },
   {
     id: "bookings",

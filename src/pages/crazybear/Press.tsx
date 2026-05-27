@@ -57,9 +57,9 @@ const Press = () => (
           page={PAGE}
           section="contact"
           contentKey="email"
-          fallback="press@crazybear.dev"
+          fallback="press@crazybear.app"
           as="a"
-          href="mailto:press@crazybear.dev"
+          href="mailto:press@crazybear.app"
           className="mt-3 inline-block font-cb-mono text-[12px] tracking-[0.35em] uppercase underline underline-offset-4"
         />
       </div>

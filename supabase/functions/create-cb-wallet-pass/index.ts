@@ -41,10 +41,10 @@ function formatMemberSince(iso: string | null): string {
 // 50/100/150px logo files and 29/58/87px icon files.
 async function fetchAsset(file: string): Promise<Uint8Array> {
   const candidates = [
-    `https://crazybear.dev/brand/wallet/${file}`,
-    `https://www.crazybear.dev/brand/wallet/${file}`,
+    `https://crazybear.app/brand/wallet/${file}`,
+    `https://www.crazybear.app/brand/wallet/${file}`,
     `https://crazy-bear-web.lovable.app/brand/wallet/${file}`,
-    `https://www.crazybear.dev/brand/wallet/${file}`,
+    `https://www.crazybear.app/brand/wallet/${file}`,
   ];
   for (const url of candidates) {
     try {
@@ -175,15 +175,15 @@ serve(async (req) => {
         ],
         backFields: [
           { key: 'about', label: 'THE DEN', value: 'Your Crazy Bear membership. Show this card on arrival.' },
-          { key: 'website', label: 'WEBSITE', value: 'https://www.crazybear.dev' },
-          { key: 'contact', label: 'CONTACT', value: 'hello@crazybear.dev' },
+          { key: 'website', label: 'WEBSITE', value: 'https://www.crazybear.app' },
+          { key: 'contact', label: 'CONTACT', value: 'hello@crazybear.app' },
           { key: 'terms', label: 'TERMS', value: 'This card is non-transferable. The Den reserves the right to refuse entry.' },
         ],
       },
       barcodes: [
         {
           format: 'PKBarcodeFormatQR',
-          message: `https://www.crazybear.dev/den/verify?m=${encodeURIComponent(membershipNumber)}`,
+          message: `https://www.crazybear.app/den/verify?m=${encodeURIComponent(membershipNumber)}`,
           messageEncoding: 'iso-8859-1',
           altText: membershipNumber,
         },

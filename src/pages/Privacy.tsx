@@ -16,7 +16,7 @@ const SECTIONS: ListSection[] = [
     id: "who",
     title: "1. Who we are",
     body:
-      "The Crazy Bear Group is the data controller for crazybear.dev and bookings made at our hotels at Stadhampton (Oxfordshire) and Beaconsfield (Buckinghamshire).",
+      "The Crazy Bear Group is the data controller for crazybear.app and bookings made at our hotels at Stadhampton (Oxfordshire) and Beaconsfield (Buckinghamshire).",
   },
   {
     id: "what",
@@ -116,7 +116,7 @@ const Privacy = () => (
         <div className="mt-3 border border-black/15 p-6">
           <CMSText page={PAGE} section="contact" contentKey="name" fallback="The Crazy Bear Group" as="p" className="opacity-85 font-bold" />
           <CMSText page={PAGE} section="contact" contentKey="address" fallback="Bear Lane, Stadhampton, Oxfordshire OX44 7UR" as="p" className="opacity-85" />
-          <CMSText page={PAGE} section="contact" contentKey="email" fallback="privacy@crazybear.dev" as="p" className="opacity-85" />
+          <CMSText page={PAGE} section="contact" contentKey="email" fallback="privacy@crazybear.app" as="p" className="opacity-85" />
           <CMSText
             page={PAGE}
             section="contact"
