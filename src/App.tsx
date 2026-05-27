@@ -33,6 +33,7 @@ const PubSnacks = lazy(() => import("./pages/pub/PubSnacks"));
 // /town/karaoke enclave
 const KaraokeLayout = lazy(() => import("./components/karaoke/KaraokeLayout"));
 const KaraokeHome = lazy(() => import("./pages/karaoke/KaraokeHome"));
+const KaraokeManageBooking = lazy(() => import("./pages/karaoke/ManageBooking"));
 const CountryRooms = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRooms })));
 const CountryRoomTypes = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRoomTypes })));
 const CountryRoomGallery = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRoomGallery })));
@@ -434,6 +435,7 @@ const App = () => {
                       {/* Karaoke — top-level enclave (belongs to Crazy Bear Town) */}
                       <Route path="/town/karaoke" element={<KaraokeLayout />}>
                         <Route index element={<KaraokeHome />} />
+                        <Route path="manage/:token" element={<KaraokeManageBooking />} />
                       </Route>
 
 

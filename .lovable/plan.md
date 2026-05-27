@@ -1,121 +1,97 @@
-## Karaoke Booking Engine — Phase 1
+# Karaoke Booking Engine — Phase 1 Build (Frontend + Emails + Management)
 
-Build out the existing `/town/karaoke` `BookingPanel` into a real reservation system. Single karaoke room, one booking per 2-hour slot (90 min usable + 15 min brief + 15 min turnover). Visual styling of the karaoke page is preserved — only the booking form and confirmation get rewired.
+Backend (tables, RPCs, seed data, email infra) is already in place. This plan covers everything still to build.
 
-### 1. Data model (Lovable Cloud)
+## 1. Shared booking logic
 
-New tables (with GRANTs + RLS):
+Create `src/lib/karaoke/slots.ts`:
+- Slot timing constants: 2h total, 15m gather, 90m usable, 15m clean-down.
+- Helpers: `formatSlotWindow`, `formatUsableWindow`, `nextNDays(28)`, `isWithinCutoff(slotStart, cutoffHours)`.
+- Min/max party size: 2 / 16.
 
-- `karaoke_slots` — config of bookable windows per weekday (`day_of_week`, `start_time`, `end_time`, `is_active`). Seeded with 12–2, 2–4, 4–6, 6–8 daily. Editable in Management later.
-- `karaoke_bookings`
-  - `id`, `slot_date` (date), `slot_start`, `slot_end`
-  - `guest_first_name`, `guest_last_name`, `guest_email`, `guest_phone`
-  - `party_size` (int, check 2–16)
-  - `food_package_id` (nullable, fk to `karaoke_packages`)
-  - `drink_package_id` (nullable, fk to `karaoke_packages`)
-  - `notes`
-  - `status`: `pending_payment` | `confirmed` | `cancelled` | `cancelled_by_venue`
-  - `manage_token` (uuid, indexed) — used in guest manage link
-  - `deposit_status`: `dummy_paid` | `paid` | `refunded` | `not_required` (phase 1 default `dummy_paid`)
-  - `deposit_amount_pennies` (int, nullable for phase 1)
-  - `cancelled_at`, `cancelled_reason`
-  - `created_at`, `updated_at`
-  - Unique index on `(slot_date, slot_start)` WHERE `status IN ('pending_payment','confirmed')` — enforces single-room exclusivity.
-- `karaoke_packages` — placeholder F&B catalogue. `kind` (`food`|`drink`), `name`, `description`, `price_per_person_pennies` (nullable until pricing confirmed), `sort_order`, `is_active`. Seeded with 3 food + 3 drink placeholders.
-- `karaoke_booking_audit` — append-only log of state changes (who, when, from→to, source: guest/management/system).
+Create `src/lib/karaoke/api.ts` — thin typed wrappers around the RPCs:
+- `getAvailability(fromDate, days)` -> `get_karaoke_availability`
+- `createBooking(input)` -> `create_karaoke_booking`
+- `getBookingByToken(token)` -> `get_karaoke_booking_by_token`
+- `updateBookingByToken(...)` / `cancelBookingByToken(...)`
+- `listPackages()` -> reads `karaoke_packages`
 
-RLS:
-- Public can `SELECT` only `karaoke_slots` and active `karaoke_packages`.
-- Public availability check goes through a `SECURITY DEFINER` RPC `get_karaoke_availability(p_from date, p_to date)` returning per-day/per-slot `available|gone` (never exposing guest data).
-- Booking insert/update/cancel goes through SECURITY DEFINER RPCs:
-  - `create_karaoke_booking(payload jsonb)` — validates party size, slot exists, slot free, then inserts with `status='confirmed'` (phase 1) + `deposit_status='dummy_paid'`. Returns `id` + `manage_token`.
-  - `get_karaoke_booking_by_token(p_token uuid)` — returns booking + packages.
-  - `update_karaoke_booking_by_token(p_token uuid, patch jsonb)` — reschedule (date/slot) and party size only; re-checks availability and 2–16 bounds.
-  - `cancel_karaoke_booking_by_token(p_token uuid, p_reason text)`.
-- Management role (`admin`/`sales`/`ops`) gets full read + RPCs for venue-side edit/cancel/override.
+## 2. Public booking flow — rework `BookingPanel.tsx`
 
-### 2. Public booking flow (`/town/karaoke`)
+Keep the existing Bears Den visual shell. Replace mock state with live data.
 
-`BookingPanel.tsx` reworked behind the same visual shell:
+Steps (one panel, animated step transitions):
+1. **Date** — 28-day picker, disabled days where no slots configured / all booked.
+2. **Slot** — list of that day's `karaoke_slots` with availability badge ("Available" / "Booked"). Inline note: "2 hour booth — 15 min welcome drink, 90 min sing, 15 min clean-down."
+3. **Party size** — slider 2–16, live total readout.
+4. **F&B** — two fieldsets (drink / food), 3 placeholder cards each, optional radio per group, "No package" allowed. Price shows "TBC" when null.
+5. **Your details** — name, email, phone, notes.
+6. **Deposit (dummy)** — explainer card "Phase 1: no card needed. A £X deposit per head will be required when payments go live." Confirm button calls `create_karaoke_booking` with `deposit_status='dummy_paid'`.
+7. **Confirmation moment** — see §3.
 
-1. **Day picker** — next 28 days (scrollable past the current week).
-2. **Slot picker** — pulls live availability from `get_karaoke_availability`. Slot row makes the "90 min usable + 15 in / 15 out" rule explicit underneath the slot label.
-3. **Party size** — slider clamped 2–16 (was 2–12). Live "min 2 / max 16" microcopy.
-4. **F&B packages** — two new fieldsets ("Food", "Drinks") rendering active `karaoke_packages` as selectable cards. "Pricing tbc" badge when price is null. None-selected is allowed.
-5. **Details** — name (split first/last), email, phone, optional notes. Zod-validated client + server.
-6. **Dummy deposit step** — a "Pay deposit (test mode)" button that completes instantly with a `dummy_paid` status. Phase 2 swaps this for the real Stripe Embedded Checkout call without changing the UI contract.
-7. **Submit** → calls `create_karaoke_booking` RPC → returns `id` + `manage_token` → navigates to confirmation.
+State managed locally; on success route to `/town/karaoke/manage/:token` link is shown but the confirmation screen stays mounted.
 
-### 3. Confirmation moment
+## 3. Confirmation moment — VHS strip
 
-New full-bleed `BookingConfirmation` overlay inside the karaoke shell:
+New `src/components/karaoke/BookingConfirmation.tsx`:
+- Looping retro VHS / karaoke GIF strip (3–4 stacked horizontal marquees with brand frames already in `/public/lovable-uploads`, plus CSS scanlines + chromatic-aberration overlay using existing tokens — no AI imagery).
+- Headline "Booth held. Warm up the pipes."
+- Booking summary card: date, slot window, usable window callout, party size, F&B, manage link, ICS download.
+- Secondary CTAs: "Manage booking", "Add to calendar" (generate ICS client-side), "Back to Karaoke".
 
-- Looping retro VHS/karaoke GIF strip across the top (3–4 stacked GIFs from existing brand assets / Giphy embeds), tracking lines + chroma offset, all wrapped in karaoke neon/blood palette.
-- Big `kar-display` headline: **"Booth held. Warm up the pipes."**
-- Booking summary (day, slot, 90 min usable, party, F&B selections).
-- Two CTAs: "Manage booking" (deep links to `/town/karaoke/manage/{token}`) and "Add to calendar" (ICS download).
-- Marquee ticker underneath: "No encores refused · Be there by [start-15min] · Booth opens at [start]".
+## 4. Guest self-service — `/town/karaoke/manage/:token`
 
-### 4. Guest self-service (`/town/karaoke/manage/:token`)
+New route + page `src/pages/karaoke/ManageBooking.tsx`:
+- Resolves token via `get_karaoke_booking_by_token`. 404-style "Link invalid" state.
+- Shows current booking + cut-off banner (24h before `slot_start`).
+- If outside cut-off:
+  - Reschedule (date + slot picker, reuses §2 components, only shows slots free for new date).
+  - Change party size (2–16 slider).
+  - Add / remove F&B packages.
+  - Cancel booking (confirm dialog, free-text reason).
+- Each save fires `update_karaoke_booking_by_token` then re-invokes guest + venue emails with `idempotencyKey` based on `booking_id + updated_at`.
+- Inside cut-off: read-only with "Call us to change" message + tel link.
 
-New public route, no auth, token-gated. Resolves booking via `get_karaoke_booking_by_token`.
+Register route in `src/App.tsx` (or wherever Town routes live).
 
-- Shows current booking + a "What you can do" panel: reschedule (date/slot), change party size (2–16), add/remove F&B packages, cancel.
-- Cut-off rule: changes & cancellations disabled within 24h of `slot_start` (server enforces).
-- Reschedule uses the same availability widget as the booking page.
-- Every change fires a transactional email update ("Your karaoke booking has changed") and a venue email reservation sheet refresh.
+## 5. Transactional email templates
 
-### 5. Transactional emails (Lovable email infra)
+Create under `supabase/functions/_shared/transactional-email-templates/`:
+- `karaoke-guest-confirmation.tsx` — Bears Den styled, includes 15 / 90 / 15 timing block, F&B summary, manage link, calendar link.
+- `karaoke-guest-update.tsx` — "Your booking has changed", diff-style summary.
+- `karaoke-guest-cancellation.tsx`.
+- `karaoke-venue-reservation-sheet.tsx` — full reservation sheet to `neil.fincham-dukes@crazybear.co.uk`: guest details, party size, slot windows, F&B, special notes, manage link for staff reference.
+- `karaoke-venue-update.tsx` / `karaoke-venue-cancellation.tsx`.
 
-Two new React Email templates registered with `send-transactional-email`:
+Register all six in `registry.ts`. Deploy `send-transactional-email`.
 
-- `karaoke-guest-confirmation` — to guest. Includes 90 min usable + 15 in / 15 out wording, full party + F&B summary, "Manage your booking" button → `https://www.crazybear.app/town/karaoke/manage/{token}`, cancellation cut-off note.
-- `karaoke-venue-reservation-sheet` — to `neil.fincham-dukes@crazybear.co.uk` (placeholder, single config row in `karaoke_settings` table so it can be swapped in Management without a code change). Full reservation sheet: guest details, party, F&B, notes, slot timing, booking ref.
+Wire invocations from §2 (create) and §4 (update / cancel). Venue email recipient pulled from `karaoke_settings.venue_email` (placeholder set to Neil's address) via a small `get-karaoke-venue-email` RPC.
 
-Triggers, each idempotency-keyed by booking id + event:
-- New booking → both emails.
-- Reschedule / party / F&B change → "updated" variants of both.
-- Cancellation (guest or venue) → "cancelled" variants of both.
+## 6. Management surface — `/management/karaoke`
 
-Email infra setup: call `email_domain--setup_email_infra` (if not present) then `email_domain--scaffold_transactional_email` and add the two templates to `registry.ts`.
+New section added to existing management sidebar/nav.
 
-### 6. Management surface (`/management/karaoke`)
+Pages:
+- **Calendar** — month view of bookings, click day -> drawer with slot-by-slot list, status pills.
+- **Bookings list** — sortable table (date, slot, guest, party, F&B, status), filters (date range, status), CSV export, row click -> detail drawer with full audit log from `karaoke_booking_audit`. Staff can cancel (status `cancelled_by_venue`) with reason -> triggers guest cancellation email.
+- **Slots** — edit `karaoke_slots` (toggle weekday availability, change windows if needed — defaults already seeded).
+- **Packages** — CRUD `karaoke_packages` (kind/name/description/price).
+- **Settings** — edit `karaoke_settings.venue_email` and cancellation cut-off hours.
 
-New sidebar entry under the Spaces grouping. Three sub-pages:
+All writes via management-scoped RPCs (already created) gated by existing admin role check.
 
-- **Karaoke calendar** — month + week view of every booking, colour-coded by status. Click a booking → drawer with full details, party, F&B, notes, audit log; actions: edit, cancel (with reason), mark no-show, resend confirmation email. Filters: date range, status.
-- **Karaoke bookings list** — table view (date, slot, guest, party, F&B, status, deposit) with search, status filters, CSV export.
-- **Karaoke settings** — manage `karaoke_slots` (toggle individual weekday slots on/off, change start/end times), edit `karaoke_packages` (placeholder names + descriptions; price left "tbc" until phase 2), and edit the venue email recipient.
+CMS entry: add to management nav per project rule "every new page added needs CMS editing".
 
-All actions go through the management RPCs and write to `karaoke_booking_audit`. Cancellations and edits trigger the same guest + venue transactional emails.
+## 7. Out of scope (Phase 2)
 
-### 7. CMS integration
+- Real Stripe deposit charging — `deposit_amount_pennies` and `useDepositCheckout()` are wired so the swap is one component.
+- Final F&B pricing — placeholders stay TBC.
+- Multi-room.
 
-Per project rule: every new page registered in the CMS management system.
+## Technical notes
 
-- Register `/town/karaoke/manage/:token` in the CMS page registry (noindex) so the route is visible/manageable.
-- Add `/management/karaoke`, `/management/karaoke/bookings`, `/management/karaoke/settings` to the management nav + access control table.
-
-### 8. Phase 2 hooks (built but inert in phase 1)
-
-- `karaoke_bookings.deposit_amount_pennies` + `karaoke_packages.price_per_person_pennies` already wired into the data model.
-- The "Pay deposit" button is a single `useDepositCheckout()` hook returning a stub success in phase 1. Phase 2 replaces the hook body with a Stripe Embedded Checkout session that creates a `pending_payment` booking, then promotes to `confirmed` + `deposit_status='paid'` on webhook.
-- A `karaoke-deposit` Stripe product + price will be added in phase 2 once per-head deposit amount is confirmed.
-- Venue email recipient + F&B copy/prices already editable from Management, so no code change needed when finalised.
-
-### Technical notes
-
-- All currency in pennies (GBP, `£`). British English copy throughout.
-- Visual styling of `/town/karaoke` shell preserved per memory rule — only `BookingPanel` internals and a new confirmation overlay change. No new fonts/colours.
-- Karaoke confirmation GIFs sourced as static assets in `src/assets/karaoke/` (or remote Giphy iframes) — agreed before build.
-- Slot timing helper centralised in `src/lib/karaoke/slots.ts` (formatting, brief/turnover windows, cut-off logic) so client + edge functions share one source of truth.
-- Edge functions:
-  - `send-transactional-email` already exists (or scaffolded) — only template additions.
-  - All booking write operations are SECURITY DEFINER Postgres functions invoked via `supabase.rpc(...)`; no custom send-only edge function needed.
-
-### Out of scope (this plan)
-
-- Real Stripe deposit charging (phase 2).
-- Final F&B pricing (placeholder until provided).
-- Multi-room support (single room assumption baked in).
-- Native push notifications for the venue (email reservation sheet only for now).
+- All currency in pennies (GBP, £).
+- ICS generated client-side, no new dependency.
+- No lucide icons, no em dashes, no AI imagery — VHS effect built from existing brand frames + CSS.
+- British English throughout copy.
+- Existing karaoke layout left alone except `BookingPanel.tsx` internals (per memory rule).
