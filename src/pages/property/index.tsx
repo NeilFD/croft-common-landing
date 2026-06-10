@@ -457,10 +457,10 @@ export const TownMenus = () => (
   <PropertyPage
     title="Menus"
     eyebrow="Food"
-    body="Every menu. One place."
     seoDescription="Every menu across Crazy Bear Town, Beaconsfield. The Black Bear, the B&B, Hom Thai."
     cmsPage="town/food/menus"
     heroObjectPosition="center 45%"
+    hideBody
   >
     <CBMenusIndex venues={TOWN_MENUS} cmsPage="town/food/menus" />
   </PropertyPage>
@@ -469,10 +469,10 @@ export const CountryMenus = () => (
   <PropertyPage
     title="Menus"
     eyebrow="Food"
-    body="Every menu. One place."
     seoDescription="Every menu across Crazy Bear Country, Stadhampton. The Pub, Restaurant and Thai."
     cmsPage="country/food/menus"
     heroObjectPosition="center 45%"
+    hideBody
   >
     <CBMenusIndex venues={COUNTRY_MENUS} cmsPage="country/food/menus" />
   </PropertyPage>
