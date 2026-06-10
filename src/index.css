@@ -942,31 +942,31 @@ h1 {
 }
 
 /* ============================================================
-   Neon BOOK button — flickering pink neon sign
+   Neon BOOK button — flickering blood-red neon sign
    ============================================================ */
 @keyframes cb-neon-flicker {
   0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
     opacity: 1;
     text-shadow:
-      0 0 4px #ff1a8c,
-      0 0 8px #ff1a8c,
-      0 0 16px #ff0080,
-      0 0 28px #ff0080,
-      0 0 42px #b3006e;
+      0 0 4px #ff1a1a,
+      0 0 8px #ff1a1a,
+      0 0 16px #b30000,
+      0 0 28px #b30000,
+      0 0 42px #7f0000;
     box-shadow:
-      0 0 6px #ff1a8c,
-      0 0 14px #ff0080,
-      0 0 28px rgba(255, 0, 128, 0.7),
-      inset 0 0 8px rgba(255, 0, 128, 0.35);
-    border-color: #ff1a8c;
-    color: #ffd6e8;
+      0 0 6px #ff1a1a,
+      0 0 14px #b30000,
+      0 0 28px rgba(179, 0, 0, 0.7),
+      inset 0 0 8px rgba(179, 0, 0, 0.35);
+    border-color: #ff1a1a;
+    color: #ffd6d6;
   }
   20%, 24%, 55% {
     opacity: 0.35;
     text-shadow: none;
-    box-shadow: 0 0 2px rgba(255, 0, 128, 0.2), inset 0 0 2px rgba(255, 0, 128, 0.1);
-    border-color: rgba(255, 26, 140, 0.4);
-    color: #6b003d;
+    box-shadow: 0 0 2px rgba(179, 0, 0, 0.2), inset 0 0 2px rgba(179, 0, 0, 0.1);
+    border-color: rgba(255, 26, 26, 0.4);
+    color: #4a0000;
   }
 }
 
@@ -978,7 +978,7 @@ h1 {
 .cb-neon-book {
   animation: cb-neon-flicker 3.6s infinite, cb-neon-buzz 0.18s infinite;
   will-change: opacity, text-shadow, box-shadow;
-  background: rgba(20, 0, 10, 0.35);
+  background: rgba(20, 0, 0, 0.35);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   transition: transform 0.2s ease, background 0.2s ease;
@@ -987,27 +987,27 @@ h1 {
   animation: none;
   opacity: 1;
   color: #ffffff;
-  border-color: #ff3090;
-  background: rgba(80, 0, 40, 0.55);
+  border-color: #ff3333;
+  background: rgba(80, 0, 0, 0.55);
   text-shadow:
-    0 0 6px #ff3090,
-    0 0 14px #ff0080,
-    0 0 28px #ff0080,
-    0 0 48px #ff0080;
+    0 0 6px #ff3333,
+    0 0 14px #b30000,
+    0 0 28px #b30000,
+    0 0 48px #b30000;
   box-shadow:
-    0 0 10px #ff3090,
-    0 0 24px #ff0080,
-    0 0 48px rgba(255, 0, 128, 0.85),
-    inset 0 0 12px rgba(255, 0, 128, 0.5);
+    0 0 10px #ff3333,
+    0 0 24px #b30000,
+    0 0 48px rgba(179, 0, 0, 0.85),
+    inset 0 0 12px rgba(179, 0, 0, 0.5);
   transform: translateY(-1px) scale(1.03);
 }
 .cb-neon-book:active {
   transform: translateY(0) scale(0.97);
   box-shadow:
-    0 0 4px #ff3090,
-    0 0 10px #ff0080,
-    inset 0 0 16px rgba(255, 0, 128, 0.8);
-  background: rgba(120, 0, 60, 0.7);
+    0 0 4px #ff3333,
+    0 0 10px #b30000,
+    inset 0 0 16px rgba(179, 0, 0, 0.8);
+  background: rgba(120, 0, 0, 0.7);
 }
 @media (prefers-reduced-motion: reduce) {
   .cb-neon-book { animation: none; }
