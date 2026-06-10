@@ -8,6 +8,7 @@ import SecretGestureHost, { type SecretVariant } from "@/components/secrets/Secr
 import { CBSeo } from "@/components/seo/CBSeo";
 import CBFAQ from "@/components/seo/CBFAQ";
 import QuoteScene from "@/components/brand2026/QuoteScene";
+import RoomTypeNav from "@/components/crazybear/RoomTypeNav";
 import {
   restaurantSchema,
   breadcrumbSchema,
