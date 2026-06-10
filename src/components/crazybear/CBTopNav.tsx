@@ -139,6 +139,17 @@ const CBTopNav = ({ tone = "light", wordmark }: CBTopNavProps) => {
           >
             {PRIMARY_CTAS.book.label}
           </Link>
+          <button
+            type="button"
+            onClick={() => setMenuOpen(true)}
+            aria-label="Open menu"
+            aria-expanded={menuOpen}
+            className="md:hidden inline-flex flex-col items-end justify-center gap-[5px] h-9 w-9 -mr-1"
+            style={{ textShadow: "none" }}
+          >
+            <span className={`block h-[2px] w-7 ${isLight ? "bg-white" : "bg-foreground"}`} />
+            <span className={`block h-[2px] w-5 ${isLight ? "bg-white" : "bg-foreground"}`} />
+          </button>
         </nav>
       </header>
 
