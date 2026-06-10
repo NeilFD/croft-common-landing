@@ -9,6 +9,7 @@ import pool from "@/assets/hero-final-poolside.png";
 import blackBear from "@/assets/cb-hero-blackbear.jpg";
 import chefPlating from "@/assets/idea-chef-plating.jpg";
 import englishMenu from "@/assets/hero-english-menu.png";
+import townMenusHero from "@/assets/cb-hero-town-menus.jpg.asset.json";
 
 // Carousel room shots reused as room page heroes
 import country01 from "@/assets/cb-carousel-new/country-01.jpg"; // red velvet room with copper bath
