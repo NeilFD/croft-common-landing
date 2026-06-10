@@ -8,6 +8,7 @@ import SecretGestureHost, { type SecretVariant } from "@/components/secrets/Secr
 import { CBSeo } from "@/components/seo/CBSeo";
 import CBFAQ from "@/components/seo/CBFAQ";
 import QuoteScene from "@/components/brand2026/QuoteScene";
+import RoomTypeNav from "@/components/crazybear/RoomTypeNav";
 import {
   restaurantSchema,
   breadcrumbSchema,
@@ -79,21 +80,13 @@ export const CountryHome = () => (
 export const CountryRooms = () =>
   withSecret(
     "rooms-country",
-    <PropertyPage
+    <RoomTypeNav
+      site="country"
       title="Rooms"
-      body="Theatrical. Warm. Never the same twice."
+      body="Theatrical. Warm. Never the same twice. Pick your character. Sleep accordingly."
       seoDescription="Bedrooms at Crazy Bear Country. Theatrical, warm, never the same twice."
-      faqKey="/country/rooms"
-      schemaKind="hotel"
       cmsPage="country/rooms"
-    >
-      <QuoteScene
-        headline={<>So many memories.<br />No evidence.</>}
-        body="Theatrical. Warm. Never the same twice. Sleep where the stories happened."
-        ctaLabel="Pick your character"
-        ctaTo="/country/rooms/types"
-      />
-    </PropertyPage>
+    />
   );
 export const CountryRoomTypes = () =>
   withSecret(
@@ -278,21 +271,13 @@ export const TownCocktails = () =>
 export const TownRooms = () =>
   withSecret(
     "rooms-town",
-    <PropertyPage
+    <RoomTypeNav
+      site="town"
       title="Rooms"
-      body="Velvet, mirror, marble. Sleep like a rumour."
+      body="Velvet, mirror, marble. Each one its own world. Pick your character."
       seoDescription="Rooms at Crazy Bear Town. Velvet, mirror, marble. Each one its own world."
-      schemaKind="hotel"
-      faqKey="/town/rooms"
       cmsPage="town/rooms"
-    >
-      <QuoteScene
-        headline="Late checkout strongly advised."
-        body="Roll-top bath. Theatrical bedhead. Do-not-disturb practically printed on the door."
-        ctaLabel="Pick your character"
-        ctaTo="/town/rooms/types"
-      />
-    </PropertyPage>
+    />
   );
 export const TownRoomTypes = () =>
   withSecret(
