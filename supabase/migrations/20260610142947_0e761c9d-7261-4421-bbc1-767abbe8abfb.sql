@@ -1,0 +1,1 @@
+UPDATE public.cms_images SET image_url = 'https://szokkwlleqndyiojhsll.supabase.co/storage/v1/object/public/cms-assets/town/food/menus/hero/town-food-menus-thai.jpg' WHERE page = 'town/food/menus' AND slot = 'hero';
