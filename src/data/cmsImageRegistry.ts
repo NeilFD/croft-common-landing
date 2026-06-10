@@ -20,6 +20,15 @@ import countryLook1 from "@/assets/cb-country-culture-look-1-routemaster.jpg";
 import countryLook2 from "@/assets/cb-country-culture-look-2-bedroom.jpg";
 import countryLook3 from "@/assets/cb-country-culture-look-3-feast.jpg";
 import countryLook4 from "@/assets/cb-country-culture-look-4-terrace.jpg";
+import roomsTownImg from "@/assets/cb-hero-rooms-town.jpg";
+import roomsCountryImg from "@/assets/cb-hero-rooms-country.jpg";
+import foodTownImg from "@/assets/cb-hero-blackbear.jpg";
+import foodCountryImg from "@/assets/cb-hero-pub.jpg";
+import eventsHeroImg from "@/assets/cb-hero-events.jpg";
+import eventsWeddingsImg from "@/assets/cb-country-culture-look-4-terrace.jpg";
+import eventsPartiesImg from "@/assets/cb-hero-parties.jpg";
+import eventsBirthdaysImg from "@/assets/cb-hero-cocktails.jpg";
+import eventsBusinessImg from "@/assets/cb-hero-country-exterior.jpg";
 
 export type AssetKind = "hero" | "carousel" | "gallery";
 
