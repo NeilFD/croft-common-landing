@@ -79,21 +79,13 @@ export const CountryHome = () => (
 export const CountryRooms = () =>
   withSecret(
     "rooms-country",
-    <PropertyPage
+    <RoomTypeNav
+      site="country"
       title="Rooms"
-      body="Theatrical. Warm. Never the same twice."
+      body="Theatrical. Warm. Never the same twice. Pick your character. Sleep accordingly."
       seoDescription="Bedrooms at Crazy Bear Country. Theatrical, warm, never the same twice."
-      faqKey="/country/rooms"
-      schemaKind="hotel"
       cmsPage="country/rooms"
-    >
-      <QuoteScene
-        headline={<>So many memories.<br />No evidence.</>}
-        body="Theatrical. Warm. Never the same twice. Sleep where the stories happened."
-        ctaLabel="Pick your character"
-        ctaTo="/country/rooms/types"
-      />
-    </PropertyPage>
+    />
   );
 export const CountryRoomTypes = () =>
   withSecret(
