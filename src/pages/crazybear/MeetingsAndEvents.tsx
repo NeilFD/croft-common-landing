@@ -87,14 +87,14 @@ const MeetingsAndEvents = () => {
         {/* 2x2 big tiles */}
         <section className="px-0 md:px-0">
           <div className="grid grid-cols-1 md:grid-cols-2">
-            {TILES.map((tile) => (
+            {TILES.map((tile, i) => (
               <Link
                 key={tile.href}
                 to={tile.href}
                 className="group relative flex items-end overflow-hidden min-h-[60vh] md:min-h-[70vh] border-t border-white/10 md:[&:nth-child(-n+2)]:border-t-0 md:[&:nth-child(2n)]:border-l border-white/10"
               >
                 <img
-                  src={tile.image}
+                  src={tileImages[i]}
                   alt={tile.label}
                   loading="lazy"
                   className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.04]"
