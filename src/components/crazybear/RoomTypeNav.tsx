@@ -63,37 +63,8 @@ const RoomTypeNav = ({ site, title, body, seoDescription, cmsPage }: Props) => {
       <CBSeo title={`${title} | Crazy Bear ${site === "town" ? "Town" : "Country"}`} description={seoDescription.slice(0, 158)} path={path} />
       <CBTopNav tone="light" />
       <main className="bg-black text-white">
-        <CBBreadcrumb />
-        {/* Intro band */}
-        <section className="px-6 md:px-12 pt-28 md:pt-32 pb-12 md:pb-16 max-w-5xl">
-          <CMSText
-            as="p"
-            page={cmsPage}
-            section="hero"
-            contentKey="eyebrow"
-            fallback="Rooms"
-            className="font-cb-mono text-[10px] tracking-[0.45em] uppercase opacity-80 mb-4"
-          />
-          <CMSText
-            as="h1"
-            page={cmsPage}
-            section="hero"
-            contentKey="title"
-            fallback={title}
-            className="font-display uppercase leading-[0.9] tracking-tight text-6xl md:text-8xl"
-          />
-          <CMSText
-            as="p"
-            page={cmsPage}
-            section="hero"
-            contentKey="body"
-            fallback={body}
-            className="mt-6 font-cb-sans text-lg md:text-xl opacity-85 max-w-2xl"
-          />
-        </section>
-
-        {/* 2x2 big tiles */}
-        <section className="px-0">
+        {/* 2x2 big tiles — moved to top */}
+        <section className="px-0 pt-20 md:pt-24">
           <div className="grid grid-cols-1 md:grid-cols-2">
             {TILES.map((tile, i) => (
               <Link
@@ -123,6 +94,37 @@ const RoomTypeNav = ({ site, title, body, seoDescription, cmsPage }: Props) => {
             ))}
           </div>
         </section>
+
+        <CBBreadcrumb />
+
+        {/* Intro band — below the tiles */}
+        <section className="px-6 md:px-12 pt-16 md:pt-24 pb-16 md:pb-20 max-w-5xl border-t border-white/10">
+          <CMSText
+            as="p"
+            page={cmsPage}
+            section="hero"
+            contentKey="eyebrow"
+            fallback="Rooms"
+            className="font-cb-mono text-[10px] tracking-[0.45em] uppercase opacity-80 mb-4"
+          />
+          <CMSText
+            as="h1"
+            page={cmsPage}
+            section="hero"
+            contentKey="title"
+            fallback={title}
+            className="font-display uppercase leading-[0.9] tracking-tight text-6xl md:text-8xl"
+          />
+          <CMSText
+            as="p"
+            page={cmsPage}
+            section="hero"
+            contentKey="body"
+            fallback={body}
+            className="mt-6 font-cb-sans text-lg md:text-xl opacity-85 max-w-2xl"
+          />
+        </section>
+
 
         {/* Gallery link band */}
         <section className="py-20 px-6 md:px-12 text-center border-t border-white/10">
