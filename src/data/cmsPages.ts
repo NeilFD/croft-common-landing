@@ -65,6 +65,7 @@ const Privacy = lazy(() => import('@/pages/Privacy'));
 const RoomsLandingPage = lazy(() => import('@/pages/crazybear/RoomsLanding'));
 const FoodLandingPage = lazy(() => import('@/pages/crazybear/FoodLanding'));
 const OffersLandingPage = lazy(() => import('@/pages/crazybear/OffersLanding'));
+const MeetingsAndEventsPage = lazy(() => import('@/pages/crazybear/MeetingsAndEvents'));
 
 const CountryHome = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryHome })));
 // /pub enclave (top-level, was /country/pub*)
