@@ -4,8 +4,10 @@ import CBFooter from "@/components/crazybear/CBFooter";
 import SplitLanding from "@/components/crazybear/SplitLanding";
 import { CMSText } from "@/components/cms/CMSText";
 import { useCMSAssets } from "@/hooks/useCMSAssets";
-import townImg from "@/assets/cb-hero-rooms-town.jpg";
-import countryImg from "@/assets/cb-hero-rooms-country.jpg";
+import townAsset from "@/assets/cb-rooms-split-town.jpg.asset.json";
+import countryAsset from "@/assets/cb-rooms-split-country.jpg.asset.json";
+const townImg = townAsset.url;
+const countryImg = countryAsset.url;
 
 const RoomsLanding = () => {
   const { assets: townAssets } = useCMSAssets("rooms-landing", "split-town");
