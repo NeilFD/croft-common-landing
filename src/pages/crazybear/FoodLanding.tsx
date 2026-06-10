@@ -3,10 +3,16 @@ import CBTopNav from "@/components/crazybear/CBTopNav";
 import CBFooter from "@/components/crazybear/CBFooter";
 import SplitLanding from "@/components/crazybear/SplitLanding";
 import { CMSText } from "@/components/cms/CMSText";
+import { useCMSAssets } from "@/hooks/useCMSAssets";
 import townImg from "@/assets/cb-hero-blackbear.jpg";
 import countryImg from "@/assets/cb-hero-pub.jpg";
 
 const FoodLanding = () => {
+  const { assets: townAssets } = useCMSAssets("food-landing", "split-town");
+  const { assets: countryAssets } = useCMSAssets("food-landing", "split-country");
+  const townSrc = townAssets[0]?.src ?? townImg;
+  const countrySrc = countryAssets[0]?.src ?? countryImg;
+
   return (
     <>
       <CBSeo
@@ -20,14 +26,14 @@ const FoodLanding = () => {
           left={{
             label: "Town",
             eyebrow: "Beaconsfield",
-            image: townImg,
+            image: townSrc,
             href: "/town/food/menus",
             cta: "Click to see Menus",
           }}
           right={{
             label: "Country",
             eyebrow: "Stadhampton",
-            image: countryImg,
+            image: countrySrc,
             href: "/country/food/menus",
             cta: "Click to see Menus",
           }}

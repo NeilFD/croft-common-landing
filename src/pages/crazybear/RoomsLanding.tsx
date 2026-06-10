@@ -3,10 +3,16 @@ import CBTopNav from "@/components/crazybear/CBTopNav";
 import CBFooter from "@/components/crazybear/CBFooter";
 import SplitLanding from "@/components/crazybear/SplitLanding";
 import { CMSText } from "@/components/cms/CMSText";
+import { useCMSAssets } from "@/hooks/useCMSAssets";
 import townImg from "@/assets/cb-hero-rooms-town.jpg";
 import countryImg from "@/assets/cb-hero-rooms-country.jpg";
 
 const RoomsLanding = () => {
+  const { assets: townAssets } = useCMSAssets("rooms-landing", "split-town");
+  const { assets: countryAssets } = useCMSAssets("rooms-landing", "split-country");
+  const townSrc = townAssets[0]?.src ?? townImg;
+  const countrySrc = countryAssets[0]?.src ?? countryImg;
+
   return (
     <>
       <CBSeo
@@ -20,14 +26,14 @@ const RoomsLanding = () => {
           left={{
             label: "Town",
             eyebrow: "Beaconsfield",
-            image: townImg,
+            image: townSrc,
             href: "/town/rooms",
             cta: "See Rooms",
           }}
           right={{
             label: "Country",
             eyebrow: "Stadhampton",
-            image: countryImg,
+            image: countrySrc,
             href: "/country/rooms",
             cta: "See Rooms",
           }}

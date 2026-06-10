@@ -20,6 +20,15 @@ import countryLook1 from "@/assets/cb-country-culture-look-1-routemaster.jpg";
 import countryLook2 from "@/assets/cb-country-culture-look-2-bedroom.jpg";
 import countryLook3 from "@/assets/cb-country-culture-look-3-feast.jpg";
 import countryLook4 from "@/assets/cb-country-culture-look-4-terrace.jpg";
+import roomsTownImg from "@/assets/cb-hero-rooms-town.jpg";
+import roomsCountryImg from "@/assets/cb-hero-rooms-country.jpg";
+import foodTownImg from "@/assets/cb-hero-blackbear.jpg";
+import foodCountryImg from "@/assets/cb-hero-pub.jpg";
+import eventsHeroImg from "@/assets/cb-hero-events.jpg";
+import eventsWeddingsImg from "@/assets/cb-country-culture-look-4-terrace.jpg";
+import eventsPartiesImg from "@/assets/cb-hero-parties.jpg";
+import eventsBirthdaysImg from "@/assets/cb-hero-cocktails.jpg";
+import eventsBusinessImg from "@/assets/cb-hero-country-exterior.jpg";
 
 export type AssetKind = "hero" | "carousel" | "gallery";
 
@@ -109,6 +118,23 @@ const SLOT_OVERRIDES: Record<string, AssetSlot[]> = {
         { src: countryLook4, alt: "Outdoor terrace at night with firepit, fairy-lit palms and laid tables", caption: "Firepit, after dark" },
       ],
     },
+  ],
+
+  // ----- SPLIT-SCREEN LANDINGS -----
+  "rooms-landing": [
+    { page: "rooms-landing", slot: "split-town", kind: "hero", label: "Rooms Landing — Town side", defaults: [{ src: roomsTownImg, alt: "Town rooms" }] },
+    { page: "rooms-landing", slot: "split-country", kind: "hero", label: "Rooms Landing — Country side", defaults: [{ src: roomsCountryImg, alt: "Country rooms" }] },
+  ],
+  "food-landing": [
+    { page: "food-landing", slot: "split-town", kind: "hero", label: "Food Landing — Town side", defaults: [{ src: foodTownImg, alt: "Town food" }] },
+    { page: "food-landing", slot: "split-country", kind: "hero", label: "Food Landing — Country side", defaults: [{ src: foodCountryImg, alt: "Country food" }] },
+  ],
+  "meetings-and-events": [
+    { page: "meetings-and-events", slot: "hero", kind: "hero", label: "Meetings & Events hero", defaults: [{ src: eventsHeroImg, alt: "Crazy Bear events" }] },
+    { page: "meetings-and-events", slot: "tile-weddings", kind: "hero", label: "Tile — Weddings", defaults: [{ src: eventsWeddingsImg, alt: "Weddings" }] },
+    { page: "meetings-and-events", slot: "tile-parties", kind: "hero", label: "Tile — Parties", defaults: [{ src: eventsPartiesImg, alt: "Parties" }] },
+    { page: "meetings-and-events", slot: "tile-birthdays", kind: "hero", label: "Tile — Birthdays", defaults: [{ src: eventsBirthdaysImg, alt: "Birthdays" }] },
+    { page: "meetings-and-events", slot: "tile-business", kind: "hero", label: "Tile — Business Events", defaults: [{ src: eventsBusinessImg, alt: "Business events" }] },
   ],
 };
 

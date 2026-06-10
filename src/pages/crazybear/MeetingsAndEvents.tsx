@@ -3,6 +3,7 @@ import { CBSeo } from "@/components/seo/CBSeo";
 import CBTopNav from "@/components/crazybear/CBTopNav";
 import CBFooter from "@/components/crazybear/CBFooter";
 import { CMSText } from "@/components/cms/CMSText";
+import { useCMSAssets } from "@/hooks/useCMSAssets";
 import heroImg from "@/assets/cb-hero-events.jpg";
 import weddingsImg from "@/assets/cb-country-culture-look-4-terrace.jpg";
 import partiesImg from "@/assets/cb-hero-parties.jpg";
@@ -12,18 +13,32 @@ import businessImg from "@/assets/cb-hero-country-exterior.jpg";
 interface Tile {
   label: string;
   eyebrow: string;
-  image: string;
+  fallback: string;
   href: string;
+  slot: string;
 }
 
 const TILES: Tile[] = [
-  { label: "Weddings", eyebrow: "I Do, Loudly", image: weddingsImg, href: "/country/events/weddings" },
-  { label: "Parties", eyebrow: "Late & Loud", image: partiesImg, href: "/country/parties" },
-  { label: "Birthdays", eyebrow: "Candles. Sparklers. Cake.", image: birthdaysImg, href: "/country/events/birthdays" },
-  { label: "Business Events", eyebrow: "Off-Site. On-Brand.", image: businessImg, href: "/country/events/business" },
+  { label: "Weddings", eyebrow: "I Do, Loudly", fallback: weddingsImg, href: "/country/events/weddings", slot: "tile-weddings" },
+  { label: "Parties", eyebrow: "Late & Loud", fallback: partiesImg, href: "/country/parties", slot: "tile-parties" },
+  { label: "Birthdays", eyebrow: "Candles. Sparklers. Cake.", fallback: birthdaysImg, href: "/country/events/birthdays", slot: "tile-birthdays" },
+  { label: "Business Events", eyebrow: "Off-Site. On-Brand.", fallback: businessImg, href: "/country/events/business", slot: "tile-business" },
 ];
 
+const useTileImage = (slot: string, fallback: string) => {
+  const { assets } = useCMSAssets("meetings-and-events", slot);
+  return assets[0]?.src ?? fallback;
+};
+
 const MeetingsAndEvents = () => {
+  const heroAssets = useCMSAssets("meetings-and-events", "hero").assets;
+  const heroSrc = heroAssets[0]?.src ?? heroImg;
+  const tileImages = [
+    useTileImage(TILES[0].slot, TILES[0].fallback),
+    useTileImage(TILES[1].slot, TILES[1].fallback),
+    useTileImage(TILES[2].slot, TILES[2].fallback),
+    useTileImage(TILES[3].slot, TILES[3].fallback),
+  ];
   return (
     <>
       <CBSeo
@@ -36,7 +51,7 @@ const MeetingsAndEvents = () => {
         {/* Hero */}
         <section className="relative min-h-[70vh] flex items-end overflow-hidden">
           <img
-            src={heroImg}
+            src={heroSrc}
             alt="Crazy Bear events"
             className="absolute inset-0 h-full w-full object-cover"
           />
@@ -72,14 +87,14 @@ const MeetingsAndEvents = () => {
         {/* 2x2 big tiles */}
         <section className="px-0 md:px-0">
           <div className="grid grid-cols-1 md:grid-cols-2">
-            {TILES.map((tile) => (
+            {TILES.map((tile, i) => (
               <Link
                 key={tile.href}
                 to={tile.href}
                 className="group relative flex items-end overflow-hidden min-h-[60vh] md:min-h-[70vh] border-t border-white/10 md:[&:nth-child(-n+2)]:border-t-0 md:[&:nth-child(2n)]:border-l border-white/10"
               >
                 <img
-                  src={tile.image}
+                  src={tileImages[i]}
                   alt={tile.label}
                   loading="lazy"
                   className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.04]"
