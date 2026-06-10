@@ -119,6 +119,23 @@ const SLOT_OVERRIDES: Record<string, AssetSlot[]> = {
       ],
     },
   ],
+
+  // ----- SPLIT-SCREEN LANDINGS -----
+  "rooms-landing": [
+    { page: "rooms-landing", slot: "split-town", kind: "hero", label: "Rooms Landing — Town side", defaults: [{ src: roomsTownImg, alt: "Town rooms" }] },
+    { page: "rooms-landing", slot: "split-country", kind: "hero", label: "Rooms Landing — Country side", defaults: [{ src: roomsCountryImg, alt: "Country rooms" }] },
+  ],
+  "food-landing": [
+    { page: "food-landing", slot: "split-town", kind: "hero", label: "Food Landing — Town side", defaults: [{ src: foodTownImg, alt: "Town food" }] },
+    { page: "food-landing", slot: "split-country", kind: "hero", label: "Food Landing — Country side", defaults: [{ src: foodCountryImg, alt: "Country food" }] },
+  ],
+  "meetings-and-events": [
+    { page: "meetings-and-events", slot: "hero", kind: "hero", label: "Meetings & Events hero", defaults: [{ src: eventsHeroImg, alt: "Crazy Bear events" }] },
+    { page: "meetings-and-events", slot: "tile-weddings", kind: "hero", label: "Tile — Weddings", defaults: [{ src: eventsWeddingsImg, alt: "Weddings" }] },
+    { page: "meetings-and-events", slot: "tile-parties", kind: "hero", label: "Tile — Parties", defaults: [{ src: eventsPartiesImg, alt: "Parties" }] },
+    { page: "meetings-and-events", slot: "tile-birthdays", kind: "hero", label: "Tile — Birthdays", defaults: [{ src: eventsBirthdaysImg, alt: "Birthdays" }] },
+    { page: "meetings-and-events", slot: "tile-business", kind: "hero", label: "Tile — Business Events", defaults: [{ src: eventsBusinessImg, alt: "Business events" }] },
+  ],
 };
 
 /** Slugs that should NOT appear in Assets (no editable imagery). */
