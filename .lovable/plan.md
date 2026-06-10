@@ -1,72 +1,36 @@
-# Top Nav Restructure + New Landing Pages
+# Meetings & Events page + nav slot + new What's Happening hero
 
-## 1. Top nav (CBTopNav + CBMemberNavItems)
+## 1. Top nav
 
-Rebuild the nav order so BOOK sits at the far right, and Members links toggle by auth state.
+Insert **Meetings & Events** between Food and Offers in `CBTopNav.tsx`:
 
-Order (left → right after the logo):
-
-1. Our Rooms → `/rooms`
-2. Food → `/food`
-3. Offers → `/offers`
-4. What's Happening → `/whats-on`
-5. Weddings → `/country/events/weddings`
-6. Members log-in (button, opens existing `CBMemberLoginModal`) — only when **not** signed in
-7. Members → `/members` — only when signed in
-8. Sign out (button) — only when signed in
-9. BOOK → `/book` (existing `PRIMARY_CTAS.book`) — far right, keeps current button styling
-
-Mobile: same order, collapses behind the Menu button as today. The Menu overlay (`CBNavOverlay`) stays as-is for now (separate site-map view).
-
-## 2. New pages
-
-All three follow the same split-screen Town/Country pattern (vertical 50/50, full-bleed hero image each side, hover/tap reveals CTA). Built as reusable `<SplitLanding>` component to keep them consistent.
-
-### `/rooms` — `src/pages/crazybear/RoomsLanding.tsx`
-- Left: Town → `/town/rooms`
-- Right: Country → `/country/rooms`
-- CTA label: "See Rooms"
-
-### `/food` — `src/pages/crazybear/FoodLanding.tsx`
-- Left: Town → `/town/food/menus`
-- Right: Country → `/country/food/menus`
-- CTA label: "Click to see Menus"
-
-### `/offers` — `src/pages/crazybear/OffersLanding.tsx`
-- Empty scaffold: hero, intro line, CMS-driven offer cards grid (renders nothing until offers exist).
-- No Town/Country split — single page per your answer.
-
-Each page: standard `CBTopNav` (light tone over imagery), `CBFooter`, SEO via `useSEO`.
-
-## 3. CMS coverage
-
-Per project rule, every new page goes into CMS. Add three new CMS content entries using the existing `useCMSContent` pattern (same approach as other landing pages):
-
-- `rooms-landing` — hero image L/R, headline L/R, CTA label
-- `food-landing` — hero image L/R, headline L/R, CTA label
-- `offers-landing` — hero image, intro copy, list of offer cards `{ title, image, body, ctaLabel, ctaPath }`
-
-Register each in `src/data/cmsImageRegistry.ts` and surface them in the CMS admin (`src/admin/...`) under a new "Landing Pages" group so they're editable like existing CMS pages.
-
-## 4. Routing
-
-Add to `src/App.tsx`:
 ```
-<Route path="/rooms" element={<RoomsLanding />} />
-<Route path="/food" element={<FoodLanding />} />
-<Route path="/offers" element={<OffersLanding />} />
+Our Rooms · Food · Meetings & Events · Offers · What's Happening · Weddings · (Member auth) · BOOK
 ```
 
-## Technical notes
+Link target: `/meetings-and-events`.
 
-- `CBMemberNavItems.tsx`: replace current markup. Use `useCBMember().isMember` to switch between `Member Login` button + (hidden Members link) vs `Members` link + `Sign out` button. Apply same `linkCls` from parent.
-- `CBTopNav.tsx`: insert the new link list between the logo and the existing right-side group. BOOK button moves to be the **last** child of the right-side `<nav>` (currently first). Keep scroll-aware backdrop, property accents, safe-area padding untouched.
-- `SplitLanding` lives at `src/components/crazybear/SplitLanding.tsx`. Props: `left`, `right` each `{ label, image, href, cta }`. Mobile: stacks vertically (50vh each).
-- New CMS content reads via existing `useCMSContent` hook; defaults baked into the component so pages render before CMS is populated.
-- No backend/auth changes. No restyle of /house-rules, /karaoke, footer.
+## 2. New page `/meetings-and-events`
+
+New file `src/pages/crazybear/MeetingsAndEvents.tsx`. Standard CBTopNav + CBFooter shell, dramatic full-bleed hero (Bowlby One headline, Space Grotesk subtitle), then a 2×2 grid of four large clickable tiles:
+
+| Tile         | Links to                          |
+| ------------ | --------------------------------- |
+| Weddings     | `/country/events/weddings`        |
+| Parties      | `/country/parties`                |
+| Birthdays    | `/country/events/birthdays`       |
+| Business Events | `/country/events/business`     |
+
+Each tile: full-bleed image, dark overlay, oversized uppercase label, eyebrow line, "Enter →" cue on hover. Mobile stacks 1-up. Hero copy + button labels via `CMSText` so they're editable.
+
+Route added to `App.tsx`; page registered in `src/data/cmsPages.ts` under Standalone group with SEO defaults (title "Meetings & Events | Crazy Bear", description "Weddings, parties, birthdays and business events at Crazy Bear Town & Country.").
+
+## 3. What's Happening hero swap
+
+Generate a new festival-crowd image (premium quality, dark moody crowd-with-lights vibe, on-brand), upload it to the existing `cms-assets/whats-on/hero/` storage path, then UPDATE the existing `cms_images` row (page=`whats-on`, section=`hero`) to point to the new URL. Alt text updated to "Festival crowd at night". No code changes in `WhatsOn.tsx` needed — `CBHeroBackdrop` already reads the row.
 
 ## Out of scope
 
-- No changes to `CBNavOverlay` (full site-map menu) — same content stands.
-- No new `/town/offers` / `/country/offers` routes.
-- No copy changes elsewhere.
+- No changes to existing `/country/events/*` or `/country/parties` pages.
+- No new Town-side equivalents (current Weddings/Birthdays/Business are country-only). If you want them mirrored to Town later, separate task.
+- CBNavOverlay site-map menu left as-is.

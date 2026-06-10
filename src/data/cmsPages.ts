@@ -65,6 +65,7 @@ const Privacy = lazy(() => import('@/pages/Privacy'));
 const RoomsLandingPage = lazy(() => import('@/pages/crazybear/RoomsLanding'));
 const FoodLandingPage = lazy(() => import('@/pages/crazybear/FoodLanding'));
 const OffersLandingPage = lazy(() => import('@/pages/crazybear/OffersLanding'));
+const MeetingsAndEventsPage = lazy(() => import('@/pages/crazybear/MeetingsAndEvents'));
 
 const CountryHome = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryHome })));
 // /pub enclave (top-level, was /country/pub*)
@@ -294,6 +295,20 @@ export const CMS_PAGES: CmsPageEntry[] = [
       include: true,
       defaultTitle: 'Offers | Crazy Bear',
       defaultDescription: 'Current offers at Crazy Bear Town & Country.',
+    },
+  },
+  {
+    slug: 'meetings-and-events',
+    route: '/meetings-and-events',
+    title: 'Meetings & Events',
+    description: 'Weddings, parties, birthdays, business — landing with four tiles',
+    group: 'Standalone',
+    icon: PartyPopper,
+    component: MeetingsAndEventsPage,
+    seo: {
+      include: true,
+      defaultTitle: 'Meetings & Events | Crazy Bear',
+      defaultDescription: 'Weddings, parties, birthdays and business events at Crazy Bear Town & Country.',
     },
   },
   {
