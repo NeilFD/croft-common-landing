@@ -51,7 +51,7 @@ const MeetingsAndEvents = () => {
         {/* Hero */}
         <section className="relative min-h-[70vh] flex items-end overflow-hidden">
           <img
-            src={heroImg}
+            src={heroSrc}
             alt="Crazy Bear events"
             className="absolute inset-0 h-full w-full object-cover"
           />
