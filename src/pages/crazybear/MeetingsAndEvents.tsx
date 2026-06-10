@@ -3,11 +3,11 @@ import { CBSeo } from "@/components/seo/CBSeo";
 import CBTopNav from "@/components/crazybear/CBTopNav";
 import CBFooter from "@/components/crazybear/CBFooter";
 import { CMSText } from "@/components/cms/CMSText";
-import heroImg from "@/assets/cb-events-hero.jpg";
-import weddingsImg from "@/assets/cb-events-weddings.jpg";
-import partiesImg from "@/assets/cb-events-parties.jpg";
-import birthdaysImg from "@/assets/cb-events-birthdays.jpg";
-import businessImg from "@/assets/cb-events-business.jpg";
+import heroImg from "@/assets/cb-hero-events.jpg";
+import weddingsImg from "@/assets/cb-country-culture-look-4-terrace.jpg";
+import partiesImg from "@/assets/cb-hero-parties.jpg";
+import birthdaysImg from "@/assets/cb-hero-cocktails.jpg";
+import businessImg from "@/assets/cb-hero-country-exterior.jpg";
 
 interface Tile {
   label: string;
