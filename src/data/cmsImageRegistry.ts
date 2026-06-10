@@ -122,8 +122,8 @@ const SLOT_OVERRIDES: Record<string, AssetSlot[]> = {
 
   // ----- SPLIT-SCREEN LANDINGS -----
   "rooms-landing": [
-    { page: "rooms-landing", slot: "split-town", kind: "hero", label: "Rooms Landing — Town side", defaults: [{ src: roomsTownImg, alt: "Town rooms" }] },
-    { page: "rooms-landing", slot: "split-country", kind: "hero", label: "Rooms Landing — Country side", defaults: [{ src: roomsCountryImg, alt: "Country rooms" }] },
+    { page: "rooms-landing", slot: "split-town", kind: "hero", label: "Rooms Landing — Town side", defaults: [{ src: roomsTownAsset.url, alt: "Deep red buttoned-leather headboard lit by a brass picture light in a Crazy Bear Town bedroom" }] },
+    { page: "rooms-landing", slot: "split-country", kind: "hero", label: "Rooms Landing — Country side", defaults: [{ src: roomsCountryAsset.url, alt: "Crazy Bear 'Please Do Not Disturb' door hanger on an ornate brass handle against deep red buttoned leather" }] },
   ],
   "food-landing": [
     { page: "food-landing", slot: "split-town", kind: "hero", label: "Food Landing — Town side", defaults: [{ src: foodTownImg, alt: "Town food" }] },
