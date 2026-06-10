@@ -21,6 +21,9 @@ const PropertyLayout = lazy(() => import("./components/property/PropertyLayout")
 const BearsDen = lazy(() => import("./pages/crazybear/BearsDen"));
 const About = lazy(() => import("./pages/crazybear/About"));
 const CBMembers = lazy(() => import("./pages/crazybear/Members"));
+const RoomsLanding = lazy(() => import("./pages/crazybear/RoomsLanding"));
+const FoodLanding = lazy(() => import("./pages/crazybear/FoodLanding"));
+const OffersLanding = lazy(() => import("./pages/crazybear/OffersLanding"));
 import { useCBMember } from "@/hooks/useCBMember";
 const SetPassword = lazy(() => import("./pages/crazybear/SetPassword"));
 const CountryHome = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryHome })));
