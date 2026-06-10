@@ -298,6 +298,20 @@ export const CMS_PAGES: CmsPageEntry[] = [
     },
   },
   {
+    slug: 'meetings-and-events',
+    route: '/meetings-and-events',
+    title: 'Meetings & Events',
+    description: 'Weddings, parties, birthdays, business — landing with four tiles',
+    group: 'Standalone',
+    icon: PartyPopper,
+    component: MeetingsAndEventsPage,
+    seo: {
+      include: true,
+      defaultTitle: 'Meetings & Events | Crazy Bear',
+      defaultDescription: 'Weddings, parties, birthdays and business events at Crazy Bear Town & Country.',
+    },
+  },
+  {
     slug: 'privacy',
     route: '/privacy',
     title: 'Privacy',
