@@ -41,7 +41,7 @@ const Side = ({ side, property }: { side: SplitSide; property: "town" | "country
           {side.eyebrow}
         </p>
       )}
-      <h2 className="font-display uppercase leading-[0.9] tracking-tight text-5xl md:text-7xl">
+      <h2 className="font-display uppercase leading-[0.9] tracking-tight text-5xl md:text-7xl transition-all duration-500 group-hover:scale-110 group-hover:[text-shadow:0_0_24px_rgba(255,255,255,0.9),0_0_48px_rgba(255,255,255,0.5)]">
         {side.label}
       </h2>
       <span className="mt-6 inline-flex items-center font-cb-mono text-[10px] tracking-[0.4em] uppercase border border-white/80 px-6 py-3 transition-colors duration-300 group-hover:bg-white group-hover:text-black">
