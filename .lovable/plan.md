@@ -1,42 +1,72 @@
-# Switch email sender to crazybear.app
+# Top Nav Restructure + New Landing Pages
 
-You bought **crazybear.app** through Lovable. We'll use it purely as the email sender domain (the site stays where it is). New sender becomes **notify@crazybear.app**, replacing the misbehaving `notify.crazybear.dev` that Gmail seems to be silently dropping.
+## 1. Top nav (CBTopNav + CBMemberNavItems)
 
-## Why this fixes the deliverability problem
+Rebuild the nav order so BOOK sits at the far right, and Members links toggle by auth state.
 
-`.dev` domains have a mixed reputation with corporate spam filters (Microsoft 365 in particular has been aggressive about them). A fresh `.app` subdomain, registered through Lovable and verified via Lovable's nameservers, gives us a clean sender reputation and proper SPF/DKIM/MX records out of the box.
+Order (left → right after the logo):
 
-## Steps
+1. Our Rooms → `/rooms`
+2. Food → `/food`
+3. Offers → `/offers`
+4. What's Happening → `/whats-on`
+5. Weddings → `/country/events/weddings`
+6. Members log-in (button, opens existing `CBMemberLoginModal`) — only when **not** signed in
+7. Members → `/members` — only when signed in
+8. Sign out (button) — only when signed in
+9. BOOK → `/book` (existing `PRIMARY_CTAS.book`) — far right, keeps current button styling
 
-### 1. Add notify.crazybear.app as an email domain
-You'll click a button to open the email setup dialog and add `crazybear.app` with subdomain `notify`. Because the domain was bought through Lovable, DNS verification is automatic — no manual record-copying.
+Mobile: same order, collapses behind the Menu button as today. The Menu overlay (`CBNavOverlay`) stays as-is for now (separate site-map view).
 
-### 2. Wait for verification (usually 5 to 30 mins)
-Lovable provisions the subdomain on its nameservers. Status moves from `awaiting_dns` to `active`.
+## 2. New pages
 
-### 3. Swap the sender domain in the email functions
-Two edge functions reference `notify.crazybear.dev` today:
-- `send-transactional-email` (karaoke + booking confirmations, venue sheets)
-- `auth-email-hook` (signup / password reset / magic links)
+All three follow the same split-screen Town/Country pattern (vertical 50/50, full-bleed hero image each side, hover/tap reveals CTA). Built as reusable `<SplitLanding>` component to keep them consistent.
 
-I'll update the `SENDER_DOMAIN` / `FROM_DOMAIN` constants in both, then redeploy. Templates, branding, queue, suppression list, unsubscribe handling — all untouched.
+### `/rooms` — `src/pages/crazybear/RoomsLanding.tsx`
+- Left: Town → `/town/rooms`
+- Right: Country → `/country/rooms`
+- CTA label: "See Rooms"
 
-### 4. Test
-Run a karaoke test booking. Confirm:
-- Guest confirmation arrives at `neilfdukes@gmail.com`
-- Venue sheet arrives at `neilfdukes@gmail.com`
-- `email_send_log` shows `sent` from the new domain
+### `/food` — `src/pages/crazybear/FoodLanding.tsx`
+- Left: Town → `/town/food/menus`
+- Right: Country → `/country/food/menus`
+- CTA label: "Click to see Menus"
 
-### 5. Leave .dev domain alone (for now)
-We won't disable or delete `notify.crazybear.dev` yet. It stays as a fallback until `.app` proves stable across a few test sends. Once confirmed, we can clean it up.
+### `/offers` — `src/pages/crazybear/OffersLanding.tsx`
+- Empty scaffold: hero, intro line, CMS-driven offer cards grid (renders nothing until offers exist).
+- No Town/Country split — single page per your answer.
 
-### 6. Update project memory
-Core memory currently says the email sender is `notify.crazybear.dev`. I'll update it to `notify.crazybear.app`.
+Each page: standard `CBTopNav` (light tone over imagery), `CBFooter`, SEO via `useSEO`.
 
-## What I need from you first
+## 3. CMS coverage
 
-Click the button below to add `crazybear.app` as an email domain (subdomain: `notify`). After that completes, I'll handle steps 3 to 6 automatically.
+Per project rule, every new page goes into CMS. Add three new CMS content entries using the existing `useCMSContent` pattern (same approach as other landing pages):
 
-<presentation-actions>
-<presentation-open-email-setup>Add crazybear.app as email domain</presentation-open-email-setup>
-</presentation-actions>
+- `rooms-landing` — hero image L/R, headline L/R, CTA label
+- `food-landing` — hero image L/R, headline L/R, CTA label
+- `offers-landing` — hero image, intro copy, list of offer cards `{ title, image, body, ctaLabel, ctaPath }`
+
+Register each in `src/data/cmsImageRegistry.ts` and surface them in the CMS admin (`src/admin/...`) under a new "Landing Pages" group so they're editable like existing CMS pages.
+
+## 4. Routing
+
+Add to `src/App.tsx`:
+```
+<Route path="/rooms" element={<RoomsLanding />} />
+<Route path="/food" element={<FoodLanding />} />
+<Route path="/offers" element={<OffersLanding />} />
+```
+
+## Technical notes
+
+- `CBMemberNavItems.tsx`: replace current markup. Use `useCBMember().isMember` to switch between `Member Login` button + (hidden Members link) vs `Members` link + `Sign out` button. Apply same `linkCls` from parent.
+- `CBTopNav.tsx`: insert the new link list between the logo and the existing right-side group. BOOK button moves to be the **last** child of the right-side `<nav>` (currently first). Keep scroll-aware backdrop, property accents, safe-area padding untouched.
+- `SplitLanding` lives at `src/components/crazybear/SplitLanding.tsx`. Props: `left`, `right` each `{ label, image, href, cta }`. Mobile: stacks vertically (50vh each).
+- New CMS content reads via existing `useCMSContent` hook; defaults baked into the component so pages render before CMS is populated.
+- No backend/auth changes. No restyle of /house-rules, /karaoke, footer.
+
+## Out of scope
+
+- No changes to `CBNavOverlay` (full site-map menu) — same content stands.
+- No new `/town/offers` / `/country/offers` routes.
+- No copy changes elsewhere.
