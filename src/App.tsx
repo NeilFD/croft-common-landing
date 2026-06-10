@@ -24,6 +24,7 @@ const CBMembers = lazy(() => import("./pages/crazybear/Members"));
 const RoomsLanding = lazy(() => import("./pages/crazybear/RoomsLanding"));
 const FoodLanding = lazy(() => import("./pages/crazybear/FoodLanding"));
 const OffersLanding = lazy(() => import("./pages/crazybear/OffersLanding"));
+const MeetingsAndEvents = lazy(() => import("./pages/crazybear/MeetingsAndEvents"));
 import { useCBMember } from "@/hooks/useCBMember";
 const SetPassword = lazy(() => import("./pages/crazybear/SetPassword"));
 const CountryHome = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryHome })));

@@ -126,6 +126,7 @@ const CBTopNav = ({ tone = "light", wordmark }: CBTopNavProps) => {
         <nav className="flex items-center gap-3 sm:gap-5 md:gap-7">
           <Link to="/rooms" className={`hidden md:inline-flex ${linkCls}`}>Our Rooms</Link>
           <Link to="/food" className={`hidden md:inline-flex ${linkCls}`}>Food</Link>
+          <Link to="/meetings-and-events" className={`hidden lg:inline-flex ${linkCls}`}>Meetings & Events</Link>
           <Link to="/offers" className={`hidden md:inline-flex ${linkCls}`}>Offers</Link>
           <Link to="/whats-on" className={`hidden lg:inline-flex ${linkCls}`}>What's Happening</Link>
           <Link to="/country/events/weddings" className={`hidden lg:inline-flex ${linkCls}`}>Weddings</Link>
