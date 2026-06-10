@@ -63,14 +63,14 @@ const RoomTypeNav = ({ site, title, body, seoDescription, cmsPage }: Props) => {
       <CBSeo title={`${title} | Crazy Bear ${site === "town" ? "Town" : "Country"}`} description={seoDescription.slice(0, 158)} path={path} />
       <CBTopNav tone="light" />
       <main className="bg-black text-white">
-        {/* 2x2 big tiles — moved to top */}
-        <section className="px-0 pt-20 md:pt-24">
-          <div className="grid grid-cols-1 md:grid-cols-2">
+        {/* 2x2 big tiles — fit above the fold (full viewport minus header) */}
+        <section className="px-0 pt-[72px] md:pt-[88px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:h-[calc(100vh-88px)]">
             {TILES.map((tile, i) => (
               <Link
                 key={tile.href}
                 to={tile.href}
-                className="group relative flex items-end overflow-hidden min-h-[60vh] md:min-h-[70vh] border-t border-white/10 md:[&:nth-child(-n+2)]:border-t-0 md:[&:nth-child(2n)]:border-l border-white/10"
+                className="group relative flex items-end overflow-hidden h-[50vh] md:h-full border-t border-white/10 md:[&:nth-child(-n+2)]:border-t-0 md:[&:nth-child(2n)]:border-l border-white/10"
               >
                 <img
                   src={tileImages[i]}
