@@ -271,21 +271,13 @@ export const TownCocktails = () =>
 export const TownRooms = () =>
   withSecret(
     "rooms-town",
-    <PropertyPage
+    <RoomTypeNav
+      site="town"
       title="Rooms"
-      body="Velvet, mirror, marble. Sleep like a rumour."
+      body="Velvet, mirror, marble. Each one its own world. Pick your character."
       seoDescription="Rooms at Crazy Bear Town. Velvet, mirror, marble. Each one its own world."
-      schemaKind="hotel"
-      faqKey="/town/rooms"
       cmsPage="town/rooms"
-    >
-      <QuoteScene
-        headline="Late checkout strongly advised."
-        body="Roll-top bath. Theatrical bedhead. Do-not-disturb practically printed on the door."
-        ctaLabel="Pick your character"
-        ctaTo="/town/rooms/types"
-      />
-    </PropertyPage>
+    />
   );
 export const TownRoomTypes = () =>
   withSecret(
