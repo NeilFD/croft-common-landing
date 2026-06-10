@@ -132,14 +132,6 @@ const CBTopNav = ({ tone = "light", wordmark }: CBTopNavProps) => {
           <Suspense fallback={null}>
             <CBMemberNavItems linkCls={`hidden md:inline-flex ${linkCls}`} onLoginOpen={() => setLoginOpen(true)} />
           </Suspense>
-          <button
-            type="button"
-            onClick={() => setMenuOpen(true)}
-            aria-label="Open menu"
-            className={linkCls}
-          >
-            Menu
-          </button>
           <Link
             to={PRIMARY_CTAS.book.path}
             className={`inline-flex items-center font-cb-mono text-[9px] sm:text-[10px] tracking-[0.35em] sm:tracking-[0.4em] uppercase px-3 sm:px-4 py-1.5 sm:py-2 transition-colors ${bookBtnCls}`}
