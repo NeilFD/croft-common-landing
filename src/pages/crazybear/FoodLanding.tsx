@@ -12,7 +12,7 @@ const FoodLanding = () => {
       <CBSeo
         title="Food | Crazy Bear"
         description="Eat at Crazy Bear. Town or Country. Pick your menu."
-        canonical="https://crazybear.app/food"
+        path="/food"
       />
       <CBTopNav tone="light" />
       <main>

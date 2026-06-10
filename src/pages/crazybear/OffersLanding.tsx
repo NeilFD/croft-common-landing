@@ -51,7 +51,7 @@ const OffersLanding = () => {
       <CBSeo
         title="Offers | Crazy Bear"
         description="Current offers at Crazy Bear Town & Country."
-        canonical="https://crazybear.app/offers"
+        path="/offers"
       />
       <CBTopNav tone="light" />
       <main className="bg-black text-white">

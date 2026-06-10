@@ -12,7 +12,7 @@ const RoomsLanding = () => {
       <CBSeo
         title="Our Rooms | Crazy Bear"
         description="Stay at Crazy Bear. Town or Country. Pick your side."
-        canonical="https://crazybear.app/rooms"
+        path="/rooms"
       />
       <CBTopNav tone="light" />
       <main>
