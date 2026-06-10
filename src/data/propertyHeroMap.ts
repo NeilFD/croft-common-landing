@@ -42,6 +42,7 @@ export const propertyHeroMap: Record<string, string> = {
 
   "/town": roomsTown,
   "/town/food": blackBear,
+  "/town/food/menus": townMenusHero.url,
   "/town/food/black-bear": chefPlating,
   "/town/food/bnb": chefPlating,
   "/town/food/hom-thai": chefPlating,
