@@ -62,6 +62,9 @@ const HouseRules = lazy(() => import('@/pages/HouseRules'));
 const EventEnquiry = lazy(() => import('@/pages/EventEnquiry'));
 const Book = lazy(() => import('@/pages/Book'));
 const Privacy = lazy(() => import('@/pages/Privacy'));
+const RoomsLandingPage = lazy(() => import('@/pages/crazybear/RoomsLanding'));
+const FoodLandingPage = lazy(() => import('@/pages/crazybear/FoodLanding'));
+const OffersLandingPage = lazy(() => import('@/pages/crazybear/OffersLanding'));
 
 const CountryHome = lazy(() => import('@/pages/property').then(m => ({ default: m.CountryHome })));
 // /pub enclave (top-level, was /country/pub*)
@@ -249,6 +252,48 @@ export const CMS_PAGES: CmsPageEntry[] = [
       include: true,
       defaultTitle: 'Book | Crazy Bear',
       defaultDescription: 'Book a table or a stay at Crazy Bear.',
+    },
+  },
+  {
+    slug: 'rooms-landing',
+    route: '/rooms',
+    title: 'Rooms (Landing)',
+    description: 'Split-screen Town/Country rooms gateway',
+    group: 'Standalone',
+    icon: Bed,
+    component: RoomsLandingPage,
+    seo: {
+      include: true,
+      defaultTitle: 'Our Rooms | Crazy Bear',
+      defaultDescription: 'Stay at Crazy Bear. Town or Country. Pick your side.',
+    },
+  },
+  {
+    slug: 'food-landing',
+    route: '/food',
+    title: 'Food (Landing)',
+    description: 'Split-screen Town/Country food gateway',
+    group: 'Standalone',
+    icon: UtensilsCrossed,
+    component: FoodLandingPage,
+    seo: {
+      include: true,
+      defaultTitle: 'Food | Crazy Bear',
+      defaultDescription: 'Eat at Crazy Bear. Town or Country. Pick your menu.',
+    },
+  },
+  {
+    slug: 'offers-landing',
+    route: '/offers',
+    title: 'Offers',
+    description: 'Current offers across Town & Country',
+    group: 'Standalone',
+    icon: Sparkles,
+    component: OffersLandingPage,
+    seo: {
+      include: true,
+      defaultTitle: 'Offers | Crazy Bear',
+      defaultDescription: 'Current offers at Crazy Bear Town & Country.',
     },
   },
   {
