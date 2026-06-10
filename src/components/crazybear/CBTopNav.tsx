@@ -134,7 +134,8 @@ const CBTopNav = ({ tone = "light", wordmark }: CBTopNavProps) => {
           </Suspense>
           <Link
             to={PRIMARY_CTAS.book.path}
-            className={`inline-flex items-center font-cb-mono text-[9px] sm:text-[10px] tracking-[0.35em] sm:tracking-[0.4em] uppercase px-3 sm:px-4 py-1.5 sm:py-2 transition-colors ${bookBtnCls}`}
+            className={`inline-flex items-center font-cb-mono text-[9px] sm:text-[10px] tracking-[0.35em] sm:tracking-[0.4em] uppercase px-3 sm:px-4 py-1.5 sm:py-2 ${bookBtnCls}`}
+            style={{ textShadow: "none" }}
           >
             {PRIMARY_CTAS.book.label}
           </Link>
