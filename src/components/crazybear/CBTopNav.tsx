@@ -79,8 +79,8 @@ const CBTopNav = ({ tone = "light", wordmark }: CBTopNavProps) => {
   const linkCls =
     "font-cb-mono text-[10px] tracking-[0.45em] uppercase opacity-90 hover:opacity-100";
 
-  // Neon pink flickering BOOK CTA — fixed treatment across light/dark nav tones.
-  const bookBtnCls = "cb-neon-book border-2 border-[#ff1a8c] text-[#ffd6e8]";
+  // Neon blood-red flickering BOOK CTA — fixed treatment across light/dark nav tones.
+  const bookBtnCls = "cb-neon-book border-2 border-[#ff1a1a] text-[#ffd6d6]";
 
   return (
     <>
