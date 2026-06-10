@@ -940,3 +940,75 @@ h1 {
 .cb-scene-cta:hover .cb-scene-cta__arrow {
   transform: translateX(4px);
 }
+
+/* ============================================================
+   Neon BOOK button — flickering red neon sign
+   ============================================================ */
+@keyframes cb-neon-flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    opacity: 1;
+    text-shadow:
+      0 0 4px #ff1a1a,
+      0 0 8px #ff1a1a,
+      0 0 16px #ff0000,
+      0 0 28px #ff0000,
+      0 0 42px #b30000;
+    box-shadow:
+      0 0 6px #ff1a1a,
+      0 0 14px #ff0000,
+      0 0 28px rgba(255, 0, 0, 0.7),
+      inset 0 0 8px rgba(255, 0, 0, 0.35);
+    border-color: #ff1a1a;
+    color: #ffd6d6;
+  }
+  20%, 24%, 55% {
+    opacity: 0.35;
+    text-shadow: none;
+    box-shadow: 0 0 2px rgba(255, 0, 0, 0.2), inset 0 0 2px rgba(255, 0, 0, 0.1);
+    border-color: rgba(255, 26, 26, 0.4);
+    color: #6b0000;
+  }
+}
+
+@keyframes cb-neon-buzz {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(0.5px); }
+}
+
+.cb-neon-book {
+  animation: cb-neon-flicker 3.6s infinite, cb-neon-buzz 0.18s infinite;
+  will-change: opacity, text-shadow, box-shadow;
+  background: rgba(20, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.cb-neon-book:hover {
+  animation: none;
+  opacity: 1;
+  color: #ffffff;
+  border-color: #ff3030;
+  background: rgba(80, 0, 0, 0.55);
+  text-shadow:
+    0 0 6px #ff3030,
+    0 0 14px #ff0000,
+    0 0 28px #ff0000,
+    0 0 48px #ff0000;
+  box-shadow:
+    0 0 10px #ff3030,
+    0 0 24px #ff0000,
+    0 0 48px rgba(255, 0, 0, 0.85),
+    inset 0 0 12px rgba(255, 0, 0, 0.5);
+  transform: translateY(-1px) scale(1.03);
+}
+.cb-neon-book:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow:
+    0 0 4px #ff3030,
+    0 0 10px #ff0000,
+    inset 0 0 16px rgba(255, 0, 0, 0.8);
+  background: rgba(120, 0, 0, 0.7);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cb-neon-book { animation: none; }
+}
