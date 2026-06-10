@@ -34,6 +34,8 @@ interface Props {
   cmsPage?: string;
   /** CSS object-position for the hero image. Defaults to "center". */
   heroObjectPosition?: string;
+  /** When true, the body paragraph beneath the hero is omitted. */
+  hideBody?: boolean;
 }
 
 const PropertyPage = ({
@@ -49,6 +51,7 @@ const PropertyPage = ({
   children,
   cmsPage,
   heroObjectPosition,
+  hideBody,
 }: Props) => {
   const { config } = useProperty();
   const location = useLocation();
@@ -183,22 +186,24 @@ const PropertyPage = ({
         </section>
       )}
       <CBBreadcrumb />
-      <section id="cb-page-body" className="mx-auto max-w-3xl px-6 pt-10 pb-20 text-foreground scroll-mt-16">
-        {cmsPage ? (
-          <CMSText
-            page={cmsPage}
-            section="hero"
-            contentKey="body"
-            fallback={bodyText}
-            as="p"
-            className="font-cb-sans text-xl md:text-2xl leading-relaxed whitespace-pre-line"
-          />
-        ) : (
-          <p className="font-cb-sans text-xl md:text-2xl leading-relaxed whitespace-pre-line">
-            {bodyText}
-          </p>
-        )}
-      </section>
+      {!hideBody && (
+        <section id="cb-page-body" className="mx-auto max-w-3xl px-6 pt-10 pb-20 text-foreground scroll-mt-16">
+          {cmsPage ? (
+            <CMSText
+              page={cmsPage}
+              section="hero"
+              contentKey="body"
+              fallback={bodyText}
+              as="p"
+              className="font-cb-sans text-xl md:text-2xl leading-relaxed whitespace-pre-line"
+            />
+          ) : (
+            <p className="font-cb-sans text-xl md:text-2xl leading-relaxed whitespace-pre-line">
+              {bodyText}
+            </p>
+          )}
+        </section>
+      )}
       {children}
       {(cmsPage || faqEntry) && (
         <CBFAQ
