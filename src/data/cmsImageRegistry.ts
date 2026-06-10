@@ -20,8 +20,8 @@ import countryLook1 from "@/assets/cb-country-culture-look-1-routemaster.jpg";
 import countryLook2 from "@/assets/cb-country-culture-look-2-bedroom.jpg";
 import countryLook3 from "@/assets/cb-country-culture-look-3-feast.jpg";
 import countryLook4 from "@/assets/cb-country-culture-look-4-terrace.jpg";
-import roomsTownImg from "@/assets/cb-hero-rooms-town.jpg";
-import roomsCountryImg from "@/assets/cb-hero-rooms-country.jpg";
+import roomsTownAsset from "@/assets/cb-rooms-split-town.jpg.asset.json";
+import roomsCountryAsset from "@/assets/cb-rooms-split-country.jpg.asset.json";
 import foodTownImg from "@/assets/cb-hero-blackbear.jpg";
 import foodCountryImg from "@/assets/cb-hero-pub.jpg";
 import eventsHeroImg from "@/assets/cb-hero-events.jpg";
@@ -122,8 +122,8 @@ const SLOT_OVERRIDES: Record<string, AssetSlot[]> = {
 
   // ----- SPLIT-SCREEN LANDINGS -----
   "rooms-landing": [
-    { page: "rooms-landing", slot: "split-town", kind: "hero", label: "Rooms Landing — Town side", defaults: [{ src: roomsTownImg, alt: "Town rooms" }] },
-    { page: "rooms-landing", slot: "split-country", kind: "hero", label: "Rooms Landing — Country side", defaults: [{ src: roomsCountryImg, alt: "Country rooms" }] },
+    { page: "rooms-landing", slot: "split-town", kind: "hero", label: "Rooms Landing — Town side", defaults: [{ src: roomsTownAsset.url, alt: "Deep red buttoned-leather headboard lit by a brass picture light in a Crazy Bear Town bedroom" }] },
+    { page: "rooms-landing", slot: "split-country", kind: "hero", label: "Rooms Landing — Country side", defaults: [{ src: roomsCountryAsset.url, alt: "Crazy Bear 'Please Do Not Disturb' door hanger on an ornate brass handle against deep red buttoned leather" }] },
   ],
   "food-landing": [
     { page: "food-landing", slot: "split-town", kind: "hero", label: "Food Landing — Town side", defaults: [{ src: foodTownImg, alt: "Town food" }] },
