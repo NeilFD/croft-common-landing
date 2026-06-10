@@ -188,7 +188,7 @@ export const TownFood = () =>
   withSecret(
     "recipe-blackbear",
     <PropertyPage
-      title="Food"
+      title="FOOD"
       body="Two kitchens. One appetite."
       seoDescription="Food at Crazy Bear Town. The Black Bear, the B&B and Hom Thai."
       faqKey="/town/food"
@@ -230,7 +230,7 @@ export const TownHomThai = () =>
     "recipe-homthai",
     <PropertyPage
       title="Hom Thai"
-      eyebrow="Food"
+      eyebrow="FOOD"
       body="Bangkok by way of Beaconsfield. Sharp, fragrant, fierce."
       seoDescription="Hom Thai at Crazy Bear Town. Bangkok by way of Beaconsfield. Sharp, fragrant, fierce."
       schemaKind="restaurant"
@@ -366,7 +366,7 @@ export const CountryRoomDecadent = () => <RoomCategoryRoute site="country" categ
  * ────────────────────────────────────────────────────────────────────── */
 export const CountryFood = () => (
   <PropertyPage
-    title="Food"
+    title="FOOD"
     body="Two kitchens, one pub. The Restaurant, Thai upstairs, the Pub downstairs. Long lunches and longer Sundays."
     seoDescription="Food at Crazy Bear Country, Stadhampton. The Restaurant, Thai upstairs, the Pub, afternoon tea, Sunday feasts."
     faqKey="/country/pub"
@@ -380,7 +380,7 @@ export const CountryFood = () => (
 export const TownAfternoonTea = () => (
   <PropertyPage
     title="Afternoon Tea"
-    eyebrow="Food"
+    eyebrow="FOOD"
     body="Three tiers. Proper tea. Champagne if you're behaving badly."
     seoDescription="Afternoon tea at Crazy Bear Town, Beaconsfield. Sandwiches, scones, pastries, proper tea. Champagne on request."
     schemaKind="restaurant"
@@ -391,7 +391,7 @@ export const TownAfternoonTea = () => (
 export const CountryAfternoonTea = () => (
   <PropertyPage
     title="Afternoon Tea"
-    eyebrow="Food"
+    eyebrow="FOOD"
     body="By the fire or out on the terrace. Scones, sandwiches, cake. The works."
     seoDescription="Afternoon tea at Crazy Bear Country, Stadhampton. By the fire or on the terrace."
     schemaKind="restaurant"
@@ -455,8 +455,8 @@ import CBMenusIndex from "@/components/property/CBMenusIndex";
 
 export const TownMenus = () => (
   <PropertyPage
-    title="Menus"
-    eyebrow="Food"
+    title="FOOD"
+    eyebrow="COUNTRY"
     seoDescription="Every menu across Crazy Bear Town, Beaconsfield. The Black Bear, the B&B, Hom Thai."
     cmsPage="town/food/menus"
     heroObjectPosition="center 45%"
@@ -467,8 +467,8 @@ export const TownMenus = () => (
 );
 export const CountryMenus = () => (
   <PropertyPage
-    title="Menus"
-    eyebrow="Food"
+    title="FOOD"
+    eyebrow="COUNTRY"
     seoDescription="Every menu across Crazy Bear Country, Stadhampton. The Pub, Restaurant and Thai."
     cmsPage="country/food/menus"
     heroObjectPosition="center 45%"
