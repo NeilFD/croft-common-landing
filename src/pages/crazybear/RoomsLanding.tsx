@@ -47,7 +47,7 @@ const RoomsLanding = () => {
             section="intro"
             contentKey="title"
             fallback="Our Rooms"
-            className="font-display uppercase text-4xl md:text-6xl leading-[0.9] tracking-tight"
+            className="font-display uppercase text-4xl md:text-6xl leading-[0.9] tracking-tight text-center"
           />
           <CMSText
             as="p"
