@@ -456,7 +456,7 @@ import CBMenusIndex from "@/components/property/CBMenusIndex";
 export const TownMenus = () => (
   <PropertyPage
     title="FOOD"
-    eyebrow="COUNTRY"
+    eyebrow="TOWN"
     seoDescription="Every menu across Crazy Bear Town, Beaconsfield. The Black Bear, the B&B, Hom Thai."
     cmsPage="town/food/menus"
     heroObjectPosition="center 45%"
