@@ -124,14 +124,13 @@ const CBTopNav = ({ tone = "light", wordmark }: CBTopNavProps) => {
           )}
         </Link>
         <nav className="flex items-center gap-3 sm:gap-5 md:gap-7">
-          <Link
-            to={PRIMARY_CTAS.book.path}
-            className={`inline-flex items-center font-cb-mono text-[9px] sm:text-[10px] tracking-[0.35em] sm:tracking-[0.4em] uppercase px-3 sm:px-4 py-1.5 sm:py-2 transition-colors ${bookBtnCls}`}
-          >
-            {PRIMARY_CTAS.book.label}
-          </Link>
+          <Link to="/rooms" className={`hidden md:inline-flex ${linkCls}`}>Our Rooms</Link>
+          <Link to="/food" className={`hidden md:inline-flex ${linkCls}`}>Food</Link>
+          <Link to="/offers" className={`hidden md:inline-flex ${linkCls}`}>Offers</Link>
+          <Link to="/whats-on" className={`hidden lg:inline-flex ${linkCls}`}>What's Happening</Link>
+          <Link to="/country/events/weddings" className={`hidden lg:inline-flex ${linkCls}`}>Weddings</Link>
           <Suspense fallback={null}>
-            <CBMemberNavItems linkCls={linkCls} onLoginOpen={() => setLoginOpen(true)} />
+            <CBMemberNavItems linkCls={`hidden md:inline-flex ${linkCls}`} onLoginOpen={() => setLoginOpen(true)} />
           </Suspense>
           <button
             type="button"
@@ -141,6 +140,12 @@ const CBTopNav = ({ tone = "light", wordmark }: CBTopNavProps) => {
           >
             Menu
           </button>
+          <Link
+            to={PRIMARY_CTAS.book.path}
+            className={`inline-flex items-center font-cb-mono text-[9px] sm:text-[10px] tracking-[0.35em] sm:tracking-[0.4em] uppercase px-3 sm:px-4 py-1.5 sm:py-2 transition-colors ${bookBtnCls}`}
+          >
+            {PRIMARY_CTAS.book.label}
+          </Link>
         </nav>
       </header>
 
