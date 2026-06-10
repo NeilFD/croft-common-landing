@@ -442,6 +442,9 @@ const App = () => {
 
 
                       {/* Site-wide */}
+                      <Route path="/rooms" element={<RoomsLanding />} />
+                      <Route path="/food" element={<FoodLanding />} />
+                      <Route path="/offers" element={<OffersLanding />} />
                       <Route path="/whats-on" element={<WhatsOn />} />
                       <Route path="/whats-on/:slug" element={<WhatsOnDetail />} />
                       <Route path="/stories" element={<Stories />} />
